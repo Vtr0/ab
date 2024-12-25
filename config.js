@@ -1,5 +1,5 @@
 var _DEFAULT_CFG = {xState: {speed:1.4,volume:1, muted:false,history:{currHis:0,hisList:[]}},
-cDBFilesEdt: {checkEdtDelay:21_600, edt:[110,113,116,113]}, //in seconds: 43_200, 86_400, edt:[101,101,101,101]}
+cDBFilesEdt: {checkEdtDelay:21_600, edt:[110,113,116,114]}, //in seconds: 43_200, 86_400, edt:[101,101,101,101]}
 xDBFilesCfg: {len:4,toLoad:null}}; 
 var ssData = ssData || {
 	wildCartStr: "<*~~*>",
