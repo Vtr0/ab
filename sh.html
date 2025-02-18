@@ -3088,8 +3088,13 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 		/* Sleep timer related elements */
 		.havingShortPopup > button:has( + #sleepTimerDivPopup){
 			&.sleepTimerActive{
-				color: red !important;
+				/* color: red !important; */
+				animation: sleepTimerActive_colorChange 3s alternate infinite;
 			}
+		}
+		@keyframes sleepTimerActive_colorChange{
+			from, 40% {color: red}
+			to {color: #c5a91e}
 		}
 		#elmSleepTimerCountDown{
 			font-size: 1.3em;
@@ -5583,7 +5588,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			</button> -->
 					
 					<button onclick="utilityHandles.gotoPlayingChapter();" title="Đến chương đang phát"
-						data-tooltip="Đến chương đang phát" data-tooltip-location="bottom">
+						data-tooltip="Đến chương đang phát">
 						<svg class="!text-[20px] button-svg-img rotate-90" focusable="false" aria-hidden="true">
 							<use href="#icnSvgJump2PlayingChap" />
 						</svg>
@@ -5592,7 +5597,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					<!-- Sleep Timer button -->
 					<div class="havingShortPopup">
 						<button onclick="utilityHandles.showSleepTimerPopup();"
-							data-tooltip="Hẹn giờ tắt Audio (nút sẽ chuyển sang màu đỏ).&#xaNhập 0 hoặc để trắng: Tắt hẹn giờ (nút hẹn giờ chuyển từ màu đỏ sang đen).&#xaNhập -1 để audio tự tắt khi phát hết chương sách hiện tại.">
+							data-tooltip="Hẹn giờ tắt Audio (nút sẽ chuyển sang màu đỏ).&#xa– Nhập 0 hoặc để trắng: Tắt hẹn giờ (nút hẹn giờ chuyển về màu đen).&#xa– Nhập -1 để audio tự tắt khi phát hết chương sách hiện tại.">
 							<svg class="!text-[25px] button-svg-img" focusable="false" aria-hidden="true">
 								<use href="#icnSvgSleepTimer" />
 							</svg>
@@ -8594,7 +8599,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				}; */
 
 				window.addEventListener('resize', function (event) {
-					//re-position for pre-code elements
+					//re-position for pre-hard-coded elements
 					reposAllTooltips();
 
 					/*	TODO: reload the book so the chapter-group-label got its height recalculted */
@@ -9149,14 +9154,14 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				//adding break for some place marked with " - ", not " – " (long alt+151 em-dash; alt+150 en-dash)
 				tit = tit.replaceAll(" - ", "<br/>");
 
-				//|Quyển|Phẩm|Bài
+				//Following separate char ('[\:\–\.\-]') can be replaced by '\b.'
 
 				//format for text looks like '1-Thôn nhỏ bên núi' (without 'Hồi|Chương|Phần|Tập' preceding)
 				// /((?<!Hồi|Chương|Phần|Tập)\s+\d+\s*[\:\-])/g
 				tit = tit.replaceAll(/((?<!Hồi|Chương|Phần|Tập|Quyển|Phẩm|Bài)\s+\d+\s*[\:\–\.\-])/gi, "<b style='color:#1566bf'>$1</b>");
 
 				//format for text looks like 'Hồi 1.1', 'Chương 2 -5' (two numbers)
-				tit = tit.replaceAll(/((?:Hồi|Chương|Phần|Tập)\s+\d+(?:\s*[\:\–\.\-]\s*\d+))/gi, "<b style='color:#c09618'>$1</b>");
+				tit = tit.replaceAll(/((?:Hồi|Chương|Phần|Tập|Quyển|Phẩm|Bài)\s+\d+(?:\s*[\:\–\.\-]\s*\d+))/gi, "<b style='color:#c09618'>$1</b>");
 
 				//format for text looks like 'Chương 1: ', 'Tập 1 -' (single number) without matching a part of two numbers like 'Chương 19 – ' of 'Chương 19 – 23'
 				// /((?:Hồi|Chương|Phần|Tập)\s+\d+(?:\s*[\:\-\.\-]?\s*(?!\d+)))/gi
@@ -9360,7 +9365,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				const _pattern = /^\d+(\s+phút|\s*[hHgG\.\-\:]\s*\d*)?$/;
 
 				_ipSleepTimer.setAttribute("pattern", _pattern.source); //pattern to check valid
-				_popupDiv.querySelector("label[for]").innerHTML = "Nhập thời gian dừng phát truyện theo định dạng: <b>HH[<i>delimiter</i>]mmm</b> (ví dụ: <b>1h20</b>), <b>mmm</b> (ví dụ: <b>45</b>). Trong đó <b>HH</b> là số giờ, <b>mmm</b> là số phút;  <b>[<i>delimiter</i>]</b> có thể là một trong các kí tự <b>H</b>, <b>h</b>, <b>G</b>, <b>g</b>, <b>.</b>, <b>-</b>, <b>:</b>";				
+				_popupDiv.querySelector("label[for]").innerHTML = "Nhập thời gian dừng phát truyện theo định dạng: <b>HH[<i>delimiter</i>]mm</b> (ví dụ: <b>1h20</b> = 1 giờ 20 phút), <b>mm</b> (ví dụ: <b>45</b> = 45 phút).<br/>Trong đó <b>HH</b> là số giờ, <b>mm</b> là số phút;  <b>[<i>delimiter</i>]</b> có thể là một trong các kí tự <b>H</b>, <b>h</b>, <b>G</b>, <b>g</b>, <b>.</b>, <b>-</b>, <b>:</b>";			
 				
 				 //show the popup and put focus on the textbox
 				_popupDiv.classList.add("shortPoupShow");
@@ -9437,12 +9442,15 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 						/** function to stop Sleep-Timer 
 						 * @param interuptOldTimer {boolean}
-						 * false or missing: meaning the current Sleep timer reach to the end, so we need to stop it
-						 * true: user decide to disable current sleep timer
+						 * - false or missing: meaning the current Sleep timer reach to the end, so we need to stop it
+						 * - true: user decide to disable current sleep timer
 						*/
 						const stopSleepTimer = interuptOldTimer => {
 							const _sleepObj = ssData.sleep;
-							clearInterval(_sleepObj.siObj);									
+							clearInterval(_sleepObj.siObj);
+
+							//const to know if there is an sleep timer is counting down
+							const _AN_TIMER_ACTIVE = _sleepObj.siObj !== null;
 
 							//reset sleep variables
 							_sleepObj.timer = 0;
@@ -9460,11 +9468,16 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 							//clear timer input
 							_ipSleepTimer.value = "";
-							//stop audio only if interuptOldTimer = false
-							if(!interuptOldTimer)
+							
+							//stop audio only for the case when the Sleep timer reached to the end
+							if(!interuptOldTimer){
 								xAudio.pause();
 
-							toast.showToast("Dừng phát audio do đã tới thời gian hẹn giờ tắt", toast.ToastType.Warning, {duration: 1e4});
+								toast.showToast("Dừng phát audio do đã tới thời gian hẹn giờ tắt", toast.ToastType.Warning, {duration: 1e4});
+							}
+							else if(_AN_TIMER_ACTIVE){
+								toast.showToast("Tắt đồng hồ hẹn giờ trước hạn.", toast.ToastType.Warning, {duration: 1e4});
+							}
 						}
 
 						//remove all spaces
@@ -9482,7 +9495,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 						//convert newSleepTimeTxt to number of minutes to compare with label's option
 						let newSleepTime = convertSleepTime(newSleepTimeTxt);
 
-						//Check if new timer was already there in the timer datalist
+						//Check if new timer was already there in the timer datalist, if not, push it in the datalist and saved new list to xState
 						if(!_sleepTimersDatalist.querySelector('[label^="' + newSleepTime + ' "]')){
 							// search right location to add newSpeed
 							let i = 0;
@@ -9500,6 +9513,9 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 							xState.sleepTimers = [..._sleepTimersDatalist.options].map(_opt => parseInt(_opt.label));
 						}
 
+						/* NOW, SETTING a NEW Sleep TIMER */
+						stopSleepTimer(true); // interupt and stop timer, do some clean up of old (but still active) timer (if any)
+
 						//convert the number of minutes into hour format in the input box
 						_ipSleepTimer.value = convertSleepTime(newSleepTime);
 
@@ -9516,12 +9532,13 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 						_stCountdownCtn.classList.remove("elm-hidden");
 
 						//start an interval to update the count-down sleep timer string and to pause audio (and do some resetting) when sleep time is reached
+						_stCountdownSpan.textContent = toHhMmSs(_sleepObj.count);
 						_sleepObj.siObj = setInterval(_ => {
 							_sleepObj.count --;
 							_stCountdownSpan.textContent = toHhMmSs(_sleepObj.count);
 							//console.log(_sleepObj.count);
 
-							// note that when a tab is inactive, the setInterval may work incorrectly (See 'Timeouts in inactive tabs' in setTimeout function from Mdn). Also, setInterval always being delayed (see mdn), so we need to update _sleepObj.count regularly based on system time to make sleep timer work more correctly
+							// note that when a tab is inactive, the setInterval may work incorrectly (See 'Timeouts in inactive tabs' in setTimeout function from Mdn). Also, setInterval always being delayed (see mdn), so we need to update _sleepObj.count regularly based on system time to make sleep timer work more correctly. See this link https://stackoverflow.com/a/16033979/36866 for limits the minimum interval on inactive tab for different browsers
 							//document.hidden && 
 							if(_sleepObj.count % 10 == 0 || _sleepObj.count < 30) {
 								// we re-update the counter based on system time every 10 times setInterval invoked or when timer reaching to the end
@@ -9536,6 +9553,9 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 							// when timer reach to the very end
 							if(_sleepObj.count <= 0) {
 								stopSleepTimer();
+								/* console.log("Reached end at: " + toHhMmSs(xAudio.currentTime) + ". Paused = " + xAudio.paused);
+								xAudio.pause(); //just for sure, can be removed since it already been done on stopSleepTimer()
+								console.log(xAudio.paused); */
 							}
 						}, 1000);						
 
@@ -11468,7 +11488,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				}
 				//add following in to field-set to make it land-scape layout with the full-width: ' class="lanscape-content" style="grid-column: span 2;" '
 				hkWrapper.innerHTML = `<div>
-				<fieldset style="grid-row: span 5;align-self: stretch;">
+				<fieldset style="grid-row: span 3;align-self: stretch;">
 					<legend>Phím tắt cho Search–Dropdown</legend>
 					<span class="commonGuide">— Trong danh mục các <b>tựa sách / chương sách</b>, kết hợp phím <samp modifier-key="true">${breakKeys(ssData.sddBookTitlesList.settings.makeSelectKey)}</samp> / <samp modifier-key="true">${breakKeys(ssData.sddChaptersList.settings.makeSelectKey)}</samp> (theo thứ tự) với các phím thay đổi mục (option) để phát ngay <b>tựa sách / chương sách</b>.</span><span class="commonGuide">— Chuyển chế độ tìm kiếm '<b>không dấu</b>' hoặc '<b>nguyên dấu</b>' bằng cách bấm phím tắt hoặc bấm nút chức năng <object style='display: inline-block; width: 20px; height: 20px; border: 1px solid; border-radius:4px;padding: 2px;'>${ssData.sddBookTitlesList.rootElement.querySelector(".search-diacritics-option-button > svg").outerHTML}</object> ở bên phải ô tìm kiếm.<br/>— App luôn luôn tìm kiếm không phân biệt chữ hoa-thường (case-insensitive). Tuy nhiên, tùy thuộc các chữ trong xâu tìm kiếm, ta có các cách tìm khác nhau:<br/>&emsp;⨁ Nếu tất cả các chữ trong xâu tìm kiếm đều là chữ hoa, chế độ tìm kiếm sẽ theo '<b>Chữ cái đầu tiên</b>' của các từ liên tiếp. Ví dụ: So sánh tìm <kbd>TĐ</kbd> trong chế độ tìm dấu nêu trên.<br/>&emsp;⨁ Nếu tất cả các chữ trong xâu tìm kiếm đều là chữ thường, chế độ tìm kiếm sẽ là tìm '<b>Cụm từ</b>' (như indexOf). Ví dụ: So sánh tìm <kbd>đại kinh</kbd> theo một trong hai chế độ tìm dấu. Trong chế dộ 'không dấu', so sánh kết quả tìm <kbd>Tinh do</kbd> vs <kbd>tinh do</kbd>; <kbd>dai kinh</kbd> vs <kbd>kinh dai</kbd>.<br/>&emsp;⨁ Nếu tất cả các chữ trong xâu tìm kiếm đều là số (và dấu <kbd>.</kbd>), chế độ tìm kiếm là '<b>Số</b>'. Có thể bấm số kết thúc bằng dấu <kbd>.</kbd> để tìm nhanh đến mục có số thứ tự tương ứng. Ví dụ: <kbd>30.</kbd><br/>&emsp;⨁ Trường hợp còn lại là chế độ tìm kiếm '<b>Khớp từ</b>', chuỗi kết quả là chuỗi chứa từng từ trong chuỗi tìm kiếm theo thứ tự bất kỳ. Ví dụ, tìm <kbd>Dai kinh</kbd> trong chế độ 'không dấu' sẽ tìm được cả 'Đại Kinh' và 'Kinh Tạng Đại Thừa'</span>
 					${listHotKeys(ssData.sddBookTitlesList.hotKeys)}
@@ -11486,7 +11506,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					<legend>Phím tắt trong cửa số cấu hình</legend>
 					${listHotKeys(ssData.hotKeys.settingModal, ", ")}
 				</fieldset>
-				 <fieldset>
+				 <fieldset style="align-self: stretch;">
 					<legend>Hints</legend>
 					<div style='grid-column: span 2;text-align: justify;'>Với các biểu tượng và một số thành phần không biết ý nghĩa, người dùng có thể di chuột lên (với máy tính) hoặc bấm vào/nhấn giữ (với thiết bị cầm tay thông minh) để hiện tooltip (chữ trắng, nền đen mờ) hướng dẫn về chức năng và thông tin bổ sung (nếu có) của thành phần đó.</div>
 				</fieldset>
@@ -11494,7 +11514,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					<legend>Who made this web-app</legend>
 					<div name="coryright">🄲<span style="font-size:1.05em">②⓪②④</span>&puncsp;<div name="authorName"></div></div>
 					<div style='grid-column: span 2;text-align: justify;'>This web-app has been made in my leisure time from May 2024 with the purpose of learning and applying state-of-the-art web technologies, so it might be a-bit of resource-consuming. It would perform well with latest browsers such as Chrome, Safari and Edge.</div>
-				</fieldset>				
+				</fieldset>
 				
 				</div>`;
 				/* <fieldset>
