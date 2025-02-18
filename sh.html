@@ -2988,8 +2988,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 		.havingShortPopup .shortPoup {
 			visibility: hidden;
-			width: min(400px, calc(100vw - 40px));
-			/* to prevent jump2Chapter popup go outside of screen viewport*/
+			/* to prevent jump2Chapter popup go outside of screen viewport */
+			width: min(450px, calc(100vw - 40px));
 			top: 100%;
 			left: 50%;
 			transform: translateX(var(--data-translateX, -50%));
@@ -3092,13 +3092,17 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			}
 		}
 		#elmSleepTimerCountDown{
-			font-size: 1.2em;
+			font-size: 1.3em;
 			color: darkred; /* var(--select-book-group-color); */
+			background: beige;
+			border-radius: 5px;
+    		padding: 0 5px;
 
 			&.almostReachingEnd{
 				animation: timer-blink-kf 2s step-start .3s infinite;
 			}
 
+			/* format for svg right before input box */
 			svg:has( + &){
 				color: darkred;
 			}
@@ -5588,7 +5592,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					<!-- Sleep Timer button -->
 					<div class="havingShortPopup">
 						<button onclick="utilityHandles.showSleepTimerPopup();"
-							data-tooltip="Hẹn giờ tắt Audio">
+							data-tooltip="Hẹn giờ tắt Audio (nút sẽ chuyển sang màu đỏ).&#xaNhập 0 hoặc để trắng: Tắt hẹn giờ (nút hẹn giờ chuyển từ màu đỏ sang đen).&#xaNhập -1 để audio tự tắt khi phát hết chương sách hiện tại.">
 							<svg class="!text-[25px] button-svg-img" focusable="false" aria-hidden="true">
 								<use href="#icnSvgSleepTimer" />
 							</svg>
@@ -9161,7 +9165,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				// /((?:Hồi|Chương|Phần|Tập)\s+\d+(?:[\s\:\–\.\-]\s*(?!\d)|$))/gi
 				// /((?:Hồi|Chương|Phần|Tập)\s+\d+((?!\s*[\:\–\.\-]\s*\d+)|$))/gi
 				// /((?:Hồi|Chương|Phần|Tập)\s+\d+\s*(?:[\:\–\.\-](?!\s*\d+)|(?![\:\–\.\-])|$))/gi
-				tit = tit.replaceAll(/((?:Hồi|Chương|Phần|Tập|Quyển|Phẩm|Bài)\s+\d+\s*([\:\–\.\-](?!\s*\d+)|$))/gi, "<b style='color:green'>$1</b>");
+				// /((?:Hồi|Chương|Phần|Tập|Quyển|Phẩm|Bài)\s+\d+\s*(?:[\:\–\.\-\(](?!\s*\d+)|$))/gi
+				tit = tit.replaceAll(/((?:Hồi|Chương|Phần|Tập|Quyển|Phẩm|Bài)\s+\d+\s*(?=[\:\–\.\-\(](?!\s*\d+)|$))/gi, "<b style='color:green'>$1</b>");
 
 				/* tit = tit.replaceAll(/((?:Hồi|Chương|Phần|Tập)\s+\d+\s*[\:\-])/g, "<b style='color:darkred'>$1</b>"); //–
 				tit = tit.replaceAll(/((?:Hồi|Chương|Phần|Tập)\s+\d+(?:\.\d+)?[\:\s](?![\-\–]\s*\d+))/g, "<b style='color:green'>$1</b>"); */
@@ -9169,7 +9174,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			}
 
 			document.querySelector(".ap-title").innerHTML = chapData.tit; //small track title right above progress bar
-			elmChapterTitle.innerHTML = "<span style='color:darkblue;'>" + pad(newChap, 2) + "/" + pad(bData.parts.length, 2) + ".</span> " + _formatTit(chapData.tit + (chapData.sTit? " ⸺ " + chapData.sTit : "" ) ); //〰︎〰︎ —	〰
+			elmChapterTitle.innerHTML = "<span style='color:darkblue;'>" + pad(newChap, 2) + "/" + pad(bData.parts.length, 2) + ".</span> " + _formatTit(chapData.tit) + (chapData.sTit? "<span style='font-size:.85em'> ⸺ " + _formatTit(" " + chapData.sTit) + "<span>" : "" ) ; //〰︎〰︎ —	〰
 			//https://perishablepress.com/all-the-hyphens-dashes/
 
 			// calculate total remaining duration, note that this is displayed in book Infor and used to calculte percentage right below
@@ -9340,7 +9345,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				//the popup
 				let _popupDiv = document.getElementById("sleepTimerDivPopup");
 				//the button on main page that when click on it, the popup show-up
-				let _showPopupButton = _popupDiv.previousElementSibling; 
+				let _btnShowPopup = _popupDiv.previousElementSibling; 
 				//the textbox to type in the sleep timer
 				let _ipSleepTimer = document.getElementById("ipSleepTimer");
 				//datalist that _ipSleepTimer bind to
@@ -9352,10 +9357,10 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				const _stCountdownSpan = document.getElementById("elmSleepTimerCountDown");
 
 				//can take 'h', '-', ':' as the hour delimiter
-				const _pattern = /^\d+(\s*[hHgG\.\-\:]\s*\d*)?$/;
+				const _pattern = /^\d+(\s+phút|\s*[hHgG\.\-\:]\s*\d*)?$/;
 
 				_ipSleepTimer.setAttribute("pattern", _pattern.source); //pattern to check valid
-				_popupDiv.querySelector("label[for]").innerHTML = "Nhập thời gian dừng phát truyện theo định dạng: <b>HH[<i>delimiter</i>]mmm</b>, <b>mmm</b>. Trong đó <b>HH</b> là số giờ, <b>mmm</b> là số phút;  <b>[<i>delimiter</i>]</b> có thể là một trong các kí tự <b>H</b>, <b>h</b>, <b>G</b>, <b>g</b>, <b>.</b>, <b>-</b>, <b>:</b>";				
+				_popupDiv.querySelector("label[for]").innerHTML = "Nhập thời gian dừng phát truyện theo định dạng: <b>HH[<i>delimiter</i>]mmm</b> (ví dụ: <b>1h20</b>), <b>mmm</b> (ví dụ: <b>45</b>). Trong đó <b>HH</b> là số giờ, <b>mmm</b> là số phút;  <b>[<i>delimiter</i>]</b> có thể là một trong các kí tự <b>H</b>, <b>h</b>, <b>G</b>, <b>g</b>, <b>.</b>, <b>-</b>, <b>:</b>";				
 				
 				 //show the popup and put focus on the textbox
 				_popupDiv.classList.add("shortPoupShow");
@@ -9397,7 +9402,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					 * @timer store the amount of seconds the audio will be paused
 					 * @endTime store the point of time the audio is paused
 					 * @stObj store the setInterval variable  */
-					 ssData.sleep = {
+					ssData.sleep = {
 						timer: 0, 
 						endTime: null, 
 						siObj: null,
@@ -9422,98 +9427,117 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					/* function to active a sleep timer by the text in the _ipSleepTimer, also standardize _ipSleepTimer text (convert into hour format, e.g, if user type in '1h5' or '65', _ipSleepTimer text would be 1h5) */
 					const _setSleepTimer  = _ => {
 						
-						if(_ipSleepTimer.checkValidity()){
-							/* function to stop Sleep-Timer */
-							const stopSleepTimer = _ => {
-								const _sleepObj = ssData.sleep;
-								clearInterval(_sleepObj.siObj);									
-
-								//reset sleep variable
-								_sleepObj.timer = 0;
-								_sleepObj.siObj = null;
-
-								//reset appearance of show popup button
-								_showPopupButton.classList.remove("sleepTimerActive");
-
-								//hide the count down span
-								_stCountdownCtn.classList.add("elm-hidden");
-								//clear the blinking class (added when the timer when there is 30 seconds left)
-								_stCountdownSpan.classList.remove("almostReachingEnd");
-
-								//clear timer input
-								_ipSleepTimer.value = "";
-								//stop audio
-								xAudio.pause();
-
-								toast.showToast("Dừng phát audio do đã tới thời gian hẹn giờ tắt", toast.ToastType.Warning, {duration: 1e4});
-							}
-
-							//remove all spaces
-							let newSleepTimeTxt = _ipSleepTimer.value.replace(/\s/g, "");
-							
-							//Check if timer string is empty or 0 (disable timer)
-							if (!newSleepTimeTxt || newSleepTimeTxt === '0'){
-								// if there is an active timer, stop it
-								if(ssData.sleep.timer > 0) 
-									stopSleepTimer();
-								_popupDiv.classList.remove("shortPoupShow");
-								return;
-							}
-
-							//convert newSleepTimeTxt to number of minutes to compare with label's option
-							let newSleepTime = convertSleepTime(newSleepTimeTxt);
-
-							//Check if new timer was already there in the timer datalist
-							if(!_sleepTimersDatalist.querySelector('[label^="' + newSleepTime + ' "]')){
-								// search right location to add newSpeed
-								let i = 0;
-								while (i < _sleepTimersDatalist.options.length && parseInt(_sleepTimersDatalist.options[i].label) < newSleepTime) {
-									i++;
-								}
-								
-								let _newOption = new Option("", convertSleepTime(newSleepTime) ); //text, value
-								_newOption.label = newSleepTime + " phút";
-
-								//add new speed before location just found
-								_sleepTimersDatalist.insertBefore(_newOption, _sleepTimersDatalist.options[i]); 
-							}
-
-							//convert the number of minutes into hour format in the input box
-							_ipSleepTimer.value = convertSleepTime(newSleepTime);
-
-							//update ssData.sleep
-							const _sleepObj = ssData.sleep;
-							_sleepObj.count = _sleepObj.timer = newSleepTime * 60; //in seconds
-
-							//change appearance of show popup button
-							_showPopupButton.classList.add("sleepTimerActive");
-
-							// show the count down sleep timer text (below workart)
-							_stCountdownCtn.classList.remove("elm-hidden");
-
-							//start an interval to update the count-down sleep timer string and to pause audio (and do some resetting) when sleep time is reached
-							_sleepObj.siObj = setInterval(_ => {
-								_sleepObj.count --;
-								_stCountdownSpan.textContent = toHhMmSs(_sleepObj.count);
-								//console.log(_sleepObj.count);
-								if(_sleepObj.count == 30) {
-									//blinking the timer when there is 30 seconds left 
-									_stCountdownSpan.classList.add("almostReachingEnd");
-								}
-
-								// when timer reach to the very end
-								if(_sleepObj.count == 0) {
-									stopSleepTimer();
-								}
-							}, 1000);
-
-							//save list of Sleep Timers into xState
-							xState.sleepTimers = [..._sleepTimersDatalist.options].map(_opt => parseInt(_opt.label));
-						}
-						else{
+						// do some clean-up if user type in wrong-format string
+						if(!_ipSleepTimer.checkValidity()){
 							_ipSleepTimer.value = ssData.sleep.timer > 0 ? convertSleepTime(ssData.sleep.timer) : "";
 							toast.showToast("Thời gian hẹn giờ nhập không đúng định dạng", toast.ToastType.Error);
+							_popupDiv.classList.remove("shortPoupShow");
+							return;
 						}
+
+						/** function to stop Sleep-Timer 
+						 * @param interuptOldTimer {boolean}
+						 * false or missing: meaning the current Sleep timer reach to the end, so we need to stop it
+						 * true: user decide to disable current sleep timer
+						*/
+						const stopSleepTimer = interuptOldTimer => {
+							const _sleepObj = ssData.sleep;
+							clearInterval(_sleepObj.siObj);									
+
+							//reset sleep variables
+							_sleepObj.timer = 0;
+							_sleepObj.count = 0;
+							_sleepObj.siObj = null;
+							_sleepObj.endTime = null;
+
+							//reset appearance of show popup button
+							_btnShowPopup.classList.remove("sleepTimerActive");
+
+							//hide the count down span
+							_stCountdownCtn.classList.add("elm-hidden");
+							//clear the blinking class (added when the timer when there is 30 seconds left)
+							_stCountdownSpan.classList.remove("almostReachingEnd");
+
+							//clear timer input
+							_ipSleepTimer.value = "";
+							//stop audio only if interuptOldTimer = false
+							if(!interuptOldTimer)
+								xAudio.pause();
+
+							toast.showToast("Dừng phát audio do đã tới thời gian hẹn giờ tắt", toast.ToastType.Warning, {duration: 1e4});
+						}
+
+						//remove all spaces
+						let newSleepTimeTxt = _ipSleepTimer.value.replace(/\s/g, "");
+						
+						//Check if timer string is empty or 0 (disable timer)
+						if (!newSleepTimeTxt || newSleepTimeTxt === '0'){
+							// if there is an active timer, stop it
+							if(ssData.sleep.timer > 0) 
+								stopSleepTimer(true); //interupt to end current timer without stopping audio
+							_popupDiv.classList.remove("shortPoupShow");
+							return;
+						}
+
+						//convert newSleepTimeTxt to number of minutes to compare with label's option
+						let newSleepTime = convertSleepTime(newSleepTimeTxt);
+
+						//Check if new timer was already there in the timer datalist
+						if(!_sleepTimersDatalist.querySelector('[label^="' + newSleepTime + ' "]')){
+							// search right location to add newSpeed
+							let i = 0;
+							while (i < _sleepTimersDatalist.options.length && parseInt(_sleepTimersDatalist.options[i].label) < newSleepTime) {
+								i++;
+							}
+							
+							let _newOption = new Option("", convertSleepTime(newSleepTime) ); //text, value
+							_newOption.label = newSleepTime + " phút";
+
+							//add new speed before location just found
+							_sleepTimersDatalist.insertBefore(_newOption, _sleepTimersDatalist.options[i]);
+							
+							//save the new list of Sleep Timers into xState
+							xState.sleepTimers = [..._sleepTimersDatalist.options].map(_opt => parseInt(_opt.label));
+						}
+
+						//convert the number of minutes into hour format in the input box
+						_ipSleepTimer.value = convertSleepTime(newSleepTime);
+
+						//update ssData.sleep
+						const _sleepObj = ssData.sleep;
+						_sleepObj.count = _sleepObj.timer = newSleepTime * 60; //in seconds
+						// set the time that the Sleep timer ends, specified by the number of seconds elapsed since the epoch
+						_sleepObj.endTime = (Date.now() / 1000  << 0) + _sleepObj.timer;
+
+						//change appearance of show popup button
+						_btnShowPopup.classList.add("sleepTimerActive");
+
+						// show the count down sleep timer text (below workart)
+						_stCountdownCtn.classList.remove("elm-hidden");
+
+						//start an interval to update the count-down sleep timer string and to pause audio (and do some resetting) when sleep time is reached
+						_sleepObj.siObj = setInterval(_ => {
+							_sleepObj.count --;
+							_stCountdownSpan.textContent = toHhMmSs(_sleepObj.count);
+							//console.log(_sleepObj.count);
+
+							// note that when a tab is inactive, the setInterval may work incorrectly (See 'Timeouts in inactive tabs' in setTimeout function from Mdn). Also, setInterval always being delayed (see mdn), so we need to update _sleepObj.count regularly based on system time to make sleep timer work more correctly
+							//document.hidden && 
+							if(_sleepObj.count % 10 == 0 || _sleepObj.count < 30) {
+								// we re-update the counter based on system time every 10 times setInterval invoked or when timer reaching to the end
+								_sleepObj.count = _sleepObj.endTime - (Date.now() / 1000  << 0);
+							}
+
+							//blinking the timer when there is 30 seconds left 
+							if(_sleepObj.count == 30) {
+								_stCountdownSpan.classList.add("almostReachingEnd");
+							}
+
+							// when timer reach to the very end
+							if(_sleepObj.count <= 0) {
+								stopSleepTimer();
+							}
+						}, 1000);						
 
 						_popupDiv.classList.remove("shortPoupShow");
 					}
