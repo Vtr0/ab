@@ -5755,16 +5755,16 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 		/* Class deal with DB files */
 		class DBFiles{
 			/** class to load multiple js libraries and return a promise
-			See https://github.com/MiguelCastillo/load-js/tree/master for usage and options - which I rename options.cache property to options.storeInternal to descibe more correcly their functionality.
-			Add options.allowReload to overloaded the old js file, which I use for config.js to detect if there is new database version
+			See https://github.com/MiguelCastillo/load-js/tree/master for usage and options - which I rename @property options.cache to @property options.storeInternal to descibe more correcly their functionality.
+			Add @property options.allowReload to overloaded the old js file, which I use for config.js to detect if there is new database version
 			I also add some properties, see createScript() for more
-				@fileNo: store the ordernal number of current database file, which act as an Id to identify a Database File
-				@jsDBName: name of database file, also the name of databse variable inside that file (they must be the same)
-				@loadMode: the mode to load the Database file
-					-1 : called from Setting.addJsDataFiles() to load information of a database that was not choosen for showing when page load (its loadMode in xDBFilesCfg == 0). This loadMode is treated as loadMode=2
-					0: Database file would not be loaded
-					1: Database file is freshly-loaded, meaning even the file has been loaded before and being stored in browser's cache, the cache will be ignore and the page will load file from server
-					2: Database file is cache-loaded. If the file has been cached by browser before, the page will use that cache version of file for better performace and save bandwidth
+				@attribute fileNo: store the ordernal number of current database file, which act as an Id to identify a Database File
+				@attribute jsDBName: name of database file, also the name of database variable inside that file (they must be the same)
+				@attribute loadMode: the mode to load the Database file
+					@value -1 : called from Setting.addJsDataFiles() to load information of a database that was not choosen for showing when page load (its loadMode in xDBFilesCfg == 0). This loadMode is treated as loadMode=2
+					@value 0: Database file would not be loaded
+					@value 1: Database file is freshly-loaded, meaning even the file has been loaded before and being stored in browser's cache, the cache will be ignore and the page will load file from server
+					@value 2: Database file is cache-loaded. If the file has been cached by browser before, the page will use that cache version of file for better performance and save bandwidth
 			*/
 			static loadJS = (function createLoadJS() {
 				var _loadedScripts = {}; //store scrips that being loaded by Loadjs
@@ -5926,8 +5926,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 			/** Compare {edt} attribute (edition) from xDBFilesCfg.toLoad[index].edt with _DEFAULT_CFG.cDBFilesEdt.edt[index] to see if there is later version of any of data_{index} DB files. Is there is, turn loadMode of that file to 1 (Fresh load) and (delayed)Notify user about DB files updates.
 			 * @param _ivkFrom: invoked from, mostly for controlling the message
-			 * 		= 0: invoked from loadPage()
-			 * 		= 1: invoked from DBFiles.checkDBsEditionFromConfig() right below
+			 * 		@value 0: invoked from loadPage()
+			 * 		@value 1: invoked from DBFiles.checkDBsEditionFromConfig() right below
 			 * @return null is there is no new update on any DB files
 					array: in array of index of updated DB files
 			*/
@@ -5939,8 +5939,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 				//array store DB fileNo that has new edition, will be loaded next pageLoad() but not included into book database because those DBs currently set loadMode = 0 (no Show). Those value will be stored into xDBFilesCfg.noShowList so next pageLoad() know which DBs to exclude
 				let _DBsFreshLoadButNotShow = [];
-				//delete old attribute if it is still existed (it should be deleted in pageLoad() )
-				if(xDBFilesCfg.hasOwnProperty('noShowList')) delete xDBFilesCfg.noShowList;
+				//delete old attribute if it is still existed (it HAS TO be deleted in pageLoad() )
+				//if(xDBFilesCfg.hasOwnProperty('noShowList')) delete xDBFilesCfg.noShowList;
 
 				xDBFilesCfg.toLoad.forEach((_dbItem, i) => {
 					
@@ -5959,12 +5959,12 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 						//only change loadMode to fresh-load(1) if it is NOT in no-Show (0) mode
 						if(_dbItem.hasOwnProperty("loadMode") && _dbItem.loadMode == 0)
-							_DBsFreshLoadButNotShow.push(i)
-
+							_DBsFreshLoadButNotShow.push(i);
+						
 						//set loadMode to fresh-load, so that next session the page know to reload the lastest edition of the DB
 						_dbItem.loadMode = 1; //fresh load because there is new version
 
-						_DBsNeedFreshLoad.push(i); //rememeber DB files has new edition for later notification to the user						
+						_DBsNeedFreshLoad.push(i); //rememeber DB files has new edition for later notification to the user
 					}
 				});
 
@@ -5975,7 +5975,12 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				//console.log(_DBsHasNewEdition);
 				const _len = DBsHasLaterEdition.length;
 				if(_len > 0){
-					ssData.delayedNotification.push({msg: `${_len > 1?"Các ":""}CSDL ${DBsHasLaterEdition.map(t => "<mark style='color:red;font-weight:bold'>data_"+t+"</mark>").join(", ")} có phiên bản mới${_ivkFrom==0?", đã được App tự động cập nhật":""}.`, option: {duration: 1.5e4}});
+					// list of file-no of DB that has new edition and having loadMode other than 0 (no-show)
+					const _DBLoadedNextSession =  DBsHasLaterEdition.filter(t => !_DBsFreshLoadButNotShow.includes(t) );
+					if(_DBLoadedNextSession.length > 0)
+					ssData.delayedNotification.push({msg: `${_DBLoadedNextSession.length > 1?"Các ":""}CSDL ${_DBLoadedNextSession.map(t => "<mark style='color:red;font-weight:bold'>data_"+t+"</mark>").join(", ")} có phiên bản mới${_ivkFrom==0?", đã được App tự động cập nhật":""}.`, option: {duration: 1.5e4}});
+
+					/* ssData.delayedNotification.push({msg: `${_len > 1?"Các ":""}CSDL ${DBsHasLaterEdition.map(t => "<mark style='color:red;font-weight:bold'>data_"+t+"</mark>").join(", ")} có phiên bản mới${_ivkFrom==0?", đã được App tự động cập nhật":""}.`, option: {duration: 1.5e4}}); */
 
 					if(_DBsFreshLoadButNotShow.length > 0){
 						ssData.delayedNotification.push({msg: `${_DBsFreshLoadButNotShow.length > 1?"Các ":""}CSDL ${_DBsFreshLoadButNotShow.map(t => "<mark style='color:red;font-weight:bold'>data_"+t+"</mark>").join(", ")} có phiên bản mới, nhưng đang ở chế độ ẩn.`, option: {duration: 1.5e4}});
@@ -6151,7 +6156,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 						// for success loaded db file: add data to data collected variable ssData.jsDBFiles
 						if(_prom.status === "fulfilled"){
 							//_prom.value point to script elements created inside createLoadJS
-							const _jsDBName = _prom.value.jsDBName;							
+							const _jsDBName = _prom.value.jsDBName;
 
 							//re-set failCount to 0
 							const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
@@ -9442,8 +9447,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 						/** function to stop Sleep-Timer 
 						 * @param interuptOldTimer {boolean}
-						 * - false or missing: meaning the current Sleep timer reach to the end, so we need to stop it
-						 * - true: user decide to disable current sleep timer
+						 * 	@value false or missing: meaning the current Sleep timer reach to the end, so we need to stop it
+						 * 	@value true: user decide to disable current sleep timer
 						*/
 						const stopSleepTimer = interuptOldTimer => {
 							const _sleepObj = ssData.sleep;
