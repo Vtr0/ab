@@ -131,11 +131,13 @@ static loadJS = (function createLoadJS() {
 			//if options.allowReload = true: return script Promise right away without reloading it
 			return _scriptEntry;
 		}
-		else if (options.allowExternal !== false) {
+		else if (options.allowExternal !== false) { //except explicitly set allowExternal == false
 			let el = getScriptById(options.id) || getScriptByUrl(options.url);
 
+			// return promise script without checking if head has other script element which same id (or url) that Not loaded by loadJs?
 			if (el) {
 				var promise = Promise.resolve(el);
+				// save to cache without checking cacheEnable flag?
 				if (_scriptId) { _loadedScripts[_scriptId] = promise; }
 				return promise;
 			}
