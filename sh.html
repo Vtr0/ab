@@ -943,6 +943,10 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			font-size: 25px !important;
 		}
 
+		.\!text-\[28px\] {
+			font-size: 28px !important;
+		}
+
 		.\!text-\[30px\] {
 			font-size: 30px !important;
 		}
@@ -2237,12 +2241,17 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 			&>.toast__msg {
 				color: var(--toast-color-dark-text) !important;
-				/* vertical middle the message in case message has something taller than normal (like a svg picture) */
-				display: flex;
+				/* vertical middle the message in case message has something taller than normal (like a svg picture). I don't use it because flex cause so much trouble when the message contains mix of text, svg and sometime <br> */
+				/* display: flex;
 				flex-wrap: wrap;
-        		align-items: center;
+        		align-items: center; */
 				/* to preserve whitespace  */
-				white-space: pre-wrap;
+				white-space: pre-wrap;				
+
+				/* instead of setting display: flex for the toast__msg, which can middle the svg with the text but cause so much issue. I just simply set margin-bottom for svg manually */
+				& > svg{
+					margin-bottom: -3px;
+				}
 			}
 
 			&>.toast__icon {
@@ -4100,21 +4109,6 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				var(--c1);
 		}
 
-		.sdd-chapterList-background {
-			--__s: 240px;
-			--__c: #a7677816; /* #f5b5f029 */
-			--__c2: transparent;
-
-			--_g: #0000 54%,var(--__c) 54% 57%,#0000 57%; 
-			background: 
-				radial-gradient(farthest-side at -33.33% 50%,var(--_g)) 0 calc(var(--__s)/2),
-				radial-gradient(farthest-side at 50% 133.33%,var(--_g)) calc(var(--__s)/2) 0,
-				radial-gradient(farthest-side at 133.33% 50%,var(--_g)),
-				radial-gradient(farthest-side at 50% -33.33%,var(--_g)),
-				var(--__c2);
-			background-size: calc(var(--__s)/4.667) var(--__s),var(--__s) calc(var(--__s)/4.667);
-		}
-
 		/* targeting smart device, the background color need to be a little darker, so its alpha channel value need to be a little bit higher */
 		@media (pointer: coarse) and (hover: none){
 			.circus-background{ --__c: #e2c9b938; }
@@ -4748,42 +4742,75 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 		}
 	}
 
-	/* adapt from #4 of https://css-loaders.com/infinity/ */
-	/* .sdd-wrapper .sdd-dropdown-border-bottom-arrows {
-		height: 5px;
-		--__c: var(--select-book-group-color) 0 15px, #0000 0 20px;
-		background: repeating-linear-gradient(135deg, var(--__c)) left top, repeating-linear-gradient(45deg, var(--__c)) left bottom;
-		background-size: 200% 50%;
-		background-repeat: no-repeat;
-		animation: sdd-dbb-arrows 35s infinite linear;
-	}
-	@keyframes sdd-dbb-arrows {
-		100% {background-position:top right,bottom right}
-	} */
+	/* Customized class for chapter-list SDD. This class will apply for SDD outermost container .sdd-wrapper. If we need to change the css for any component inside .sdd-wrapper, we specify the query-selector path for that component and put css for that component inside that path */
+	.sdd-wrapper.sdd-wrapper-chapterList{
+		/* customize the sdd-dropdown-content background */
+		& .sdd-dropdown-wrapper .sdd-dropdown-content {
+			--__s: 240px;
+			--__c: #a7677816; /* #f5b5f029 */
+			--__c2: transparent;
 
-	/* Adapt from #2 of https://css-loaders.com/factory/ */
-	.sdd-wrapper .sdd-dropdown-border-bottom-factory {
-		--__c: var(--select-book-group-color); /* main color of the dots */
-		--__h: 8px; /* height of the div and the dots */
-		--__s: 25px; /* the size of the block that each contains one dot */
-		--__cw: 65%; /* clip-width: which set the width of the left side which contains square dots */
-		
-		animation: none; /* reset animation in case other class having animation */
-		height: var(--__h);
-		box-shadow: 0 2px 0 var(--__c); /* draw the bottom/top border, change to negative to draw top border, change to 0px to remove the border */
-		background: linear-gradient(#0fa8a8 0 0) var(--__cw) 100%/3px 100% no-repeat, var(--color-light); /* draw the cross-bar */
-		display: grid;
-		&::before,
-		&::after{
-			content: "";
-			grid-area: 1/1;
-			background: repeating-linear-gradient(90deg, var(--__c) 0 calc(1.5*var(--__h)),#0000 0 100%) 0 0/var(--__s) 100%;
-			clip-path: inset(0 calc(100% - var(--__cw)) 0 0);
-			animation: sdd-dbb-sc .8s infinite linear;
+			--_g: #0000 54%,var(--__c) 54% 57%,#0000 57%; 
+			background: 
+				radial-gradient(farthest-side at -33.33% 50%,var(--_g)) 0 calc(var(--__s)/2),
+				radial-gradient(farthest-side at 50% 133.33%,var(--_g)) calc(var(--__s)/2) 0,
+				radial-gradient(farthest-side at 133.33% 50%,var(--_g)),
+				radial-gradient(farthest-side at 50% -33.33%,var(--_g)),
+				var(--__c2);
+			background-size: calc(var(--__s)/4.667) var(--__s),var(--__s) calc(var(--__s)/4.667);
+
+			& .sdd-dropdown-item:nth-of-type(odd){
+				color: #7d1f21;
+			}
+		}		
+
+		/* & .sdd-dropdown-wrapper .sdd-dropdown-item.is-selected::before{
+			border-color: #797979;
+		} */
+
+		/* & .sdd-dropdown-wrapper .sdd-dropdown-item.is-active.is-selected{
+			background: linear-gradient(25deg, var(--sdd-dropdown-item-color-light) 0%, #ccca 70%, var(--color-dark-light_yellow) -10%);
+		} */
+
+		/* customize the animation for .sdd-dropdown-border-bottom */
+
+		/* adapt from #4 of https://css-loaders.com/infinity/ */
+		/* .sdd-wrapper .sdd-dropdown-border-bottom-arrows {
+			height: 5px;
+			--__c: var(--select-book-group-color) 0 15px, #0000 0 20px;
+			background: repeating-linear-gradient(135deg, var(--__c)) left top, repeating-linear-gradient(45deg, var(--__c)) left bottom;
+			background-size: 200% 50%;
+			background-repeat: no-repeat;
+			animation: sdd-dbb-arrows 35s infinite linear;
 		}
-		&::before{
-			background: radial-gradient(circle calc(var(--__h)/2) at calc(var(--__h)/2) 50%, color-mix(in hsl, var(--__c) 40%, #d3cf00) 99%,#0000) 0 0/var(--__s) 100%;
-			clip-path: inset(0 0 0 var(--__cw));
+		@keyframes sdd-dbb-arrows {
+			100% {background-position:top right,bottom right}
+		} */
+
+		/* Adapt from #2 of https://css-loaders.com/factory/ */
+		& .sdd-dropdown-wrapper .sdd-dropdown-border-bottom {
+			--__c: var(--select-book-group-color); /* main color of the dots */
+			--__h: 8px; /* height of the div and the dots */
+			--__s: 25px; /* the size of the block that each contains one dot */
+			--__cw: 65%; /* clip-width: which set the width of the left side which contains square dots */
+			
+			animation: none; /* reset animation in case other class having animation */
+			height: var(--__h);
+			box-shadow: 0 2px 0 var(--__c); /* draw the bottom/top border, change to negative to draw top border, change to 0px to remove the border */
+			background: linear-gradient(#0fa8a8 0 0) var(--__cw) 100%/3px 100% no-repeat, var(--color-light); /* draw the cross-bar */
+			display: grid;
+			&::before,
+			&::after{
+				content: "";
+				grid-area: 1/1;
+				background: repeating-linear-gradient(90deg, var(--__c) 0 calc(1.5*var(--__h)),#0000 0 100%) 0 0/var(--__s) 100%;
+				clip-path: inset(0 calc(100% - var(--__cw)) 0 0);
+				animation: sdd-dbb-sc .8s infinite linear;
+			}
+			&::before{
+				background: radial-gradient(circle calc(var(--__h)/2) at calc(var(--__h)/2) 50%, color-mix(in hsl, var(--__c) 40%, #d3cf00) 99%,#0000) 0 0/var(--__s) 100%;
+				clip-path: inset(0 0 0 var(--__cw));
+			}
 		}
 	}
 	@keyframes sdd-dbb-sc {
@@ -5057,9 +5084,9 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			clip-path: polygon(0 0, 100% 0,100% 100%, 0 100% ,var(--s) 50% ); */
 
 			background: linear-gradient(-165deg, transparent,  transparent 30%, var(--color-dark-light_yellow)); /* var(--color-dark-blues); */
-			&  *{
+			/* &  *{
 				color: inherit;
-			}
+			} */
 			/* &::after{
 				color: initial;
 			} */
@@ -5593,12 +5620,12 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 							<use href="#icnSvgJump2PlayingChap" />
 						</svg>
 					</button>
-
+					
 					<!-- Sleep Timer button -->
 					<div class="havingShortPopup">
 						<button onclick="utilityHandles.showSleepTimerPopup();"
 							data-tooltip="Hẹn giờ tắt Audio (nút sẽ chuyển sang màu đỏ).&#xa– Nhập 0 hoặc để trắng: Tắt hẹn giờ (nút hẹn giờ chuyển về màu đen).&#xa– Nhập -1 để audio tự tắt khi phát hết chương sách hiện tại.">
-							<svg class="!text-[25px] button-svg-img" focusable="false" aria-hidden="true">
+							<svg class="!text-[28px] button-svg-img" focusable="false" aria-hidden="true">
 								<use href="#icnSvgSleepTimer" />
 							</svg>
 						</button>
@@ -5616,7 +5643,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					<div class="havingShortPopup">
 						<button onclick="utilityHandles.showSeekAudioDurationPopup();"
 							data-tooltip="Chọn thời gian nghe">
-							<svg class="!text-[25px] button-svg-img" focusable="false" aria-hidden="true">
+							<svg class="!text-[28px] button-svg-img" focusable="false" aria-hidden="true">
 								<use href="#icnSvgRunJumping" />
 							</svg>
 						</button>
@@ -5752,70 +5779,165 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 	<!-- Script that deal with loading js script files that contains page configuration and database, then loadPage() -->
 	<script>
 	"use strict";
-		/* Class deal with DB files */
+		/* Class deal with DB files being loaded as js script elements */
 		class DBFiles{
-			/** class to load multiple js libraries and return a promise
-			See https://github.com/MiguelCastillo/load-js/tree/master for usage and options - which I rename @property options.cache to @property options.storeInternal to descibe more correcly their functionality.
-			Add @property options.allowReload to overloaded the old js file, which I use for config.js to detect if there is new database version
-			I also add some properties, see createScript() for more
-				@attribute fileNo: store the ordernal number of current database file, which act as an Id to identify a Database File
-				@attribute jsDBName: name of database file, also the name of database variable inside that file (they must be the same)
-				@attribute loadMode: the mode to load the Database file
-					@value -1 : called from Setting.addJsDataFiles() to load information of a database that was not choosen for showing when page load (its loadMode in xDBFilesCfg == 0). This loadMode is treated as loadMode=2
-					@value 0: Database file would not be loaded
-					@value 1: Database file is freshly-loaded, meaning even the file has been loaded before and being stored in browser's cache, the cache will be ignore and the page will load file from server
-					@value 2: Database file is cache-loaded. If the file has been cached by browser before, the page will use that cache version of file for better performance and save bandwidth
+
+			/** Enum to define the loadMode of script file, especially for DB file  */
+			static LMODE = Object.freeze({
+				/* @value 0: Database file would not be loaded */		
+				noShow: 0,
+				/* @value 1: Database file is freshly-loaded, meaning even the file has been loaded before and being stored in browser's cache, the cache will be ignore and the page will load file from server */
+				freshLoad: 1,
+				/* @value 2: Database file is cache-loaded. If the file has been cached by browser before, the page will use that cache version of file for better performance and save bandwidth */
+				cacheLoad:2,
+				/* @value -1 : called from Setting.addJsDataFiles() to load information of a database that was not choosen for showing when page load (its loadMode in xDBFilesCfg == 0). This loadMode is treated as loadMode=2 */
+				tempLoad: -1,
+				/* for some DB that currently has loadMode = noShow(0) but it has new edition, we temporarily change it loadMode to delayFresh(-2), so that when completing reload (fresh) new edition of that DB, we would know to change its loadMode back to noShow */
+				delayFresh: -2
+			});
+
+			/** LoadJS: class to load multiple js libraries and return a promise or an array of promise
+			* @adapt_from https://github.com/MiguelCastillo/load-js/tree/master. See that github for usage and options, although I has renamed some flag name to to descibe more correcly their functionality, also I added some new @atttributes to meet my needs for this app (see @CUSTOMIZED_PROPERTIES section below).
+			See _DEFAULT_OPTIONS in exec() function for the default value for all flags
+
+			* @ORIGINAL_PROPERTIES
+				@property type: @defaults to 'text/javascript'.
+				@property async: @defaults to false.
+				@property charset: @defaults to utf-8.
+				@property id: no default value. If id is not set, loadJs will hash the script url (without parameters - string after '?') and make it to be the script id
+				@property url: Location of the script to load. Required if no text is provided.
+				@property text: Script code to execute. Required if no url is provided.
+
+				@flag cacheEnable {@defaults to true} (I rename from original name 'cache'): flag to determine if item with ID or URL is to be cached. if this flag set to false, its promise will not be update the the loadJs internal cache
+				@flag allowExternal {@defaults to true}: flag to handle situations when the DOM already has a script element with the same ID or URL as what loadJS is being told to load. By default, loadJs will ignore the script with similar url (same without parameter) that not loaded by loadJs. If set to false, loadJS will use script elements that already exist in the DOM. To turn off this behavior, set allowExternal to false. 
+				@flag debug {@defaults to true}: flag to show debug message.
+
+			* @CUSTOMIZED_PROPERTIES 
+				@flag allowReload {@defaults to false}: the flag to tell loadJs to overload the old js file (which also had been loaded by loadJs). I use for config.js to detect if there is new database version or on Setting.addJsDataFiles(). Let see a case when loadJS has loaded a js file, e.g 'data_0.js', now that file is loaded again (also by loadJS), if this flag is missing or false, we can't load again the same file. This is different from @property allowExternal is that  allowExternal compared with js script NOT loaded by loadJS (might be a markup that was hard-coded or dynamiclly loaded by other agency )
+				@flag freshLoad {@defaults to false}: the flag to tell if the script should be fresh-load (=true) or got from cache (false or missing), if applicable
+				@flag removeMarkup {@defaults to true}: the flag to tell if the script mark-up should be delete out of DOM or keep it in the DOM (false). Even of markup being removed out of DOM, its data still being kept in window variables, so we still being able to process script data
+
+				@attribute extAttr {@defaults to empty json {} }. extAttr will keep all @properties that user want to attach to script element for later usage:
+					@attribute fileNo: store the ordernal number of current database file, which act as an Id to identify a Database File
+					@attribute jsDBName: name of database file, also the name of database variable inside that file (they must be the same). For now, each file should have only one data variable, such as data_0.js has only one const json-like object 'data_0'
+					@attribute loadMode: the mode to load the Database file. See LMODE for detail information of each type of loadMode
+						
+					@note See createScript() for the handy, customized property that added to script element like id, jsDBName, loadMode, urlVersion, watermark, type, charset
+			* @USAGE
+					@way 1: loadJS("https://code.jquery.com/jquery-2.2.1.js")
+					 .then(function() {});
+					@way 2: loadJS(["https://code.jquery.com/jquery-2.2.1.js", "https://unpkg.com/react@15.3.1/dist/react.min.js"])
+					 .then(function() {}); 
+					@way 3: loadJS({
+							url: "data_1.js?v=3333",
+							freshLoad: true,
+							extAttr: {
+								fileNo: 1,
+								jsDBName: 'data_1', 
+								allowReload: true,
+								loadMode: -1
+							}
+						})
+						.then(_ => {})
+						See Setting.addJsDataFiles() for one example of usage that customize for this App
+					@way 4: loadJS([{
+					 		url: "data_1.js?v=3333",
+							removeMarkup: false,
+							extAttr: {
+								fileNo: 1,
+								jsDBName: 'data_1', 
+								allowReload: true,
+								loadMode: -1
+							}
+						}, {
+							async: true,
+							url: "https://unpkg.com/react@15.3.1/dist/react.min.js"
+						}])
+						.then(_ => {})
+					@otherway : can use loadJS to load script code instead of url as above ways
+			* @RETURN
+				 * if @items is one item, it will return the script element directly
+				 * if @items is array of items, it will return the array of result json which has one of following formats:
+				 * 	- success: {status: 'fulfilled', value: ...the script element...}
+				 * 	- failed:  {status: 'rejected', reason: ...the script element...}
 			*/
 			static loadJS = (function createLoadJS() {
-				var _loadedScripts = {}; //store scrips that being loaded by Loadjs
+				var _loadJsInternalCache = {}; //store scrips promise that being loaded by Loadjs
 				var head = document.getElementsByTagName("head")[0] || document.documentElement;
+				const _WATERMARK = "Chinhvtr";
+				DBFiles.WATERMARK = _WATERMARK; //saved to wrapper class for later use
 
-				function exec(options) {
-					if (typeof options === "string") {
-						options = {
-							url: options,
-							debug: false
-						};
+				/* HELPER FUNCTIONS */
+				/** get script THAT NOT LOADED by LoadJS */
+				/* function getScriptById(id) {
+					var script = id && document.getElementById(id);
+
+					if (script && script.watermark !== _WATERMARK) {
+						console.warn("load-js: duplicate script with id:", id);
+						return script;
 					}
+				}
+				
+				function getScriptByUrl(url) {
+					var script = url && document.querySelector("script[src='" + url + "']");
 
-					// cache here just to avoid same js files being loaded twice in the SAME session, with requirement both are loaded by loadJS
-					var _scriptId = (options.id || options.url).split('?')[0]; //get url without param
-					var _scriptEntry = _loadedScripts[_scriptId];
+					if (script && script.watermark !== _WATERMARK) {
+						console.warn("load-js: duplicate script with url:", url);
+						return script;
+					}
+				} */
 
-					if (_scriptEntry && !options.allowReload) {
-						if (!!options.debug) {
-							console.log("load-js: Script hit - this script has been loaded in current page session", _scriptId);
+				/** get script that NOT loaded by LoadJS 
+				 * @param url {string}: the url or the id of scipt
+				 * @param byUrlOrId {boolean}:
+				 * 		@value true (default): search script by url without param (string after '?')
+				 * 		@value false: search by id
+				 * @return
+				 * 	- the first found script element if found
+				 * 	- null if not found
+				*/
+				function getExternalScript(url, byUrlOrId = true) {
+					if(!url) return null;
+
+					if(byUrlOrId) url = url.split("?")[0];
+					const _queryStr = byUrlOrId? "script[src^='" + url + "']" : "script[id='" + url + "']";
+
+					const _scripts = document.querySelectorAll(_queryStr);
+					let _foundScript = null;
+
+					_scripts.forEach(_script => {
+						if (!_foundScript && _script.watermark !== _WATERMARK) {
+							console.warn("loadJS: found external script (one that not loaded by loadJs) with " + (byUrlOrId?"url":"id") + ":", url);
+							_foundScript =_script;
 						}
-						return _scriptEntry;
-					}
-					else if (options.allowExternal !== false) {
-						var el = getScriptById(options.id) || getScriptByUrl(options.url);
+					});
 
-						if (el) {
-							var promise = Promise.resolve(el);
-							if (_scriptId) { _loadedScripts[_scriptId] = promise; }
-							return promise;
-						}
-					}
-
-					if (!options.url && !options.text) {
-						throw new Error("load-js: must provide a url or text to load");
-					}
-
-					var pending = (options.url ? loadScript : runScript)(head, createScript(options));
-
-					//if storeInternal is not false, save this script inside createLoadJS() for later check duplication
-					if (_scriptId && options.storeInternal !== false) { _loadedScripts[_scriptId] = pending; }
-
-					return pending;
+					return _foundScript;					
 				}
 
-				function runScript(head, script) {
+				/** simple hash function to hash any string to 7-chars string, this used to create an (nearly) unique id for the script */
+				function simpleHash(str) {
+					let hash = 0
+					for (let i = 0; i < str.length; i++) {
+						hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0
+					}
+					return (hash >>> 0).toString(36)
+				}
+
+				/** append script text (set in options.text) in the case that options.url is missing. Because options.text contain the js code already, so script should be loaded immediately without any delay, meaning no need to handle the async state of the script 
+				 * @param head: the document.head element
+				 * @param script: the script element that created by createScript() but not yet append to the DOM
+				*/
+				function appendScriptByText(head, script) {
 					head.appendChild(script);
 					return Promise.resolve(script);
 				}
 
-				function loadScript(head, script) {
+				/** append script by url (speified in options.url), so we use Promise to handle async state of script load 
+				 * @param head: the document.head element
+				 * @param script: the script element that created by createScript() but not yet append to the DOM
+				*/
+				function appendScriptByUrl(head, script) {
 					return new Promise(function(resolve, reject) {
 					// Handle Script loading
 					var done = false;
@@ -5843,75 +5965,146 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					});
 				}
 
-				function createScript(options) {
+				/* IMPORTAN FUNCTIONS */
+
+				/** function to create script and attached properties, attributes to script element for later processing when script file is loaded or failed-loading. Note that for now, the script has not been appended to the DOM
+				 * @param option: json of all attributes that need to config the script element and some other atttribute added to elements for using later. See https://github.com/MiguelCastillo/load-js/tree/master for list of default attribute like type, async, charset, id, url, text, cache (I renamed to 'cacheEnable'), debug
+				 * ADDED: jsDBName, loadMode, allowReload, urlVersion
+				 * @return the script element
+				 */
+				function createScriptElem(options) {
 					var script = document.createElement("script");
+					/* some built-in attribute of a script element, see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script for the full list */
 					script.charset = options.charset || "utf-8";
 					script.type = options.type || "text/javascript";
 					script.async = !!options.async; //default false
-					script.id = (options.id || options.url).split("?")[0]; //without param of url if there any
-					//jsDBName to store the name of data variable inside data file. For now, each file should have only one data variable, such as data_0.js has only one const json-like object 'data_0'
-					script.jsDBName = options.jsDBName || options.url;
-					//loadMode: the loadMode (1 - fresh loaded ignoring the cache, 2 - using the cache if there any)
-					script.loadMode = options.loadMode || 2;
-					script.loadJS = "watermark";
+					//in exec() we already create an options.id if user not clearly specify it
+					script.id = options.id; 
+					//script.id = (options.id || options.url).split("?")[0]; //without param of url if there any
 
+					/* customized attribute to meet user extra need */
+					//attach all extra/extented attributes that user need to attach to script for later handy usage
+					script.extAttr = options.extAttr || {};
+					//attach a watermark to know that the script is loaded by loadJs or not
+					script.watermark = _WATERMARK;
+					//adding timestamp for ease of debugging when loadJS internal cache hit
+					script.timestamp = (new Date()).toLocaleString();
+
+					/* Using version paramet '?v={version_number}' to force the browser to re-load and script file (mostly through file url) */
 					const _DEF_VERSION = Math.round(performance.now()); //101;
 					let _dbUrl = options.url;
 					const _versReg = _dbUrl.match(/v\=(\d+)/);
 					if(_versReg){
 						let _version = parseInt(_versReg[1]);
 						if(isNaN(_version)) _version = _DEF_VERSION;
-						// if this load is fresh-load (loadMode == 1): change the version so the js file load will ignore browser's cache. Other mode loadMode= -1 (called from addJsDataFiles()) or =2, using cache if applicable
-						if(options.loadMode == 1)  _dbUrl = _dbUrl.replace(_versReg[0], "v=" + (++_version));
+						// freshLoad = true, we need to re-load the script even there is old version in the cache. For the specific case of this page when loading DB stored in script file, we do fresh-load only when loadMode == 1 (and we need to specify freshLoad attribute when invoking loadJs). Other mode loadMode= -1 (called from addJsDataFiles()) or =2, using cache if applicable
+						// We archive fresh-load by changing the version so the js file load will ignore browser's cache.
+						if(options.freshLoad)  _dbUrl = _dbUrl.replace(_versReg[0], "v=" + (++_version));
 					}
 					else _dbUrl += (_dbUrl.indexOf("?")>-1? "": "?") + "v=" + _DEF_VERSION; //assign a initial version number
-					options.url = _dbUrl;
-
-					//if this is book database js that is about being loaded: update new Url with versioning to xDBFilesCfg for the next session cache-load to use the right version, other broewser cache would not work
-					if(options.fileNo !== undefined){
-						const _toLoadItem = xDBFilesCfg.toLoad.find(_item => _item.fileNo == options.fileNo);
-						if(_toLoadItem) {
-							// update new dbUrl if changes
-							_toLoadItem.dbUrl = _dbUrl;
-
-							// if fresh-load, then change loadMode to cache-load for next session
-							if(_toLoadItem.loadMode == 1) {
-								_toLoadItem.loadMode = 2;
-								console.log(`Database file ${_toLoadItem.dbUrl} has change loadMode to 2 (Load from Browser's Cache on next session)`);
-							}
-						}
-					}
+					
+					//save new versionning into urlVersion of script element, so later in loadPage, we can update the new version into xDBFilesCfg.toLoad[index].dbUrl. Note that I don't want to use script.src since it is absolute address while script.urlVersion is relative address (shorter)
+					script.extAttr.urlVersion = options.url = _dbUrl;
 
 					if (options.url) { script.src = options.url; }
 					if (options.text) { script.text = options.text; }
 					return script;
 				}
 
-				function getScriptById(id) {
-					var script = id && document.getElementById(id);
+				/** function to create script and append it to the DOM. Note that this function only support for one script only. This function also handle some situation like duplicate load by loadJs or duplicate with hard-coded markup.
+				 * @param option: config for the single script to be load
+				 * @return a promise wrapping the script
+				 */
+				function exec(options) {
+					// if user only invokde loadJS with a string as parameter like loadJS('https://code.jquery.com/jquery-2.2.1.js'), consider as loading by url
 
-					if (script && script.loadJS !== "watermark") {
-						console.warn("load-js: duplicate script with id:", id);
-						return script;
+					/* Create default value for options attributes when missing */
+					if (typeof options === "string") {
+						options = {
+							url: options
+						};
 					}
+
+					//default flags if not otherwise specify differently when invoking loadJS()
+					const _DEFAULT_OPTIONS = {
+						cacheEnable: true, //update script to the loadJs internal cache
+						allowExternal: false, //ignore the external having same url script (after removing parameter if any), if any
+						allowReload: false, //not allow reload if this script has been loaded before by loadJs
+						freshLoad: false, //using the browser cache if any
+						removeMarkup: true, //remove markkup out of DOM when done loading script
+						debug: true
+					}
+					options = Object.assign({}, _DEFAULT_OPTIONS, options);
+
+					// if user not specify an id for script, we make one from its url without param
+					let _scriptId = options.id || simpleHash(options.url.split('?')[0]); // make an id from url if option.id is not explicitly specified
+					options.id = _scriptId; //update back the maybe-new id to the option
+
+					// cache here just to avoid same js files being loaded twice in the SAME session, with requirement both are loaded by loadJS
+					let _cachedScriptEntry = _loadJsInternalCache[_scriptId]; //see if script already in loadJS cache
+
+					if (_cachedScriptEntry) {
+						if (!!options.debug) {
+							console.warn("loadJS: Script hit - this script has been loaded by loadJS in current page session. id:", _scriptId, "; url:", options.url);
+						}
+						//if options.allowReload = true: return script Promise right away without reloading it
+						if(!options.allowReload)
+							return _cachedScriptEntry;
+					}
+					//check allowExternal only when no _cachedScriptEntry because when there is _cachedScriptEntry, allowExternal is checked when the first time this script is loaded by loadJS
+					else if (options.allowExternal) {
+						// not found script in the cache AND options.allowExternal = true or missing, we need to look in the DOM to see if there any script (of cource, not loaded by loadJS). In case found, use that script without having loadJs reloaded that script
+
+						let el = getExternalScript(options.url) ;//getScriptById(options.id) || getScriptByUrl(options.url);
+
+						// found an external script with similar url (but not loaded by loadJs)
+						if (el) {
+							// Promise.resolve(el) is the same with 'new Promise( (resolve, reject) => resolve(el) )'
+							let promise = Promise.resolve(el);
+							//store external script promise into cache
+							if (_scriptId) { _loadJsInternalCache[_scriptId] = promise; }
+							return promise;
+						}
+					}					
+
+					if (!options.url && !options.text) {
+						throw new Error("load-js: must provide a url or text to load");
+					}
+
+					// depding on the type of script (code or url), we need different function to append the script and handle async nature of the script to the DOM
+					const _scriptElem = createScriptElem(options);
+					var pendingPromise = (options.url ? appendScriptByUrl : appendScriptByText)(head, _scriptElem);
+
+					//if options.removeMarkup is true of missing, remove the script markup in document.head, so if other inspect the code would not see the script had been loaded to the page which could cause confusing for them when inspecting the code.
+					if(options.removeMarkup !== false)
+						//finally is to do performing cleanup/finalizing after the previous operations are complete (doesn't matter successfull to failed).
+						pendingPromise.finally(_ => {
+							_scriptElem.remove();
+						});
+
+					//if cacheEnable is not explicitly set to false, save this script inside _loadJsInternalCache for later check of duplication
+					if (_scriptId && options.cacheEnable !== false) { _loadJsInternalCache[_scriptId] = pendingPromise; }
+
+					return pendingPromise;
 				}
 
-				function getScriptByUrl(url) {
-					var script = url && document.querySelector("script[src='" + url + "']");
-
-					if (script && script.loadJS !== "watermark") {
-						console.warn("load-js: duplicate script with url:", url);
-						return script;
-					}
-				}
-
+				/** load one script or array of script 
+				 * @param items is one item or array of items. Each item can be a string which contains url of the script or a json. If item is an json, the json is actually the option which has attributes as described in wrapper loadJS comments above
+				 * 
+				 * @return
+				 * if @items is one item, it will return the script element directly
+				 * if @items is array of items, it will return the array of result json which has one of following formats:
+				 * 		success: {status: 'fulfilled', value: ...the script element...}
+				 * 		failed:  {status: 'rejected', reason: ...the script element...}
+				 * See createScript() for the handy, customized property that added to script element like id, jsDBName, loadMode, urlVersion, watermark, type, charset
+				*/
 				return function load(items) {
 					return items instanceof Array ? Promise.allSettled(items.map(exec)) : exec(items);
 				}
 			})();
 
-			/** Function to load the Book Kit variables inside each Database file named {_jsDBName} into a collection {ssData.jsDBFiles} along with database file _loadMode */
-			static dataJsFileLoad(_jsDBName, _loadMode) {
+			/** Function to deploy data inside DB js file into the page, that is to load the Book Kit variables inside each Database file named {_jsDBName} into a collection {ssData.jsDBFiles} along with database file _loadMode */
+			static deployDB(_jsDBName, _loadMode) {
 				const bookKitVars = []; //store the names of attributes (each actually is book Kit variable) of the current data variable (like data_0)
 				this.name = _jsDBName; //store data variable names inside the variable content
 				for (const key of Object.getOwnPropertyNames(this)) {
@@ -5928,19 +6121,25 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			 * @param _ivkFrom: invoked from, mostly for controlling the message
 			 * 		@value 0: invoked from loadPage()
 			 * 		@value 1: invoked from DBFiles.checkDBsEditionFromConfig() right below
-			 * @return null is there is no new update on any DB files
-					array: in array of index of updated DB files
+			 * 		@note: for now, this param is redundant and is not usable
+			 * @return 
+			 * 		@value null is there is no new update on any DB files
+					@value an json: see the 'return' directive at the very end of function for detailed information
 			*/
 			static checkDBFilesEdition(_ivkFrom){
 				const _DEF_DB_EDITION = 100; //initial edition of any DBFile
 				
-				//_DBsNeedFreshLoad store DBs (its index as 0,1,... correspoinding with data_0, data_1,...) that need fresh-load (loadMode=1). DBsHasLaterEdition store all DBs that having cache but has later edition (version), this array only for purpose of notify user about edition updates
-				let _DBsNeedFreshLoad = [], DBsHasLaterEdition=[];
+				//_DBsNeedFreshLoad store DBs (its index as 0,1,... correspoinding with data_0, data_1,...) that need fresh-load (loadMode=1), and in current (or previous) session's Setting, those DB was set loadMode other than 0 (which can be 1 or 2, note that there might be some DBs has freshLoad=2 but has new Edition, so we need to temporarily change loadMode=1 to fresh-Load and change back to 2 later).
+				let _DBsFreshLoadAndShow = [];
 
-				//array store DB fileNo that has new edition, will be loaded next pageLoad() but not included into book database because those DBs currently set loadMode = 0 (no Show). Those value will be stored into xDBFilesCfg.noShowList so next pageLoad() know which DBs to exclude
-				let _DBsFreshLoadButNotShow = [];
-				//delete old attribute if it is still existed (it HAS TO be deleted in pageLoad() )
-				//if(xDBFilesCfg.hasOwnProperty('noShowList')) delete xDBFilesCfg.noShowList;
+				//array store DB fileNo that has new edition, will be fresh loaded in next pageLoad() but not included into book database because those DBs currently set loadMode = 0 (no Show).
+				let _DBsFreshLoadAndHide = [];
+
+				//save all hidden DB that was found new edition in last session (and was changed loadMode to delayFresh), we only found such DB when invoking checkDBFilesEdition from loadPage (_ivkFrom = 0)
+				let _DBsDelayFreshLoadAndHide = [];
+				
+				//the counter to count the number of DBs that has NO edt attributes before. This only happen when there is no xDBFilesCfg in local storage (which only the case when the page is loaded very firs time OR local storage has been completely wiped-out)
+				let _DBsLoadedVeryFirstTimeCounter = 0;
 
 				xDBFilesCfg.toLoad.forEach((_dbItem, i) => {
 					
@@ -5950,48 +6149,64 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 						_latestDbEdition = i < _DEFAULT_CFG.cDBFilesEdt.edt.length ? _DEFAULT_CFG.cDBFilesEdt.edt[i] :  _DEF_DB_EDITION;
 					}
 
+					const _fileNo = _dbItem.fileNo;
+					
+					//save all hidden DB that was found new edition in last session (and was changed loadMode to delayFresh), we only found such DB when invoking checkDBFilesEdition from loadPage (_ivkFrom = 0)
+					if( _dbItem.loadMode == DBFiles.LMODE.delayFresh )
+						_DBsDelayFreshLoadAndHide.push(_fileNo);
+
 					//if current edition of inspected DBItem is not set yet (when page runs clean - meaning cache and localStore of last session is all wiped out) OR not the lastest (need update)
 					if(!_dbItem.hasOwnProperty("edt") || _dbItem.edt <  _latestDbEdition) {
 						//store DBs already cached but has later edition
-						if(_dbItem.hasOwnProperty("edt")) DBsHasLaterEdition.push(i);
+						if(!_dbItem.hasOwnProperty("edt")) _DBsLoadedVeryFirstTimeCounter++;
 
-						_dbItem.edt =  _latestDbEdition; //update the edition number
+						//update the edition number
+						_dbItem.edt =  _latestDbEdition;
 
-						//only change loadMode to fresh-load(1) if it is NOT in no-Show (0) mode
-						if(_dbItem.hasOwnProperty("loadMode") && _dbItem.loadMode == 0)
-							_DBsFreshLoadButNotShow.push(i);
-						
-						//set loadMode to fresh-load, so that next session the page know to reload the lastest edition of the DB
-						_dbItem.loadMode = 1; //fresh load because there is new version
+						// we need to check for both noShow and delayFresh, because there is case a DB has been marked as delayFresh in last session, but from last session, its edition has change again
+						if( _dbItem.hasOwnProperty("loadMode") && [DBFiles.LMODE.noShow, DBFiles.LMODE.delayFresh].includes(_dbItem.loadMode) ){
+							// add all need-to-fresh-load DB AND currently Show (loadMode=1 or 2) in Setting
+							_DBsFreshLoadAndHide.push(_fileNo);
+							_dbItem.loadMode = DBFiles.LMODE.delayFresh; // turn to delay fresh load so after sucessfullt loading, turn back to noShow
+						}	
+						else {
+							// add all need-to-fresh-load DB AND currently No-Show (loadMode=0) in Setting
+							_DBsFreshLoadAndShow.push(_fileNo); 
 
-						_DBsNeedFreshLoad.push(i); //rememeber DB files has new edition for later notification to the user
+							// temporarily set loadMode (for all kind of current loadMode 0,1, or 2) to fresh-load, so that next session the page know to reload the lastest edition of the DB. After successfully load new edition of those DBs, we will change back loadMode = 0 for those loadMode was 0 (in last session), for those loadMode was 1 or 2, we will change to 2 (cache-load)
+							_dbItem.loadMode = DBFiles.LMODE.freshLoad; //fresh load because there is new version
+						}
 					}
-				});
+				});				
 
-				if(_DBsFreshLoadButNotShow.length > 0)
-				xDBFilesCfg.noShowList = _DBsFreshLoadButNotShow;
+				const _allNewDBsCount = _DBsFreshLoadAndHide.length + _DBsFreshLoadAndShow.length;
+
+				/** the function to create notification message to user of the detail of new DBs 
+				 * @param _DBarray the array of DBs file_no that need to create message, such as [0, 1, 3]
+				*/
+				const _newDBNotifyMsg = (_DBarray) => {
+					let _msg = '';
+					if(_DBarray.length > 0)
+						_msg = (_msg==''?'': '<br>') + `${_DBarray.length > 1?"Các ":""}CSDL ${ _DBarray.map(t => "<mark style='color:red;font-weight:bold'>data_"+t+"</mark>").join(", ") } có phiên bản mới`;
+					return _msg;
+				}			
 				
-				//Push this into delayed Toast to notify user
-				//console.log(_DBsHasNewEdition);
-				const _len = DBsHasLaterEdition.length;
-				if(_len > 0){
-					// list of file-no of DB that has new edition and having loadMode other than 0 (no-show)
-					const _DBLoadedNextSession =  DBsHasLaterEdition.filter(t => !_DBsFreshLoadButNotShow.includes(t) );
-					if(_DBLoadedNextSession.length > 0)
-					ssData.delayedNotification.push({msg: `${_DBLoadedNextSession.length > 1?"Các ":""}CSDL ${_DBLoadedNextSession.map(t => "<mark style='color:red;font-weight:bold'>data_"+t+"</mark>").join(", ")} có phiên bản mới${_ivkFrom==0?", đã được App tự động cập nhật":""}.`, option: {duration: 1.5e4}});
-
-					/* ssData.delayedNotification.push({msg: `${_len > 1?"Các ":""}CSDL ${DBsHasLaterEdition.map(t => "<mark style='color:red;font-weight:bold'>data_"+t+"</mark>").join(", ")} có phiên bản mới${_ivkFrom==0?", đã được App tự động cập nhật":""}.`, option: {duration: 1.5e4}}); */
-
-					if(_DBsFreshLoadButNotShow.length > 0){
-						ssData.delayedNotification.push({msg: `${_DBsFreshLoadButNotShow.length > 1?"Các ":""}CSDL ${_DBsFreshLoadButNotShow.map(t => "<mark style='color:red;font-weight:bold'>data_"+t+"</mark>").join(", ")} có phiên bản mới, nhưng đang ở chế độ ẩn.`, option: {duration: 1.5e4}});
-					}
-				}
-				
-				//if toast already initialize, show the delayed message right-away (so it is not delayed anymore, huh?)
-				if( toast?.showDelayedToast) toast.showDelayedToast();
-
-				//if there is no new DB, return null
-				return _len>0 ? _DBsNeedFreshLoad : null;
+				return _allNewDBsCount > 0 ? 
+					/** format of returned value
+						 * @param loadShow Array of DBs need fresh-load and will be shown
+						 * @param loadHide Array of DBs need fresh-load and will be hidden (DBs stored inside it will not be load to the book list)
+						 * @param delayLoadHide keep all hidden DB that was found new edition in last session (and was changed loadMode to delayFresh), we only found such DB when invoking checkDBFilesEdition from loadPage (_ivkFrom = 0)
+						 * @param noDBsBefore True if the page is loaded very first time (all DBs not yet has edt attribute). its purpose solely to avoid displaying Notification that having new DBs edition when page loaded for very first time (so they are 'new' compared to nothing)
+						 * @param newDBNotifyMsg attach the function to create notification message to user of the detail of new DBs for the sake of re-use
+					*/
+					{loadShow: _DBsFreshLoadAndShow, 
+						loadHide: _DBsFreshLoadAndHide, 
+						delayLoadHide: _DBsDelayFreshLoadAndHide,
+						noDBsBefore: _DBsLoadedVeryFirstTimeCounter == _allNewDBsCount,
+						newDBNotifyMsg: _newDBNotifyMsg
+					} : 
+					//if there is no new DB, return null
+					null;
 			}
 
 			/** Extend function of aboved checkDBFilesEdition, that is: fisrt - load config.js file, and then check the Edition number to find if any DB files has new edition (version) 
@@ -6003,42 +6218,51 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				//success or not, we need to update this lastDBCheck, otherwise in case of continuos fails (lost internet, for example), page will keep checking updates
 				ssData.lastDBCheck = Date.now(); //update last checked time
 				
-				// this array store list of DB files that has newer editions. If none has or fail to load 'config.js', it is null
-				let _DBsHasNewEdition = null;
-	
 				//"config.js" has no "?v={version_number}" so it will be added in loadJs. This make config.js always in Fresh-load mode. allowReload=true allow config.js is reloaded even it has loaded before by the same old loadJS
 				DBFiles.loadJS( {url: "config.js", allowReload: true} )
 				.then((_ret) => {
-					//check if there is new DB files updated. Note that this function could override loadMode for some DB files on check failCount above
-					_DBsHasNewEdition = DBFiles.checkDBFilesEdition(1);
+					// this array store list of DB files that has newer editions. If none has or fail to load 'config.js', it is null					
+					//See return in DBFiles.checkDBFilesEdition for the format of returned value
+					let _newEditionDBs = DBFiles.checkDBFilesEdition(1);
 										
-					//remove old <script> tag that load old config.js
-					const oldConfigJsTags = document.querySelectorAll("script[id='config.js']");
-					//remove all but the last one
-					for(let i=0; i<oldConfigJsTags.length-1;i++) oldConfigJsTags[i].remove();
+					//Notify user about DBs having new edition and ask them to reload page if necessary
+					if(_newEditionDBs){
+						let _msg = '';
 
-					if(_DBsHasNewEdition)
-						setTimeout(_ =>  //wait for 1 second so that the delayedToast not be supressed by the confirm
-						{if(confirm("CSDL có phiên bản mới. Cần nạp lại trang Web để cập nhật dữ liệu mới?\n\n Sẽ chỉ mất vài giây. Bạn có muốn nạp lại trang Web ngay bây giờ?"))
-							//Force a hard reload to clear the cache if supported by the browser
-							window.location.reload(true);
-						}, 1.4e4);
+						//empty function
+						let _callback = _ => {};
+
+						if(_newEditionDBs.loadShow.length > 0){
+							_msg += _newEditionDBs.newDBNotifyMsg(_newEditionDBs.loadShow) + ".";
+
+							_callback = _ => {
+								if(confirm("CSDL có phiên bản mới. Cần nạp lại trang Web để cập nhật dữ liệu mới?\n\n Sẽ chỉ mất vài giây. Bạn có muốn nạp lại trang Web ngay bây giờ?"))
+								//Force a hard reload to clear the cache if supported by the browser
+									window.location.reload(true);
+							}
+						}
+
+						if(_newEditionDBs.loadHide.length > 0){
+							let _localMsg = _newEditionDBs.newDBNotifyMsg(_newEditionDBs.loadHide);
+							if(_localMsg != '')
+								_msg += (_msg==''?'': '<br>') + _localMsg + ', nhưng đang ở chế độ ẩn. Sẽ được App tự động cập nhật khi nạp lại trang Web.';
+						}
+
+						toast.showToast(_msg, toast.ToastType.Infor, {duration: 1.5e4, cbEnd: _callback});
+					}
 					else if(_showFailedCheck) toast.showToast("Cơ sở dữ liệu hiện có đã là mới nhất.", toast.ToastType.Infor, {duration: 1e4});
 
-					//return array of updated DB files or null 
-					//return _DBsHasNewEdition;
+					//fire event that notifying that DBs has just been checked for updates, so the Settinng modal will update accordingly in case user are opening it (see Setting.addJsDataFiles() function which catch this event to update the last time checking DBs edition)
+					window.dispatchEvent(new CustomEvent("DbsFileGotNewEdition", {
+						detail: { updateDBs: _newEditionDBs, caller: 'DBFiles.checkDBsEditionFromConfig' }
+					}));
 				})
 				.catch(err => {
-					console.log(err);
+					console.error(err);
 					if(_showFailedCheck) toast.showToast("Không nạp được file config.js.", toast.ToastType.Error, {duration: 1e4});
 				});
 
-				//fire event that notifying that DBs has just been checked for updates, so the Settinng modal will update accordingly in case user are opening it (see DBFiles.checkDBsEditionFromConfig() function which fire this event)
-				window.dispatchEvent(new CustomEvent("DbsFileGotNewEdition", {
-					detail: { updateDBs: _DBsHasNewEdition, caller: 'DBFiles.checkDBsEditionFromConfig' }
-				}));
-				
-				return _DBsHasNewEdition; //array of updated DB files or null 
+				//return _DBsHasNewEdition; //array of updated DB files or null 
 			}
 		}
 
@@ -6049,6 +6273,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 		 */
 		function loadPage(){
 			//note that since "config.js" has no suffix "?v=", so it is treated as loadMode = 1 because it will be added suffixe ?v={performance.noe()}
+			//{url: "config.js", removeMarkup: false}
 			DBFiles.loadJS( "config.js" ).then((_ret) => {
 				/* STEP B: Lấy lại xState, xDBFilesCfg lưu trong Storage từ phiên trước; This have been moved to init() */
 				function getFromStorage(_storageName){ //wrap function to restore json variable from localStorage
@@ -6090,11 +6315,12 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				//for now, I fix number of databases on _DEFAULT_CFG.xDBFilesCfg.len
 				xDBFilesCfg.len = _DEFAULT_CFG.xDBFilesCfg.len; //Math.max( (xDBFilesCfg.len ?? 3), _DEFAULT_CFG.xDBFilesCfg.len);
 				
+				//initiate xDBFilesCfg.toLoad array if it not yet exist (this only happen when page loaded for very first time or local storge was been completely wiped out)
 				if(!(xDBFilesCfg.toLoad instanceof Array))  xDBFilesCfg.toLoad = [];
 				let toLoadArr = xDBFilesCfg.toLoad; //don't swap this line and above
 
 				/* II. load the DB files */
-				const _DEF_LOADMODE = 2;  //default loadMode is load, use cache
+				const _DEF_LOADMODE = DBFiles.LMODE.cacheLoad;  //default loadMode is load, use cache
 				// fill in items that localStorage's xDBFilesCfg does not have. This might happens when new database files being added to the page
 				const _DB_MAX_FAILCOUNT = 10; //maximum fail count for an DB files before it is put into 'No Show' mode				
 
@@ -6129,85 +6355,129 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				}
 				
 				// if all data files having loadMode = 0 (no load) then mark the data_0 loadMode = 2 so there is at least one database to be loaded
-				if(toLoadArr.every(_lm => _lm.loadMode == 0)){
+				if(toLoadArr.every(_lm => _lm.loadMode == DBFiles.LMODE.noShow)){
 					toLoadArr.find(_lm => _lm.fileNo == 0).loadMode = _DEF_LOADMODE; //load, use cache
 				}
 
 				//for item that has too many times fail when loading, just mark it to 'No show' so the page won't bother load it, except when its loadMode == 1 (forcing fresh load)
 				toLoadArr.forEach((_dbItem, i) => {
 					//mark no show if failCOunt > 10
-					if(_dbItem.loadMode == 2 && _dbItem.failCount > _DB_MAX_FAILCOUNT) _dbItem.loadMode = 0;
+					if(_dbItem.loadMode == DBFiles.LMODE.cacheLoad && _dbItem.failCount > _DB_MAX_FAILCOUNT) _dbItem.loadMode = DBFiles.LMODE.noShow;
 				});
 
 				//check if there is new DB files updated, mark those DBs has new edition or has no cache with loadMode = 1 (fresh Load) so that DBFiles.loadJS will do the rest to load latest version of those new DB files. Note that this function could override loadMode for some DB files on check failCount above
-				DBFiles.checkDBFilesEdition(0);				
-				
+				// this array store list of DB files that has newer editions. If none has or fail to load 'config.js', it is null. See return in DBFiles.checkDBFilesEdition for the format of returned value
+				let _newEditionDBs = DBFiles.checkDBFilesEdition(0);
+				//notify user about DBs having new edition
+				if(_newEditionDBs){
+					let _msg = '';
+
+					//_newEditionDBs.noDBsBefore = true when all DBs (in xDBFilesCfg.toLoad) load into page not yet has 'edt' attribute, meaning this might be the very first time page is loaded or xState was completely wiped-out
+					if(_newEditionDBs.noDBsBefore){
+						_msg = 'Sử dụng app lần đầu tiên hoặc dữ liệu lưu của các phiên làm việc trước của app đã bị xóa sạch!';
+					}
+					else{
+						if(_newEditionDBs.loadShow.length > 0){
+							_msg += _newEditionDBs.newDBNotifyMsg(_newEditionDBs.loadShow) + ", đã được App tự động cập nhật.";
+						}
+
+						if(_newEditionDBs.delayLoadHide.length > 0){
+							let _localMsg = _newEditionDBs.newDBNotifyMsg(_newEditionDBs.delayLoadHide);
+							if(_localMsg != '')
+								_msg += (_msg==''?'': '<br>') + _localMsg + ' (phát hiện từ phiên làm việc trước) đã được App tự động cập nhật, nhưng đang ở chế độ ẩn.';
+						}
+
+						if(_newEditionDBs.loadHide.length > 0){
+							let _localMsg = _newEditionDBs.newDBNotifyMsg(_newEditionDBs.loadHide);
+							if(_localMsg != '')
+								_msg += (_msg==''?'': '<br>') + _localMsg + ' đã được App tự động cập nhật, nhưng đang ở chế độ ẩn.';
+						}
+					}
+					//since Toast object has not been loaded, so we put it into delayedNotification
+					ssData.delayedNotification.push({msg: _msg, option: {duration: 1.5e4}});
+				}
+								
 				//store array of script url and its option to load into loadJs
 				//loadMode: 0 - No Show. 1- Fresh load, No Cache. 2-load, using cache if applicable.
-				let _jsDataFiles = toLoadArr.filter(_dbItem => _dbItem.loadMode != 0) //filter item to be loaded (has loadMode 1 or 2)
-				.map( _dbItem =>  ({fileNo: _dbItem.fileNo, url: _dbItem.dbUrl, jsDBName: _dbItem.dbName, loadMode: _dbItem.loadMode})
+				let _jsDataFiles = toLoadArr.filter(_dbItem => _dbItem.loadMode != DBFiles.LMODE.noShow) //filter item to be loaded (has loadMode 1 or 2)
+				.map( _dbItem =>  ({
+					url: _dbItem.dbUrl,
+					//removeMarkup: since we don't set value for this flag, its default value would be true, meaning the script markup would be removed out of DOM after being loaded (sucess or fail), so other would not see any markup in the DOM for those config.js and data_*.js files
+					freshLoad: [DBFiles.LMODE.freshLoad, DBFiles.LMODE.delayFresh].includes(_dbItem.loadMode), //to tell if script should be fresh-load or cache-load 
+					//see DBFiles.loadJS for explanation of some properties of extAttr
+					extAttr: {
+						fileNo: _dbItem.fileNo, // this actually can derived from jsDBName below
+						jsDBName: _dbItem.dbName, 
+						loadMode: _dbItem.loadMode //this property actually not use
+					} 
+				})
 				); //map into format of options for loadJS()
 
-				ssData.jsDBFiles = []; //initialize jsFiles for dataJsFileLoad() to put data into
+				ssData.jsDBFiles = []; //initialize jsFiles for deployDB() to put data into
 
 				DBFiles.loadJS(_jsDataFiles)
 				.then((_res) => {
 					_res.forEach(_prom => {
 						// for success loaded db file: add data to data collected variable ssData.jsDBFiles
 						if(_prom.status === "fulfilled"){
-							//_prom.value point to script elements created inside createLoadJS
-							const _jsDBName = _prom.value.jsDBName;
+							// because of Promise.allSettled in loadJS, so _prom.value point to script elements created inside createLoadJS
+							const _scriptElm = _prom.value;
+							const _extAttr = _scriptElm.extAttr;
+							const _jsDBName = _extAttr.jsDBName; //something like 'data_0'
 
 							//re-set failCount to 0
 							const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
-							if(_dbFileCfgItm) _dbFileCfgItm.failCount = 0;
-							if(xDBFilesCfg.hasOwnProperty('noShowList')){
-								const _fileNo = Number(_jsDBName.match(/_(\d+)/)[1]);
+							
+							//this should never happen
+							if(!_dbFileCfgItm) return console.log('loadPage(): somehow there is a database script element that not found in xDBFilesCfg.toLoad');
 
-								//if this DB is in noShowList list that stored from last session
-								if(xDBFilesCfg.noShowList.includes(_fileNo) ){
-									_dbFileCfgItm.loadMode = 0; //change back loadMode to 0
-									_prom.value.loadMode = 0;
-								}
+							//reset failCount
+							_dbFileCfgItm.failCount = 0;
+
+							// If flag freshLoad is set to true (when loadMode=1), loadJS.exec() will change version number in script url. So, we need to update dbUrl accordingly, so next time load the page, the page would use the right version from the browser's cache (because the browser's cache only keep the last version of script)
+							_dbFileCfgItm.dbUrl = _scriptElm.extAttr.urlVersion;
+
+							// DB file number
+							const _fileNo = _extAttr.fileNo; //Number(_jsDBName.match(/_(\d+)/)[1]);
+
+							//if DB file having loadMode == DBFiles.LMODE.delayFresh (one was hidden but found new edition in last page session), we need change back its loadMode = 0 (as it is set in previous session) and clean its data since those data would not be shown in books list
+							if( _dbFileCfgItm.loadMode == DBFiles.LMODE.delayFresh ){
+								_dbFileCfgItm.loadMode = DBFiles.LMODE.noShow; //change back loadMode to 0
+								//_scriptElm.loadMode = 0;
+
+								console.warn(`loadPage(): Database file ${_dbFileCfgItm.dbUrl} has change loadMode from -2 to 0 (the page just temporarily load its new edition but not show its data since it is set in hidden-mode in User-setting)`);
+
+								//delete the global variable for data that was delayFresh to save memory
+								window[_jsDBName] = undefined;
 							}
+							else{
+								// if fresh-load, then change loadMode to cache-load for next session
+								if(_dbFileCfgItm.loadMode == DBFiles.LMODE.freshLoad) {
+									_dbFileCfgItm.loadMode = DBFiles.LMODE.cacheLoad;
+									console.warn(`loadPage(): Database file ${_dbFileCfgItm.dbUrl} has change loadMode from 1 to 2 (Load from Browser's Cache on next session)`);
+								}
 
-							//only load DB into ssData.jsDBFiles (so books inside that DB would be show in this session) if it is not no-show mode (loadMode !=0)
-							if(_prom.value.loadMode !== 0)
-							DBFiles.dataJsFileLoad.call(window[_jsDBName], _jsDBName, _prom.value.loadMode);
+								// load DB into ssData.jsDBFiles (so books inside that DB would be show in this session) if it is not in no-show mode (loadMode !=0)
+								DBFiles.deployDB.call(window[_jsDBName], _jsDBName, _extAttr.loadMode);
+							}
 						}
 						// for failed loaded db file: 
 						else if(_prom.status === "rejected"){
-							//most likely the database file not exist
+							/* most likely the database file not exist */
+
 							//_prom.reason.target point to script elements created inside createLoadJS
-							const _jsDBName = _prom.reason.target.jsDBName;
+							const _scriptElm = _prom.reason.target;
+							const _jsDBName = _scriptElm.extAttr.jsDBName;
+
 							//mark loadMode of failly-loaded database file to be 'No Show' and increase failCount
 							const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
 							if(_dbFileCfgItm){
-								_dbFileCfgItm.loadMode = 0;
+								_dbFileCfgItm.loadMode = DBFiles.LMODE.noShow;
 								if(typeof _dbFileCfgItm.failCount == 'number')_dbFileCfgItm.failCount++; else _dbFileCfgItm.failCount = 1;
 								console.log(`Database file ${_dbFileCfgItm.dbUrl} has change loadMode to 0 (No show on next session)`);
 							}
 						}
-					});
-
-					//delete old attribute if it last session has a new edition of a DB file but that DB is set no-Show (loadMode = 0)
-					if(xDBFilesCfg.hasOwnProperty('noShowList')) {
-						
-						for(let _fileNo of xDBFilesCfg.noShowList){
-							const _varName = 'data_' + _fileNo;
-							//remove old <script> tag that load old config.js
-							const _oldDataJsTags = document.querySelectorAll(`script[id='${_varName}.js']`);
-							//remove all data _varName script tags
-							for(let i=0; i<_oldDataJsTags.length;i++) _oldDataJsTags[i].remove();
-							
-							//delete the global variable
-							window[_varName] = undefined;
-						}
-
-						//remove the noShowList from xDBFilesCfg
-						delete xDBFilesCfg.noShowList;
-					}
-					
+					});					
 					init();
 				})
 			})
@@ -6384,7 +6654,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 	</script>
 
-	<!-- SMALL FUNCTION THAT EFFECT UI -->
+	<!-- TOAST + SMALL FUNCTIONS THAT EFFECT UI -->
 	<script>
 		"use strict";
 		/* Helper prototype for any HTML element that:
@@ -8483,6 +8753,11 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 						// S: set sleep timer
 						{task: "global_openSleepTimer", kCode: ["KeyS"], desc: "Hẹn giờ tắt.", callback: utilityHandles.showSleepTimerPopup},
 
+						// N: expand or collapse all group chapters
+						{task: "global_OpenCloseAllGroupChapters", kCode: ["KeyN"], desc: "Đóng/mở tất cả các nhóm chương.", callback: _ => {
+							document.getElementById("allChapGrpChkbox").click()
+						}},
+
 						// G: change book Group way
 						{task: "global_switchBookGrpWay", kCode: ["KeyG"], desc: "Đổi cách nhóm thứ tự sách.", callback: () => {
 							const _selBookGroup = document.querySelector("#selBookGroup");
@@ -8768,7 +9043,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					//allow trying reload 3 times
 					if (_retryCount < 3)
 						_elmArtwork.src = _elmArtwork.src + "?" + performance.now().toFixed(0);
-					else _elmArtwork.src = "https://th.bing.com/th/id/OIG1.umQWEGl8_HY7m9Mm76ww";
+					else _elmArtwork.src = "default.jpg"; //"https://th.bing.com/th/id/OIG1.umQWEGl8_HY7m9Mm76ww";
 				}
 				else{
 					//show cover img or sprite svg image of No Internet depending on state of internet connection
@@ -9036,8 +9311,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			const chapterListSetting = {
 				displayOneLine: false,
 				diacriticsFilterMode: xState?.chapterListDiacriticsSearch ?? true,
-				//decorate background for SDDDropdownContent and SDD-dropdown-border-bottom
-				componentsCssClass: [{qs: '.sdd-dropdown-content', css: 'sdd-chapterList-background'}, {qs: '.sdd-dropdown-border-bottom', css: 'sdd-dropdown-border-bottom-factory'}],
+				//decorate background for SDDDropdownContent and SDD-dropdown-border-bottom, we specify customized class for whole .sdd-wrapper container
+				customizedCssClass: "sdd-wrapper-chapterList",
 				searchBoxPlaceholder: "Tìm trong {_items_length} chương sách ...",
 				//rightAlignInEachOptGroup: false, //force right-align for items in whole SDD (not by optGroup as sddBookTitlesList)
 				
@@ -10152,7 +10427,11 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				historyCls.prototype.buttonAppeance();
 			}
 
-			/* Clear all information saved in xState, not just books reading history, but also other information such as last playing time, grpLine, urlLine */
+			/** Clear all information saved in xState, not just books reading history, but also other information such as last playing time, grpLine, urlLine 
+			 * @param mode 
+			  		@value 0 or missing: completely wipe out xState (which store environment variable across page session) and xDBFilesCfg (which store setting for DBs file)
+					@value 1: just clean xState, keep xDBFilesCfg so next session, the page would load only DBs that user set
+			*/
 			static wipeAll(mode) {
 				mode = mode ?? 0;
 				if (!confirm("Bạn muốn xóa toàn bộ lịch sử trang Web đã lưu?\n\n Sẽ cần phải nạp lại trang Web.")) return;
@@ -11026,8 +11305,11 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					
 					let _liGrpTitle = document.createElement('li');
 					const _jsDBName = _jsFileItem.dbName;
+					
+					//make version string (that next to DB name)
 					let _version = _jsFileItem.dbUrl.match(/v\=(\d+)/)?.[0] ?? "";
 					_version = _version == "" ? "" : " (" + _version + ", " + (_jsFileItem.hasOwnProperty("edt")?"Edt=" + _jsFileItem.edt + ", ":"") + _jsFileItem.failCount + ")";
+
 					_liGrpTitle.innerHTML = `<div>
 						<details open=""><summary><span>${_jsDBName}${window.innerWidth>600? _version:""}</span><br/><samp name="dbSummary"></samp></summary></details>
 						<span><input type="checkbox" role="switch" id="jsDataFileChkbox_${_jsDBName}" attr-chkbox-Data-jsFile="${_jsFileItem.fileNo}"/> <label for="jsDataFileChkbox_${_jsDBName}"></label></span>
@@ -11037,7 +11319,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					lstJsFileDataSetting.appendChild(_liGrpTitle);
 
 					// js database files loaded before in loadPage()
-					if(_jsFileItem.loadMode > 0) {
+					if(_jsFileItem.loadMode > 0) {// short way for [DBFiles.LMODE.freshLoad, DBFiles.LMODE.cacheLoad].includes(_jsFileItem.loadMode)
 						//adding details and calculate statistics for whole DB file
 						const _dbSummary = addJsDataFilesDetails(_liGrpTitle);
 						//adding statistics for whole DB file to the title of li element
@@ -11052,20 +11334,25 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 							addJsDataFilesDetails(_liGrpTitle, _jsFileItem.failCount);
 							continue;
 						}
-						// if variable not yet existed, load it from data js file
+						// if variable not yet existed, temporarily load it from data js file, showing its books list (and some statisticals) them remove the variable to save memory
 						DBFiles.loadJS({
-							fileNo: _jsFileItem.fileNo,
-							jsDBName: _jsDBName, 
-							loadMode: -1, //to mark that this load js not for adding data to xData, it is for showing book and book kit for user to decide or not to show this database next session
-							url: _jsFileItem.dbUrl //using version to have freshed load
+							allowReload: true, //using this in case the DB has new edition but loadMode=0(no-show), so its script has been loaded before in loadPage() function (and even its script element has already been removed) but its data has been remove. now we need to load again							
+							freshLoad: false, //get DB from cache if feasible
+							url: _jsFileItem.dbUrl,
+							//see DBFiles.loadJS for explanation of some properties of extAttr
+							extAttr: {
+								fileNo: _jsFileItem.fileNo, //this property is actually not use
+								jsDBName: _jsDBName, 
+								loadMode: DBFiles.LMODE.tempLoad, //to mark that this load js not for adding data to xData, it is for showing book and book kit for user to decide or not to show this database next session. This might not be neccessary since in .then(), .catch() below we don't update back loadMode into xDBFiles, so we can set this loadMode to DBFiles.LMODE.cacheLoad or DBFiles.LMODE.freshLoad
+							}
 						})
 						.then((_prom) => {
 							// add data to data collected variable ssData.jsDBFiles
 							
-							//_prom.value point to script elements created inside createLoadJS
-							const _jsDBName = _prom.jsDBName;
+							// Here we run loadJS for a single DB file, so _prom point to script elements created inside createLoadJS()
+							const _jsDBName = _prom.extAttr.jsDBName;
 							if(typeof window[_jsDBName] == "object")
-							DBFiles.dataJsFileLoad.call(window[_jsDBName], _jsDBName, _prom.loadMode);
+							DBFiles.deployDB.call(window[_jsDBName], _jsDBName, _prom.extAttr.loadMode);
 							
 							//adding details and calculate statistics for whole DB file
 							const _dbSummary = addJsDataFilesDetails(_liGrpTitle);
@@ -11078,16 +11365,14 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 							//reset failCount
 							if(_dbFileCfgItm) _dbFileCfgItm.failCount = 0;
 
-							//remove <script> tag and unload the variable
-							if(_prom.loadMode == -1){
-								_prom.remove();
-								window[_jsDBName] = undefined;
-							}
+							//if(_prom.extAttr.loadMode == DBFiles.LMODE.tempLoad) //maydo some extra check before cleaning DB variable
+							window[_jsDBName] = undefined; //clean the variable that stored inside DB script
 						})
 						.catch((err) => { //error when page cannot load the database js files
 							addJsDataFilesDetails(_liGrpTitle);
 							//console.log(err);
-							const _jsDBName = err.target.jsDBName;
+							//err.target point to script element itself
+							const _jsDBName = err.target.extAttr.jsDBName;
 							const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
 							toast.showToast(`Không tải được database ${err.target.src}`, toast.ToastType.Error);
 							//increase failCount
@@ -11507,7 +11792,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					<legend>Phím tắt cho trang ngoài</legend>
 					${listHotKeys(ssData.hotKeys.mainPage, ", ")}
 				</fieldset>
-				<fieldset>
+				<fieldset style="align-self: stretch;">
 					<legend>Phím tắt trong cửa số cấu hình</legend>
 					${listHotKeys(ssData.hotKeys.settingModal, ", ")}
 				</fieldset>
@@ -11862,6 +12147,13 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					//the param should be true for most of the cases, but I use 'xAudio.paused' instead of 'true' for the case lost internet, audio having buffer still playing, now got internet back, we let audio continue playing
 					if (xAudio.paused) {
 						switchPlayPauseButton(1, 1); //enable buttons and show Play icon
+
+						//compare the width of progressBar and its container (parent), if it is equal (or not-possible longer), meaning the audio is paused at the very end of its full duration, we just make it  jump to next chapter
+						if(progressBar.parentElement.offsetWidth <= progressBar.offsetWidth){
+							playNextPrev(1); //play next chapter
+						}
+						//we only reload audio src when there is no audio buffer left, using naive-stupid method to check that condition is to compare the width of progressBar (audio duration played so far) with that of preloadBar (the audio duration has been buffered by browser)
+						if(preloadBar.offsetWidth <= progressBar.offsetWidth)
 						reloadSrc(true); //reload src, force Pause
 					}
 					else
@@ -14614,9 +14906,9 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					const _DEFAULT_PROPS = {
 						displayOneLine: false, //sdd display on only one line when close
 						makeSelectKey: "Ctrl + Shift", //the key that would make active option immediately becoming selected option. See keydown event for more
-						maxHeight: [400, 800], // the range for max-height of dropdown menu (part that contains all options and search box) when it is open. the height of SDD is set so that its bottom when expanded, its bottom almost reaches to bottom of viewport. If the set-height out of this range, the height will be set to either end of the range.
+						maxHeight: [400, 900], // the range for max-height of dropdown menu (div.sdd-dropdown-content - part that contains all options) when it is open. the height of SDD is set so that its bottom, when expanded, almost reaches to bottom of viewport. If the set-height out of this range, the height will be set to either end of the range.
 						//backgroundCSSClass: null, //specify class that would decorate background for SDDDropdownContent. If not specified, the default class for background is .circus-background
-						componentsCssClass: null, //this specify the customized css class for components of SDD, this should be an array of which each item is a json with format: {qs: the query selector which can uniquely identify an component element of SDD, css: the name of css class that apply to the component, style: inline css style for the component}
+						customizedCssClass: null, //this specify the customized css class for components of SDD, this should be a string that specify the name of customized class applied for whole .sdd-wrapper container. If we need to change the css for any component inside .sdd-wrapper, in CSS code we specify the query-selector path for that component and put css for that component inside that path. See changeBook() function for this customized setting for ssData.sddChaptersList
 						searchBoxPlaceholder: "Search in {_items_length} items ...", //🔍 the text that will display as placeholder in search textbox, where {_items_length} would be replaced by the number of items of this dropdown
 						statusBarTimeout: 5000, //the duration in ms that starusBar appear when user filter the items
 						rightAlignInEachOptGroup: true, //for elements that having attribute [data-rAlignGroup] (see more in _DEFAULT_RENDER const below), they will be right align in each optGroup (true) or all SDD
@@ -14667,24 +14959,10 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					_settings.render = Object.assign({}, _DEFAULT_RENDER, _settingParam.render); //render properties
 					_settings.callbacks = Object.assign({}, _DEFAULT_CALLBACKS, _settingParam.callbacks); //callbacks properties
 
-					//set customized css class (mostly background) for some SDD component, such as background for SDD Dropdown Content, decoration for SDD-dropdown-bottom-border. See changeBook() function for this customized setting for ssData.sddChaptersList
-					const _customizedCss = _settings.componentsCssClass;
-					if(_customizedCss && Array.isArray(_customizedCss) && _customizedCss.length > 0){
-						_customizedCss.forEach(_css => {
-							const _element = _sddWrapper.querySelector(_css.qs); //locate the component element
-							//set css class if there is css setting
-							if(_element && _css.css) _element.classList.add(_css.css);
-							//if there is inline-style setting, add it to the element
-							if(_element && _css.style) {
-								//get old inline-style if any
-								const _oldStyle = _element.getAttribute('style');
-								//set the style with new inline-style setting added
-								_element.setAttribute( (_oldStyle ? _oldStyle + ";": "") + _css.style );
-							}
-
-						})
-					}
-		
+					//set customized css class (mostly background) for some SDD component, such as background for SDD Dropdown Content, decoration for SDD-dropdown-bottom-border. See _DEFAULT_PROPS for the detailed explanation, See changeBook() function for this customized setting for ssData.sddChaptersList
+					const _customizedCss = _settings.customizedCssClass;
+					if(_customizedCss) _sddWrapper.classList.add(_customizedCss);
+					
 					// class event callbacks
 					_onChange = _settings.callbacks.onChange;
 					if("function" == typeof _settings.callbacks.notify) _notifyFunction = _settings.callbacks.notify;
@@ -14839,8 +15117,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			<path
 				d="M3.07 79.92c4.32 1.19 29.57 17.12 32.69 10.85.32-.64 2.87-6.24 2.87-6.27l13.62 3.47c.44 1.39-5.97 12.95-7.23 14.27-1.6 1.68-3.21 2.68-4.93 3.57C34.31 108.79 6.82 94.12 0 93.16zm72.78 39.9c.63.24.89 1.1.58 1.93s-1.07 1.31-1.7 1.07l-18.78-7.03c-.63-.24-.89-1.1-.58-1.93s1.07-1.31 1.7-1.07zm10.94-7.69c.63.24.89 1.1.58 1.93s-1.07 1.31-1.7 1.07l-18.78-7.03c-.63-.24-.89-1.1-.58-1.93s1.07-1.31 1.7-1.07zm.33-11.66c.63.24.89 1.1.58 1.93s-1.07 1.31-1.7 1.07l-18.78-7.03c-.63-.24-.89-1.1-.58-1.93s1.07-1.31 1.7-1.07zM22.26 22.99c-.66-.15-1.03-.97-.83-1.83.19-.86.88-1.44 1.54-1.29l19.56 4.41c.66.15 1.03.97.83 1.83-.19.86-.88 1.44-1.54 1.29zm-2.47-10.86c-.66-.15-1.03-.97-.83-1.83.19-.86.88-1.44 1.54-1.29l19.56 4.41c.66.15 1.03.97.83 1.83-.19.86-.88 1.44-1.54 1.29zm5.9-8.98c-.66-.15-1.03-.97-.84-1.83s.88-1.44 1.54-1.29l19.56 4.41c.66.15 1.03.97.83 1.83-.19.86-.88 1.44-1.54 1.29zm13.28 44.06-2.86 17.67c-.58 6.69-.63 11.89 5.95 15 3.44 1.62 4.32 1.42 8.12 2.06l19.27-.42c1.04-.02 26.34 11.02 28.43 12.43l7.83-9.36c1.1-1.31-25.7-14.04-29.63-15.46-18.65-6.72-20.64 10.5-16.9-15.51 3.75 2.9 6.93 3.62 13.62 5.39 8.01 1.1 11.41-.86 17.65-3.7l9.22-4.57-7.14-10.84-7.05 4.2c-.26.12-.92.45-2.08 1.01-2.92 1.07-5.25 1.95-7.25 1.26-6.64-2.32-12.06-12.07-29.81-11.45-24.69.86-22.32-2.09-38.63 17.42l9.79 7.55c7.7-9.21 8.39-11.43 20.79-12.61.23-.04.45-.05.68-.07M59.12 9.04c6.83-3.12 14.89-.11 18 6.72 3.12 6.83.11 14.89-6.72 18-6.83 3.12-14.89.11-18-6.72-3.12-6.83-.11-14.89 6.72-18" />
 		</symbol>			
-		<symbol id="icnSvgSleepTimer" xmlns="http://www.w3.org/2000/svg" viewBox="1.01 1 11.97 12">
-			<path d="M1.893 12.961c-.04-.016-.074-.1-.074-.187 0-.118.11-.266.438-.593l.438-.435.163.143c.09.08.175.151.189.16s-.183.227-.438.484c-.438.44-.538.5-.716.428m4.212-.023c-.48-.086-1.341-.39-1.75-.618C1.96 10.983.906 8.04 1.918 5.506c.807-2.021 2.657-3.335 4.854-3.447 2.55-.13 4.862 1.561 5.54 4.056.19.698.22 1.768.07 2.49a5.52 5.52 0 0 1-3.97 4.22c-.537.145-1.787.206-2.307.113m.11-2.544v-.261l-.54-.017-.54-.017.54-.43.54-.43v-.693H4.398v.556l.37-.019c.204-.01.458-.01.565 0 .193.02.192.02-.368.46l-.562.439-.003.337-.003.337h1.817zm3.927-2.609v-.292l-1.2-.016-1.2-.016 1.2-1.077 1.2-1.077v-.69l-1.568.016-1.567.016v.527h1.216c.669 0 1.214.013 1.211.03-.003.015-.55.517-1.216 1.115-1.192 1.069-1.212 1.09-1.23 1.34-.032.442-.13.416 1.6.416h1.554zm1.273 4.759-.455-.457.18-.171.178-.172.478.479c.452.451.474.486.41.628-.12.26-.294.193-.791-.307M1.186 4.549c-.363-1.036-.148-2.029.6-2.777a2.48 2.48 0 0 1 1.425-.738 2.6 2.6 0 0 1 1.43.173l.255.115-1.79 1.798-1.79 1.799zm9.701-1.445c-.972-.968-1.753-1.776-1.734-1.795.02-.019.19-.092.38-.162.487-.18 1.322-.176 1.796.01a2.73 2.73 0 0 1 1.515 1.516c.177.452.19 1.298.03 1.789-.061.186-.135.353-.165.371s-.849-.759-1.822-1.727z"/>
+		<symbol id="icnSvgSleepTimer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 493 511.92">
+			<path d="M277.16 41.75c49.87 6.77 94.55 29.89 128.47 63.79 40.67 40.67 65.83 96.87 65.83 158.93 0 62.08-25.15 118.28-65.83 158.96a227 227 0 0 1-25.34 21.83l27.24 38.33c5.68 8.18 3.65 19.42-4.54 25.11-8.19 5.68-19.44 3.65-25.12-4.54l-28.28-39.78c-30.84 15.91-65.83 24.89-102.92 24.89-37.7 0-73.23-9.28-104.43-25.69l-26.59 39.71c-5.54 8.28-16.76 10.5-25.04 4.95-8.29-5.55-10.5-16.75-4.95-25.03l26.07-38.95a226 226 0 0 1-24-20.83c-40.68-40.68-65.84-96.89-65.84-158.96 0-62.06 25.17-118.26 65.84-158.93 36.44-36.44 85.34-60.4 139.74-65.03 16.45-1.4 33.38-.97 49.69 1.24m5.6 195.95 65.46-.03v31.57H234.68V239l63.71-63.71h-62.95v-31.57h110.69v30.24zM177.59 355.19l44.18-.03v21.31h-76.64v-20.41l43.01-43h-42.49v-21.31h74.71v20.41zm304.1-210.46c17.29-41.28 15.24-84.52-9.52-113.49-29.69-34.76-83.39-38.75-133.25-14.3 53.01 36.36 101.11 78.78 142.77 127.79m-470.15 1.35C-6.1 104.02-4.01 59.97 21.21 30.45 51.47-4.97 106.18-9.03 156.99 15.88c-54 37.06-103.03 80.26-145.45 130.2m368.56-15.02c-34.14-34.15-81.31-55.27-133.42-55.27-52.1 0-99.28 21.12-133.43 55.27-34.14 34.14-55.26 81.31-55.26 133.42s21.12 99.28 55.26 133.43c34.15 34.14 81.32 55.26 133.42 55.26 52.12 0 99.29-21.12 133.43-55.26 34.14-34.15 55.27-81.32 55.27-133.44 0-52.1-21.12-99.27-55.27-133.41"/>
 		</symbol>
 
 		<!-- Other icons -->
