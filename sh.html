@@ -5440,7 +5440,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 						
 							<div class="flex-button-container">
 								<span class="control-button-flex">
-									<button onclick="DBFiles.checkDBsEditionFromConfig(true);"
+									<button onclick="ssData.setting.handyCheckDBsEdition(true);"
 									data-tooltip="Kiểm tra để tìm xem có phiên bản (edition) mới các file dữ liệu (Database- DB). Nếu có phiên bản mới của một file dữ liệu, bạn có thể cần phải khởi động lại app để cập nhật dữ liệu mới nhật." id="elmCheckDBFilesUpdate">
 										<svg class="!text-[20px] button-svg-img" focusable="false" aria-hidden="true">
 											<use href="#icnSvgCheckDBsUpdate" />
@@ -5810,7 +5810,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 				@flag cacheEnable {@defaults to true} (I rename from original name 'cache'): flag to determine if item with ID or URL is to be cached. if this flag set to false, its promise will not be update the the loadJs internal cache
 				@flag allowExternal {@defaults to true}: flag to handle situations when the DOM already has a script element with the same ID or URL as what loadJS is being told to load. By default, loadJs will ignore the script with similar url (same without parameter) that not loaded by loadJs. If set to false, loadJS will use script elements that already exist in the DOM. To turn off this behavior, set allowExternal to false. 
-				@flag debug {@defaults to true}: flag to show debug message.
+				@flag debug {@defaults to false}: flag to show debug message.
 
 			* @CUSTOMIZED_PROPERTIES 
 				@flag allowReload {@defaults to false}: the flag to tell loadJs to overload the old js file (which also had been loaded by loadJs). I use for config.js to detect if there is new database version or on Setting.addJsDataFiles(). Let see a case when loadJS has loaded a js file, e.g 'data_0.js', now that file is loaded again (also by loadJS), if this flag is missing or false, we can't load again the same file. This is different from @property allowExternal is that  allowExternal compared with js script NOT loaded by loadJS (might be a markup that was hard-coded or dynamiclly loaded by other agency )
@@ -6032,9 +6032,12 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 						allowReload: false, //not allow reload if this script has been loaded before by loadJs
 						freshLoad: false, //using the browser cache if any
 						removeMarkup: true, //remove markkup out of DOM when done loading script
-						debug: true
+						debug: false
 					}
 					options = Object.assign({}, _DEFAULT_OPTIONS, options);
+
+					// if freshload, meaning loading new version of the script without using browser caches or loadJS internal cache, so we must set allowReload = true
+					if(options.freshLoad) options.allowReload = true;
 
 					// if user not specify an id for script, we make one from its url without param
 					let _scriptId = options.id || simpleHash(options.url.split('?')[0]); // make an id from url if option.id is not explicitly specified
@@ -6114,13 +6117,24 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 						bookKitVars.push(key);
 					}
 				}
-				ssData.jsDBFiles.push({ dbName: this.name, dbs : bookKitVars, loadMode: _loadMode});
+
+				// new item of ssData.jsDBFiles for _jsDBName
+				const _newJsDBFile = { dbName: this.name, dbs : bookKitVars, loadMode: _loadMode};
+				// find index of current item in ssData.jsDBFiles having dbName == _jsDBName
+				const _jsDBFileIdx = ssData.jsDBFiles.findIndex(_dbFile => _dbFile.dbName == _jsDBName );
+
+				if(_jsDBFileIdx == -1)
+					// not found, just push it in
+					ssData.jsDBFiles.push(_newJsDBFile);
+				else
+					//found, replace old item with new one
+					ssData.jsDBFiles.splice(_jsDBFileIdx, 1, _newJsDBFile);
 			}
 
-			/** Compare {edt} attribute (edition) from xDBFilesCfg.toLoad[index].edt with _DEFAULT_CFG.cDBFilesEdt.edt[index] to see if there is later version of any of data_{index} DB files. Is there is, turn loadMode of that file to 1 (Fresh load) and (delayed)Notify user about DB files updates.
+			/** Compare {edt} attribute (edition) from xDBFilesCfg.toLoad[index].edt with _DEFAULT_CFG.cDBFilesEdt.edt[index] to see if there is later version of any of data_{index} DB files. If there is, UPDATE edt IMMEDIATELY.
 			 * @param _ivkFrom: invoked from, mostly for controlling the message
 			 * 		@value 0: invoked from loadPage()
-			 * 		@value 1: invoked from DBFiles.checkDBsEditionFromConfig() right below
+			 * 		@value 1: invoked from Setting.handyCheckDBsEdition()
 			 * 		@note: for now, this param is redundant and is not usable
 			 * @return 
 			 * 		@value null is there is no new update on any DB files
@@ -6129,14 +6143,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			static checkDBFilesEdition(_ivkFrom){
 				const _DEF_DB_EDITION = 100; //initial edition of any DBFile
 				
-				//_DBsNeedFreshLoad store DBs (its index as 0,1,... correspoinding with data_0, data_1,...) that need fresh-load (loadMode=1), and in current (or previous) session's Setting, those DB was set loadMode other than 0 (which can be 1 or 2, note that there might be some DBs has freshLoad=2 but has new Edition, so we need to temporarily change loadMode=1 to fresh-Load and change back to 2 later).
-				let _DBsFreshLoadAndShow = [];
-
-				//array store DB fileNo that has new edition, will be fresh loaded in next pageLoad() but not included into book database because those DBs currently set loadMode = 0 (no Show).
-				let _DBsFreshLoadAndHide = [];
-
-				//save all hidden DB that was found new edition in last session (and was changed loadMode to delayFresh), we only found such DB when invoking checkDBFilesEdition from loadPage (_ivkFrom = 0)
-				let _DBsDelayFreshLoadAndHide = [];
+				//array store DB dbName (like 'data_0', 'data_1') that has new edition that is to be fresh load (load ignoring browser'cache).
+				let _DBsHasNewEdition = [];
 				
 				//the counter to count the number of DBs that has NO edt attributes before. This only happen when there is no xDBFilesCfg in local storage (which only the case when the page is loaded very firs time OR local storage has been completely wiped-out)
 				let _DBsLoadedVeryFirstTimeCounter = 0;
@@ -6149,121 +6157,219 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 						_latestDbEdition = i < _DEFAULT_CFG.cDBFilesEdt.edt.length ? _DEFAULT_CFG.cDBFilesEdt.edt[i] :  _DEF_DB_EDITION;
 					}
 
-					const _fileNo = _dbItem.fileNo;
-					
-					//save all hidden DB that was found new edition in last session (and was changed loadMode to delayFresh), we only found such DB when invoking checkDBFilesEdition from loadPage (_ivkFrom = 0)
-					if( _dbItem.loadMode == DBFiles.LMODE.delayFresh )
-						_DBsDelayFreshLoadAndHide.push(_fileNo);
-
 					//if current edition of inspected DBItem is not set yet (when page runs clean - meaning cache and localStore of last session is all wiped out) OR not the lastest (need update)
 					if(!_dbItem.hasOwnProperty("edt") || _dbItem.edt <  _latestDbEdition) {
 						//store DBs already cached but has later edition
 						if(!_dbItem.hasOwnProperty("edt")) _DBsLoadedVeryFirstTimeCounter++;
 
-						//update the edition number
+						//Important: update the edition number IMMEDIATELY and DIRECTLY into xDBFilesCfg.toLoad[index].edt
 						_dbItem.edt =  _latestDbEdition;
 
-						// we need to check for both noShow and delayFresh, because there is case a DB has been marked as delayFresh in last session, but from last session, its edition has change again
-						if( _dbItem.hasOwnProperty("loadMode") && [DBFiles.LMODE.noShow, DBFiles.LMODE.delayFresh].includes(_dbItem.loadMode) ){
-							// add all need-to-fresh-load DB AND currently Show (loadMode=1 or 2) in Setting
-							_DBsFreshLoadAndHide.push(_fileNo);
-							_dbItem.loadMode = DBFiles.LMODE.delayFresh; // turn to delay fresh load so after sucessfullt loading, turn back to noShow
-						}	
-						else {
-							// add all need-to-fresh-load DB AND currently No-Show (loadMode=0) in Setting
-							_DBsFreshLoadAndShow.push(_fileNo); 
-
-							// temporarily set loadMode (for all kind of current loadMode 0,1, or 2) to fresh-load, so that next session the page know to reload the lastest edition of the DB. After successfully load new edition of those DBs, we will change back loadMode = 0 for those loadMode was 0 (in last session), for those loadMode was 1 or 2, we will change to 2 (cache-load)
-							_dbItem.loadMode = DBFiles.LMODE.freshLoad; //fresh load because there is new version
-						}
+						//store dbName of DB having new edition
+						_DBsHasNewEdition.push(_dbItem.dbName);
 					}
 				});				
 
-				const _allNewDBsCount = _DBsFreshLoadAndHide.length + _DBsFreshLoadAndShow.length;
-
-				/** the function to create notification message to user of the detail of new DBs 
-				 * @param _DBarray the array of DBs file_no that need to create message, such as [0, 1, 3]
-				*/
-				const _newDBNotifyMsg = (_DBarray) => {
-					let _msg = '';
-					if(_DBarray.length > 0)
-						_msg = (_msg==''?'': '<br>') + `${_DBarray.length > 1?"Các ":""}CSDL ${ _DBarray.map(t => "<mark style='color:red;font-weight:bold'>data_"+t+"</mark>").join(", ") } có phiên bản mới`;
-					return _msg;
-				}			
-				
-				return _allNewDBsCount > 0 ? 
-					/** format of returned value
-						 * @param loadShow Array of DBs need fresh-load and will be shown
-						 * @param loadHide Array of DBs need fresh-load and will be hidden (DBs stored inside it will not be load to the book list)
-						 * @param delayLoadHide keep all hidden DB that was found new edition in last session (and was changed loadMode to delayFresh), we only found such DB when invoking checkDBFilesEdition from loadPage (_ivkFrom = 0)
-						 * @param noDBsBefore True if the page is loaded very first time (all DBs not yet has edt attribute). its purpose solely to avoid displaying Notification that having new DBs edition when page loaded for very first time (so they are 'new' compared to nothing)
-						 * @param newDBNotifyMsg attach the function to create notification message to user of the detail of new DBs for the sake of re-use
-					*/
-					{loadShow: _DBsFreshLoadAndShow, 
-						loadHide: _DBsFreshLoadAndHide, 
-						delayLoadHide: _DBsDelayFreshLoadAndHide,
-						noDBsBefore: _DBsLoadedVeryFirstTimeCounter == _allNewDBsCount,
-						newDBNotifyMsg: _newDBNotifyMsg
+				return _DBsHasNewEdition.length > 0 ? 
+					{	// array contains dbName of all DB having new edition
+						DBsHasNewEdition: _DBsHasNewEdition,
+						// true if all DB having new edition is actually has no .edt before (meaning page is loaded very first time of just being fully wiped out all its localStorage)
+						noDBsBefore: _DBsLoadedVeryFirstTimeCounter == _DBsHasNewEdition.length
 					} : 
-					//if there is no new DB, return null
+					//if there is no DBs having new edition, return null
 					null;
 			}
 
-			/** Extend function of aboved checkDBFilesEdition, that is: fisrt - load config.js file, and then check the Edition number to find if any DB files has new edition (version) 
-			 * @param _showFailedCheck (boolean): - true show the toast that tell there is no new DBs or failed to load config.js.Otherwise (false - default), not show the message
-			 * @return Array of index (0,1,2) of DB files that has new Edition
-			 * 		Otherwise (no DB files has new version or load config.js failed), return null
+			/** Function to download and load-up all DB script file, update its version into xDBFilesCfg.toLoad[index].dbUrl.
+			 * @param _ivkFrom: invoked from, used for doing some extra work depending on where this function is invoked from, and for controlling the toast message
+			 * 		@value 0: invoked from loadPage()
+			 * 		@value 1: invoked from ssData.setting.handyCheckDBsEdition
+			 * @param _promiseCB {function} the callback function when EACH script promise suceed
+			 * @param _allSettleCB {function} the callback function when ALL scripts promise are settled (does not matter successfully or not)
+			 * @return 
+			 * 		@value array of dbName of all DBs having new edition
 			*/
-			static checkDBsEditionFromConfig(_showFailedCheck = false){
-				//success or not, we need to update this lastDBCheck, otherwise in case of continuos fails (lost internet, for example), page will keep checking updates
-				ssData.lastDBCheck = Date.now(); //update last checked time
-				
-				//"config.js" has no "?v={version_number}" so it will be added in loadJs. This make config.js always in Fresh-load mode. allowReload=true allow config.js is reloaded even it has loaded before by the same old loadJS
-				DBFiles.loadJS( {url: "config.js", allowReload: true} )
-				.then((_ret) => {
-					// this array store list of DB files that has newer editions. If none has or fail to load 'config.js', it is null					
-					//See return in DBFiles.checkDBFilesEdition for the format of returned value
-					let _newEditionDBs = DBFiles.checkDBFilesEdition(1);
-										
-					//Notify user about DBs having new edition and ask them to reload page if necessary
-					if(_newEditionDBs){
+			static importDBfromFiles(_ivkFrom, _promiseCB, _allSettleCB){
+				//make an alias for xDBFilesCfg.toLoad
+				let toLoadArr = xDBFilesCfg.toLoad;
+
+				//check if there is new DB files updated, mark those DBs has new edition or has no cache with loadMode = 1 (fresh Load) so that DBFiles.loadJS will do the rest to load latest version of those new DB files. Note that this function could override loadMode for some DB files on check failCount above
+				// this array store list of DB files that has newer editions. If none has or fail to load 'config.js', it is null. See return in DBFiles.checkDBFilesEdition for the format of returned value
+				let _newEditionDBs = DBFiles.checkDBFilesEdition(0);
+
+				let _DBsHasNewEdition = [];
+				//notify user about DBs having new edition
+				if(_newEditionDBs){
+					/** the function to create notification message to user of the detail of new DBs 
+					 * @param _DBarray the array of DBs file_no that need to create message, such as [0, 1, 3]
+					*/
+					const _newDBNotifyMsg = (_DBarray) => {
 						let _msg = '';
+						if(_DBarray.length > 0)
+							_msg = (_msg==''?'': '<br>') + `${_DBarray.length > 1?"Các ":""}CSDL ${ _DBarray.map(t => "<mark style='color:red;font-weight:bold'>"+t+"</mark>").join(", ") } có phiên bản mới`;
+						return _msg;
+					}
 
-						//empty function
-						let _callback = _ => {};
+					let _msg = '';
 
-						if(_newEditionDBs.loadShow.length > 0){
-							_msg += _newEditionDBs.newDBNotifyMsg(_newEditionDBs.loadShow) + ".";
+					//empty function, this function is used as toast callback when user manually check new edition (when page is running), then it found a shown DB (loadMode = 1,2) having new edition, so when the toast is timed-out, this callback will be invoked to ask user to refesh the page to get new DB updated
+					let _toastCallback = _ => {};
 
-							_callback = _ => {
-								if(confirm("CSDL có phiên bản mới. Cần nạp lại trang Web để cập nhật dữ liệu mới?\n\n Sẽ chỉ mất vài giây. Bạn có muốn nạp lại trang Web ngay bây giờ?"))
+					//get the list of all DBs having new edition
+					_DBsHasNewEdition = _newEditionDBs.DBsHasNewEdition;
+
+					//_newEditionDBs.noDBsBefore = true when all DBs (in xDBFilesCfg.toLoad) load into page not yet has 'edt' attribute, meaning this might be the very first time page is loaded or xState was completely wiped-out
+					if(_newEditionDBs.noDBsBefore){
+						if(_ivkFrom==0 )
+						_msg = 'Sử dụng app lần đầu tiên hoặc dữ liệu lưu của các phiên làm việc trước của app đã bị xóa sạch!';
+					}
+					else{
+						//get all DBs has new edition but is set to be hidden
+						const _DBloadHide = _DBsHasNewEdition.filter(_dbName => 
+							toLoadArr.find(_dbItem => _dbItem.dbName == _dbName).loadMode == DBFiles.LMODE.noShow
+						);
+
+						//get all DBs has new edition and is set to be shown
+						const _DBloadShow = _DBsHasNewEdition.filter(_dbName => !_DBloadHide.includes(_dbName)
+						);
+
+						// show toast for DBs having new edition and also set to be shown
+						if(_DBloadShow.length > 0){
+							let _localMsg = _newDBNotifyMsg(_DBloadShow);
+							if(_localMsg != '')
+								_msg += _localMsg + ', đã được App tự động ' + (_ivkFrom == 0? 'cập nhật.' : 'tải xuống (Dữ liệu mới chỉ cập nhật khi nạp lại trang Web.).');
+						}
+
+						// show toast for DBs having new edition but set to be hidden
+						if(_DBloadHide.length > 0){
+							let _localMsg = _newDBNotifyMsg(_DBloadHide);
+							if(_localMsg != '')
+								_msg += (_msg == ''? '': '<br>') + _localMsg + ', đã được App tự động cập nhật nhưng đang ở chế độ ẩn.';
+						}
+
+						//set toast callback when is invoked from Setting.handyCheckDBsEdition()
+						if(_DBloadHide.length < _DBsHasNewEdition.length && _ivkFrom == 1)
+						_toastCallback = _ => {
+								if(confirm("CSDL có phiên bản mới. Cần nạp lại trang Web để cập nhật dữ liệu mới.\n\n Sẽ chỉ mất vài giây. Bạn có muốn nạp lại trang Web ngay bây giờ?"))
 								//Force a hard reload to clear the cache if supported by the browser
 									window.location.reload(true);
 							}
-						}
-
-						if(_newEditionDBs.loadHide.length > 0){
-							let _localMsg = _newEditionDBs.newDBNotifyMsg(_newEditionDBs.loadHide);
-							if(_localMsg != '')
-								_msg += (_msg==''?'': '<br>') + _localMsg + ', nhưng đang ở chế độ ẩn. Sẽ được App tự động cập nhật khi nạp lại trang Web.';
-						}
-
-						toast.showToast(_msg, toast.ToastType.Infor, {duration: 1.5e4, cbEnd: _callback});
 					}
-					else if(_showFailedCheck) toast.showToast("Cơ sở dữ liệu hiện có đã là mới nhất.", toast.ToastType.Infor, {duration: 1e4});
 
-					//fire event that notifying that DBs has just been checked for updates, so the Settinng modal will update accordingly in case user are opening it (see Setting.addJsDataFiles() function which catch this event to update the last time checking DBs edition)
-					window.dispatchEvent(new CustomEvent("DbsFileGotNewEdition", {
-						detail: { updateDBs: _newEditionDBs, caller: 'DBFiles.checkDBsEditionFromConfig' }
-					}));
+					if(toast && _ivkFrom == 1)
+						toast.showToast(_msg, toast.ToastType.Infor, {duration: 1.5e4, cbEnd: _toastCallback}); 
+					else
+						//since Toast object has not been loaded, so we put it into delayedNotification
+						ssData.delayedNotification.push({msg: _msg, option: {duration: 1.5e4}});
+				}
+				
+				
+				const _newDBcheck = _dbItem => {
+					if(_DBsHasNewEdition.length == 0) return false;
+					return Boolean( _DBsHasNewEdition.find(_dbName => _dbItem.dbName == _dbName) );
+				}
+				const _filterFnc = _dbItem => {
+					//const _newDBcheck = _dbName => 
+					if(_ivkFrom == 0){
+						/* call from loadPage(), we need to load all DB that match one of following condition:
+						 a) cacheLoad (2) or freshLoad (1)
+						 b) all DB (even in noShow(0) mode) but has new edition. Some DB of this condition might already be in condition a) */
+						return _dbItem.loadMode != DBFiles.LMODE.noShow || _newDBcheck(_dbItem);
+					}
+					else {
+						// call from Setting.handyCheckDBsEdition(), just load the DB has new edition
+						return _newDBcheck(_dbItem);
+					}
+				}
+				//store array of script url and its option to load into loadJs
+				//loadMode: 0 - No Show. 1- Fresh load, No Cache. 2-load, using cache if applicable.
+				let _jsDataFiles = toLoadArr.filter( _dbItem => _filterFnc(_dbItem) ) //filter item to be loaded (has loadMode 1 or 2)
+				.map( _dbItem =>  ({
+					url: _dbItem.dbUrl,
+					//removeMarkup: since we don't set value for this flag, its default value would be true, meaning the script markup would be removed out of DOM after being loaded (sucess or fail), so other would not see any markup in the DOM for those config.js and data_*.js files
+					//allowReload: true, //removed because when freshLoad = true, allowReload also set to true
+					freshLoad: _dbItem.loadMode == DBFiles.LMODE.freshLoad || _newDBcheck(_dbItem), //script should ignore browser's cache if its loadMode is freshLoad or it has new edition (does not matter what its loadMode is)
+					//see DBFiles.loadJS for explanation of some properties of extAttr
+					extAttr: {
+						fileNo: _dbItem.fileNo, // this actually can derived from jsDBName below
+						jsDBName: _dbItem.dbName, 
+						loadMode: _dbItem.loadMode //this property actually not use
+					} 
 				})
-				.catch(err => {
-					console.error(err);
-					if(_showFailedCheck) toast.showToast("Không nạp được file config.js.", toast.ToastType.Error, {duration: 1e4});
-				});
+				); //map into format of options for loadJS()
 
-				//return _DBsHasNewEdition; //array of updated DB files or null 
-			}
+				DBFiles.loadJS(_jsDataFiles)
+				.then((_res) => {
+					_res.forEach(_prom => {
+						// for success loaded db file: add data to data collected variable ssData.jsDBFiles
+						if(_prom.status === "fulfilled"){
+							// because of Promise.allSettled in loadJS, so _prom.value point to script elements created inside createLoadJS
+							const _scriptElm = _prom.value;
+							const _extAttr = _scriptElm.extAttr;
+							const _jsDBName = _extAttr.jsDBName; //something like 'data_0'
+
+							//xDBFilesCfg.toLoad corresponding with current script
+							const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
+							
+							//this should never happen
+							if(!_dbFileCfgItm) return console.log('importDBfromFiles(): somehow there is a database script element that not found in xDBFilesCfg.toLoad');
+
+							//reset failCount
+							_dbFileCfgItm.failCount = 0;
+
+							// If flag freshLoad is set to true (when loadMode=1), loadJS.exec() will change version number in script url. So, we need to update dbUrl accordingly, so next time load the page, the page would use the right version from the browser's cache (because the browser's cache only keep the last version of script)
+							_dbFileCfgItm.dbUrl = _scriptElm.extAttr.urlVersion;
+
+							//if DB file having loadMode == DBFiles.LMODE.noShow then clean its data since those data would not be shown in books list
+							if( _dbFileCfgItm.loadMode == DBFiles.LMODE.noShow ){ //delayFresh
+								//_dbFileCfgItm.loadMode = DBFiles.LMODE.noShow; //change back loadMode to 0
+								//_scriptElm.loadMode = 0;
+
+								//console.warn(`loadPage(): Database file ${_dbFileCfgItm.dbUrl} has change loadMode from -2 to 0 (the page just temporarily load its new edition but not show its data since it is set in hidden-mode in User-setting)`);
+
+								//delete the global variable for data that set hidden to save memory
+								window[_jsDBName] = undefined;
+							}
+							else{
+								// if fresh-load, then change loadMode to cache-load for next session
+								if(_dbFileCfgItm.loadMode == DBFiles.LMODE.freshLoad) {
+									_dbFileCfgItm.loadMode = DBFiles.LMODE.cacheLoad;
+									console.warn(`importDBfromFiles(): Database file ${_dbFileCfgItm.dbUrl} has change loadMode from 1 to 2 (Load from Browser's Cache on next session)`);
+								}
+							}
+
+							if(_ivkFrom == 0 && 'function' == typeof _promiseCB)
+								// load DB into ssData.jsDBFiles (so books inside that DB would be show in this session) if it is not in no-show mode (loadMode !=0)
+								_promiseCB(_scriptElm);
+								//DBFiles.deployDB.call(window[_jsDBName], _jsDBName, _extAttr.loadMode);
+							
+							if(_ivkFrom == 1 && 'function' == typeof _promiseCB)
+								_promiseCB(); // for now Setting.handyCheckDBsEdition has set no function for this callback
+						}
+						// for failed loaded db file: 
+						else if(_prom.status === "rejected"){
+							/* most likely the database file not exist */
+
+							//_prom.reason.target point to script elements created inside createLoadJS
+							const _scriptElm = _prom.reason.target;
+							const _jsDBName = _scriptElm.extAttr.jsDBName;
+
+							//mark loadMode of failly-loaded database file to be 'No Show' and increase failCount
+							const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
+							if(_dbFileCfgItm){
+								_dbFileCfgItm.loadMode = DBFiles.LMODE.noShow;
+								if(typeof _dbFileCfgItm.failCount == 'number')_dbFileCfgItm.failCount++; else _dbFileCfgItm.failCount = 1;
+								console.log(`Database file ${_dbFileCfgItm.dbUrl} has change loadMode to 0 (No show on next session)`);
+							}
+						}
+					});
+
+					if('function' == typeof _allSettleCB) _allSettleCB();
+
+					
+				})
+				return _DBsHasNewEdition;
+			}			
 		}
 
 		/* Function is called at the very beginning when page is load. It does:
@@ -6365,122 +6471,35 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					if(_dbItem.loadMode == DBFiles.LMODE.cacheLoad && _dbItem.failCount > _DB_MAX_FAILCOUNT) _dbItem.loadMode = DBFiles.LMODE.noShow;
 				});
 
-				//check if there is new DB files updated, mark those DBs has new edition or has no cache with loadMode = 1 (fresh Load) so that DBFiles.loadJS will do the rest to load latest version of those new DB files. Note that this function could override loadMode for some DB files on check failCount above
-				// this array store list of DB files that has newer editions. If none has or fail to load 'config.js', it is null. See return in DBFiles.checkDBFilesEdition for the format of returned value
-				let _newEditionDBs = DBFiles.checkDBFilesEdition(0);
-				//notify user about DBs having new edition
-				if(_newEditionDBs){
-					let _msg = '';
-
-					//_newEditionDBs.noDBsBefore = true when all DBs (in xDBFilesCfg.toLoad) load into page not yet has 'edt' attribute, meaning this might be the very first time page is loaded or xState was completely wiped-out
-					if(_newEditionDBs.noDBsBefore){
-						_msg = 'Sử dụng app lần đầu tiên hoặc dữ liệu lưu của các phiên làm việc trước của app đã bị xóa sạch!';
-					}
-					else{
-						if(_newEditionDBs.loadShow.length > 0){
-							_msg += _newEditionDBs.newDBNotifyMsg(_newEditionDBs.loadShow) + ", đã được App tự động cập nhật.";
-						}
-
-						if(_newEditionDBs.delayLoadHide.length > 0){
-							let _localMsg = _newEditionDBs.newDBNotifyMsg(_newEditionDBs.delayLoadHide);
-							if(_localMsg != '')
-								_msg += (_msg==''?'': '<br>') + _localMsg + ' (phát hiện từ phiên làm việc trước) đã được App tự động cập nhật, nhưng đang ở chế độ ẩn.';
-						}
-
-						if(_newEditionDBs.loadHide.length > 0){
-							let _localMsg = _newEditionDBs.newDBNotifyMsg(_newEditionDBs.loadHide);
-							if(_localMsg != '')
-								_msg += (_msg==''?'': '<br>') + _localMsg + ' đã được App tự động cập nhật, nhưng đang ở chế độ ẩn.';
-						}
-					}
-					//since Toast object has not been loaded, so we put it into delayedNotification
-					ssData.delayedNotification.push({msg: _msg, option: {duration: 1.5e4}});
-				}
-								
-				//store array of script url and its option to load into loadJs
-				//loadMode: 0 - No Show. 1- Fresh load, No Cache. 2-load, using cache if applicable.
-				let _jsDataFiles = toLoadArr.filter(_dbItem => _dbItem.loadMode != DBFiles.LMODE.noShow) //filter item to be loaded (has loadMode 1 or 2)
-				.map( _dbItem =>  ({
-					url: _dbItem.dbUrl,
-					//removeMarkup: since we don't set value for this flag, its default value would be true, meaning the script markup would be removed out of DOM after being loaded (sucess or fail), so other would not see any markup in the DOM for those config.js and data_*.js files
-					freshLoad: [DBFiles.LMODE.freshLoad, DBFiles.LMODE.delayFresh].includes(_dbItem.loadMode), //to tell if script should be fresh-load or cache-load 
-					//see DBFiles.loadJS for explanation of some properties of extAttr
-					extAttr: {
-						fileNo: _dbItem.fileNo, // this actually can derived from jsDBName below
-						jsDBName: _dbItem.dbName, 
-						loadMode: _dbItem.loadMode //this property actually not use
-					} 
-				})
-				); //map into format of options for loadJS()
-
 				ssData.jsDBFiles = []; //initialize jsFiles for deployDB() to put data into
 
-				DBFiles.loadJS(_jsDataFiles)
-				.then((_res) => {
-					_res.forEach(_prom => {
-						// for success loaded db file: add data to data collected variable ssData.jsDBFiles
-						if(_prom.status === "fulfilled"){
-							// because of Promise.allSettled in loadJS, so _prom.value point to script elements created inside createLoadJS
-							const _scriptElm = _prom.value;
-							const _extAttr = _scriptElm.extAttr;
-							const _jsDBName = _extAttr.jsDBName; //something like 'data_0'
+				/** function to be invoked as a callback for importDBfromFiles() each time a script promise successfully loaded 
+				 * @param _scriptElem {promise} the script promise that wrap script element
+				*/
+				const _promiseCB = _scriptElm => {
+					const _extAttr = _scriptElm.extAttr;
+					const _jsDBName = _extAttr.jsDBName; //something like 'data_0'
+					//xDBFilesCfg.toLoad corresponding with current script
+					const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
 
-							//re-set failCount to 0
-							const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
-							
-							//this should never happen
-							if(!_dbFileCfgItm) return console.log('loadPage(): somehow there is a database script element that not found in xDBFilesCfg.toLoad');
-
-							//reset failCount
-							_dbFileCfgItm.failCount = 0;
-
-							// If flag freshLoad is set to true (when loadMode=1), loadJS.exec() will change version number in script url. So, we need to update dbUrl accordingly, so next time load the page, the page would use the right version from the browser's cache (because the browser's cache only keep the last version of script)
-							_dbFileCfgItm.dbUrl = _scriptElm.extAttr.urlVersion;
-
-							// DB file number
-							const _fileNo = _extAttr.fileNo; //Number(_jsDBName.match(/_(\d+)/)[1]);
-
-							//if DB file having loadMode == DBFiles.LMODE.delayFresh (one was hidden but found new edition in last page session), we need change back its loadMode = 0 (as it is set in previous session) and clean its data since those data would not be shown in books list
-							if( _dbFileCfgItm.loadMode == DBFiles.LMODE.delayFresh ){
-								_dbFileCfgItm.loadMode = DBFiles.LMODE.noShow; //change back loadMode to 0
-								//_scriptElm.loadMode = 0;
-
-								console.warn(`loadPage(): Database file ${_dbFileCfgItm.dbUrl} has change loadMode from -2 to 0 (the page just temporarily load its new edition but not show its data since it is set in hidden-mode in User-setting)`);
-
-								//delete the global variable for data that was delayFresh to save memory
-								window[_jsDBName] = undefined;
-							}
-							else{
-								// if fresh-load, then change loadMode to cache-load for next session
-								if(_dbFileCfgItm.loadMode == DBFiles.LMODE.freshLoad) {
-									_dbFileCfgItm.loadMode = DBFiles.LMODE.cacheLoad;
-									console.warn(`loadPage(): Database file ${_dbFileCfgItm.dbUrl} has change loadMode from 1 to 2 (Load from Browser's Cache on next session)`);
-								}
-
-								// load DB into ssData.jsDBFiles (so books inside that DB would be show in this session) if it is not in no-show mode (loadMode !=0)
-								DBFiles.deployDB.call(window[_jsDBName], _jsDBName, _extAttr.loadMode);
-							}
-						}
-						// for failed loaded db file: 
-						else if(_prom.status === "rejected"){
-							/* most likely the database file not exist */
-
-							//_prom.reason.target point to script elements created inside createLoadJS
-							const _scriptElm = _prom.reason.target;
-							const _jsDBName = _scriptElm.extAttr.jsDBName;
-
-							//mark loadMode of failly-loaded database file to be 'No Show' and increase failCount
-							const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
-							if(_dbFileCfgItm){
-								_dbFileCfgItm.loadMode = DBFiles.LMODE.noShow;
-								if(typeof _dbFileCfgItm.failCount == 'number')_dbFileCfgItm.failCount++; else _dbFileCfgItm.failCount = 1;
-								console.log(`Database file ${_dbFileCfgItm.dbUrl} has change loadMode to 0 (No show on next session)`);
-							}
-						}
-					});					
-					init();
-				})
+					//note that the case loadMode==noShow (0), importDBfromFiles() has taken care to delete the global variable for data that set hidden to save memory. Here, we only do the deploy data inside database that set to be shown: cacheLoad(2), freshLoad(1)
+					if(_dbFileCfgItm.loadMode > 0)
+					DBFiles.deployDB.call(window[_jsDBName], _jsDBName, _extAttr.loadMode);
+				}
+				//now, actually download the DB script file and deploy data inside (if DB is not in hidden mode), then run the init()
+				DBFiles.importDBfromFiles(
+					//mark that invoke from loadPage()
+					0, 
+					//callback function which will be invoked each time a DB script file is loaded succesfully
+					_promiseCB,
+					//callback function which is invoked when all DBs has been loaded (each might be sucessful or failed)
+					init
+				);
 			})
+			.catch(err => {
+				console.error(err);
+				alert("Không nạp được file config.js, trang Web không thể hoạt động.");
+			});
 		}
 	</script>
 
@@ -7514,8 +7533,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				let _idx = 0, _xData = [];
 				//Variable {dataSize} is used to built ssData.bookKitInfor and get bookKit father id for each bookSet in xBookGrp 
 				let dataSize = [{ idx: 0, name: "", eName: "" }];
-				//iterate through each DB file
-				ssData.jsDBFiles.forEach(_dbFile => {
+				//iterate through each DB file having loadMode cacheLoad(2) or freshLoad(1)
+				ssData.jsDBFiles.filter(_dbFile => _dbFile.loadMode > 0).forEach(_dbFile => {
 					const _dbFileName = _dbFile.dbName; //the name of DB file also the name of DB variable that file contain, such as data_0 (without '.js' extension)
 
 					//iterate through each bookKit inside DB variable (each DB file has only one DB variable with the same name, such as data_0)
@@ -8856,8 +8875,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 					
 					//check for DB files update
 					if(!ssData.hasOwnProperty("lastDBCheck") || (Date.now() - ssData.lastDBCheck > 1000 * _DEFAULT_CFG.cDBFilesEdt.checkEdtDelay)){
-						//check if there is new DB files updated, mark their loadMode=1 (fresh Load) and ask user to hard-reload the page to update the DBs changes. Note that this function could override loadMode for some DB files on check failCount above
-						const _DBsHasNewEdition = DBFiles.checkDBsEditionFromConfig();					
+						//check if there is any DB files having new edition, download them. Among them, if there is a DB file that its loadMode currently set to cacheLoad or freshLoad, ask user to reload the page to update the new data inside those DB
+						const _DBsHasNewEdition = ssData.setting.handyCheckDBsEdition(false);					
 					}
 				}, false);
 				window.addEventListener('blur', (event) => {
@@ -11185,7 +11204,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			//store one copy of xState.grpCfg when openning the setting then compare later when close setting to see if there is any change in current groupLine
 			let _xGrpCfgSetting = [];
 			//contains a copy of xDBFilesCfg global variables to track-changes if user has change the setting (loadMode, order) in DB files
-			let _xDBFilesCfgSetting = {};
+			let _xDBFilesCfg_filtered_toLoadSetting = {};
 
 			/* Function to deal with adding Database files and display its content including db variables, Book Kits inside and books in each bookKit */
 			function addJsDataFiles(){
@@ -11209,13 +11228,15 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 						${_SEPARATOR}<var attr-duration="${_dbSummary.totalDur}">${toHhMmSs(_dbSummary.totalDur / xState.speed, _verbose? 1: 0)}</var></dfn>`;
 				}
 					
-				/* Display information of all Book of a Book Kit - which is a database variable whose name is _jsDBName (see the code)
-				_failCount == undefined (is missing)
+				/** Display information of all Book of a Book Kit - which is a database variable whose name is _jsDBName (see the code)
+				 * @param _liElem {HTMLElement} the li element of ol#lstJsFileDataSetting element. We extract dbName from this _liElem, and use the global variable has that {dbName} to extract information and put on _liElem
+				 * @param _failCount 
+					@value == undefined (is missing)
 					- show Book infor if _jsDBName has data
 					- show notification if variable whose name is {_jsDBName} not exists
-				_failCount == number (usually > 10): show error notification
+					@value _failCount == number (usually > 10): show error notification
 
-				Return: - null if {_jsDBName} not exists
+				 * @return: - null if {_jsDBName} not exists
 						- json in format {bookSetsCount: , booksCount: , chaptersCount: , totalDur: } store statistics for the whole database inside DB files
 				*/
 				function addJsDataFilesDetails(_liElem, _failCount){
@@ -11292,15 +11313,11 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				//remove mark of dragged li of last time using setting
 				lstJsFileDataSetting.querySelectorAll("li.beingPlay").forEach(_li => _li.classList.remove("beingPlay") );
 
-				//make sure this deploy run only once in one session
-				if (!lstJsFileDataSetting.hasAttribute("controlDeployed")) lstJsFileDataSetting.setAttribute("controlDeployed", "done")
-				else return;
-
 				/* Load detailed information for each DB files */
 				let toLoadArr = xDBFilesCfg.toLoad;
 				lstJsFileDataSetting.innerHTML = ""; //clear the last book dropdown list
 				let gStt = 1;
-				for (let j = 0; j < xDBFilesCfg.len; j++) {
+				for (let j = 0; j < toLoadArr.length; j++) {
 					let _jsFileItem = toLoadArr[j];
 					
 					let _liGrpTitle = document.createElement('li');
@@ -11343,14 +11360,15 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 							extAttr: {
 								fileNo: _jsFileItem.fileNo, //this property is actually not use
 								jsDBName: _jsDBName, 
-								loadMode: DBFiles.LMODE.tempLoad, //to mark that this load js not for adding data to xData, it is for showing book and book kit for user to decide or not to show this database next session. This might not be neccessary since in .then(), .catch() below we don't update back loadMode into xDBFiles, so we can set this loadMode to DBFiles.LMODE.cacheLoad or DBFiles.LMODE.freshLoad
+								loadMode: _jsFileItem.loadMode
+								//Old: DBFiles.LMODE.tempLoad, //to mark that this load js not for adding data to xData, it is for showing book and book kit for user to decide or not to show this database next session. This might not be neccessary since in .then(), .catch() below we don't update back loadMode into xDBFiles, so we can set this loadMode to DBFiles.LMODE.cacheLoad or DBFiles.LMODE.freshLoad
 							}
 						})
 						.then((_prom) => {
-							// add data to data collected variable ssData.jsDBFiles
-							
 							// Here we run loadJS for a single DB file, so _prom point to script elements created inside createLoadJS()
 							const _jsDBName = _prom.extAttr.jsDBName;
+
+							// add data to data collected variable ssData.jsDBFiles
 							if(typeof window[_jsDBName] == "object")
 							DBFiles.deployDB.call(window[_jsDBName], _jsDBName, _prom.extAttr.loadMode);
 							
@@ -11389,6 +11407,10 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				const _DBStatisticselem =document.querySelector('[name="DBStatistics"]');
 				const _nextCheckText = window.innerWidth > 500? "Lần tự động kiểm tra phiên bản DB tiếp theo: " : "Next auto-check for new DBs edition: ";
 				_DBStatisticselem.innerHTML = statisticsHTML(_wholeStatistics, true) + `<br/><dfn name='lastCheckDBUpdateStatus'>${_nextCheckText}<mark style='color:darkred' data-tooltip='Khoảng cách giữa hai lần tự động kiểm tra là ${toHhMmSs(_DEFAULT_CFG.cDBFilesEdt.checkEdtDelay, 2)}'></mark></dfn>`;
+
+				//make sure the following event handler run only once in one session
+				if (!lstJsFileDataSetting.hasAttribute("controlDeployed")) lstJsFileDataSetting.setAttribute("controlDeployed", "done")
+				else return;
 
 				const _checkDBUpdateElem = _DBStatisticselem.querySelector('dfn[name="lastCheckDBUpdateStatus"] > mark');
 				function updateLastDBsEditionCheck(event) {
@@ -11465,6 +11487,53 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				})(); //allow drag&drop right when new list is populated
 			}
 			
+			/** Function to reload 'config.js', chech edition number to see if there is any DBs having new edition. If there are, download the new edition (and version) of those DBs. If among them, there is DBs that currently not in hidden mode (loadMode = cacheLoad(2) or freshLoad(1)), ask user to restart the page to get data inside those DBs got updated
+			 * @param _showFailedCheck (boolean): - true show the toast that tell there is no new DBs or failed to load config.js.Otherwise (false - default), not show the message
+			 * @return nothing
+			*/
+			function _handyCheckDBsEdition(_showFailedCheck = false){
+				//success or not, we need to update this lastDBCheck, otherwise in case of continuos fails (lost internet, for example), page will keep checking updates
+				ssData.lastDBCheck = Date.now(); //update last checked time
+
+				//function to run after all script load is settled down and its general information is shown up in Setting modal tab
+				function _allSettleCallback(){
+					const _radioTabJsFileDataSetting = document.getElementById("radioTabJsFileDataSetting");
+					delete _radioTabJsFileDataSetting.dataset.beenActive;
+					//if the tab-content is appeared in user view
+					if(_radioTabJsFileDataSetting.nextElementSibling.nextElementSibling.offsetParent){
+						//reloading the tab to update the change of DB version, edition and especially content (even just book name and some statisticals)
+						addJsDataFiles();
+					}
+				}
+				
+				//"config.js" has no "?v={version_number}" so it will be added in loadJs. This make config.js always in Fresh-load mode. allowReload=true allow config.js is reloaded even it has loaded before by the same old loadJS
+				DBFiles.loadJS( {url: "config.js", allowReload: true} )
+				.then((_ret) => {
+					// this array store list of DB files that has newer editions. If none has or fail to load 'config.js', it is null					
+					//See return in DBFiles.checkDBFilesEdition for the format of returned value
+					let _DBsHasNewEdition = DBFiles.importDBfromFiles(
+						//mark that invoke from Setting.handyCheckDBsEdition()
+						1,
+						//callback function which will be invoked each time a DB script file is loaded succesfully
+						null,
+						//callback function which is invoked when all DBs has been loaded (each might be sucessful or failed)
+						_allSettleCallback
+					);
+
+					//if there is no DBs has new edition
+					if(_showFailedCheck && _DBsHasNewEdition.length==0) toast.showToast("Cơ sở dữ liệu hiện có đã là mới nhất.", toast.ToastType.Infor, {duration: 1e4});
+
+					//fire event that notifying that DBs has just been checked for updates, so the Settinng modal will update accordingly in case user are opening it (see Setting.addJsDataFiles() function which catch this event to update the last time checking DBs edition)
+					window.dispatchEvent(new CustomEvent("DbsFileGotNewEdition", {
+						detail: { updateDBs: _DBsHasNewEdition, caller: 'Setting.handyCheckDBsEdition' }
+					}));
+				})
+				.catch(err => {
+					console.error(err);
+					if(_showFailedCheck) toast.showToast("Không nạp được file config.js.", toast.ToastType.Error, {duration: 1e4});
+				});
+			}
+
 			/** to list listening history  */
 			function addListeningHistory(){
 				let _hist = xState.history;
@@ -11990,6 +12059,12 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				}, 1000);				
 			}			
 			
+			/** function to filter to keep only dbName and loadMode properties of toLoad array, so the page will not false-alarm that there is a change in DB setting (even change might be on dbUrl or edition), filter this way, we will know exactly when user change the loadMode of a DB
+			 * @param _DBFileCfg kind of _DBFileCfg
+			 * @return let say an item of @param _DBFileCfg.toLoad is '{"fileNo":3,"dbName":"data_3","dbUrl":"data_3.js?v=178","loadMode":0,"failCount":0,"edt":117}', the returned json of that item now is only {"dbName":"data_3", "loadMode":0}
+			*/
+			const _filterDBFileCfg = _DBFileCfg => xDBFilesCfg.toLoad.map(_itm => { return {dbName: _itm.dbName, loadMode: _itm.loadMode} });
+
 			/* When setting modal shows up */
 			function openSettingModal() {
 				//make a deep copy of xState.toastCfg to track changes
@@ -11999,7 +12074,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 				_xGrpCfgSetting = structuredClone(xState.grpCfg);
 
 				//make a deep copy of xDBFilesCfg to track changes
-				_xDBFilesCfgSetting = structuredClone(xDBFilesCfg);
+				_xDBFilesCfg_filtered_toLoadSetting = structuredClone( _filterDBFileCfg(xDBFilesCfg) );
 
 				document.getElementById("modalSettingPopup").classList.add("activeModalPopup"); //show the modal
 
@@ -12057,7 +12132,7 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 
 				//check if there is any changes in DB files settings
 				//TODO: note that when addJsDataFiles() trying to load a DBfile that has loadMode = 0 (no show) and its failed, then xDBFilesCfg.toLoad[idx].failCount would increase by 1 (see the .catch in addJsDataFiles()), so the below objsEqual() will return @true even if there is no user-change in the DBfiles setting, thus it will false-alarm the user that there is a change.
-				if( !objsEqual(_xDBFilesCfgSetting, xDBFilesCfg) ){
+				if( !objsEqual(_xDBFilesCfg_filtered_toLoadSetting, _filterDBFileCfg(xDBFilesCfg)) ){
 					if (confirm("Có thay đổi trong Database Files Setting.\nBạn có muốn nạp lại trang Web?")) 
 						//Force a hard reload to clear the cache if supported by the browser
 						window.location.reload(true);
@@ -12070,7 +12145,8 @@ Following are settings for Desktop screen. "pointer: coarse" is for iphone/iPad 
 			/* PUBLIC METHOD */
 			return {
 				openSettingModal: openSettingModal,
-				closeSettingModal: closeSettingModal				
+				closeSettingModal: closeSettingModal,
+				handyCheckDBsEdition: _handyCheckDBsEdition
 			};
 		}
 
