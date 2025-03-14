@@ -30,26 +30,10 @@
 		}
 
 		body {
-			/* Font size of Chapter title (span) in Playlist item (li) */
-			--playlist-item-title-font-size: 21px;
-			--playlist-item-title-font-weight: 400;
-			--button-hover-bground-color: #e5e7eb;
-			/* the filter that shift color of backgound svg image of select boxes from Black to --button-hover-bground-color */
-			--button-hover-border-color: #8d28a5;
-			--button-border-style: 1px solid #bdbec0;
-
-			--select-hover-bground-filter: invert(19%) sepia(33%) saturate(6688%) hue-rotate(278deg) brightness(91%) contrast(89%);
-			
+			/* Fun corner: change color of selBookGroup and elmSelBookTitles by the selected value of selBookGroup */
 			--select-book-group-color: darkblue;
 			/* filter to change color from Black to darkblue */
-			--select-book-group-filter: invert(14%) sepia(49%) saturate(4923%) hue-rotate(236deg) brightness(81%) contrast(147%);
-
-			/* Fun corner: change color of selBookGroup and elmSelBookTitles by the selected value of selBookGroup */
-			/* &:has(#selBookGroup > option:nth-of-type(1):checked){
-				--select-book-group-color: darkblue;
-				/* filter to change color from Black to darkblue * /
-				--select-book-group-filter: invert(14%) sepia(49%) saturate(4923%) hue-rotate(236deg) brightness(81%) contrast(147%);
-			} */
+			--select-book-group-filter: invert(14%) sepia(49%) saturate(4923%) hue-rotate(236deg) brightness(81%) contrast(147%);			
 
 			&:has(#selBookGroup > option:nth-of-type(2):checked) {
 				--select-book-group-color: darkred;
@@ -64,7 +48,14 @@
 
 		/* SETTING SOME VARIABLE TO CUSTOMIZE THE PAGE */
 		:root {
-			
+			/* Font size of Chapter title (span) in Playlist item (li) */
+			--playlist-item-title-font-size: 21px;
+			--playlist-item-title-font-weight: 400;
+			--button-hover-bground-color: #e5e7eb;
+			--select-hover-bground-filter: invert(19%) sepia(33%) saturate(6688%) hue-rotate(278deg) brightness(91%) contrast(89%);
+			/* the filter that shift color of backgound svg image of select boxes from Black to --button-hover-bground-color */
+			--button-hover-border-color: #8d28a5;
+			--button-border-style: 1px solid #bdbec0;
 		}
 
 		audio {
@@ -73,7 +64,14 @@
 		}
 
 		div[name="divContainer"] {
-			/* Choose divContainer becauss this div is innermost element that contain both playPause button. Remove this if you don't want circle progress buttons */			
+			/* Choose divContainer becauss this div is innermost element that contain both playPause button. Remove this if you don't want circle progress buttons */
+			/* Following 3 vars are for icnSvgPlayProgress */
+			--audio-playing-current-progress-percent: 383px;
+			/* stroke-dashoffset to show effect of percentage of current playing */
+			--audio-playing-current-progress-remained-color: #8f8f8f;
+			/* remained color: #abef83 rgb(135, 243, 102)*/
+			--audio-playing-current-progress-played-color: #21ff15;
+			/* Progressed color #ff4015*/
 
 			width: 100%;
 			/* 100vw 1vw = 1% of viewport width. Default width of the page is all screen */
@@ -383,9 +381,7 @@
 
 			max-width: 100%;
 			/* max-height: 0px; */
-			overflow: hidden;
-			/* transition: padding .1s ease, max-height 1s ease-out; */
-			/* , border 0ms 400ms linear; */
+			overflow: hidden;			
 			
 			/* animation adapt from https://css-tricks.com/almanac/rules/s/starting-style/ */
 			opacity: 0;
@@ -393,11 +389,6 @@
 			/* the allow-discrete value will make properties like display wait until the end of the transition to switch to none */
 			transition: opacity .75s ease-in, display .75s allow-discrete;
 		}
-
-		/* details+div.detailContent#elmChapterInfor {
-			/* transition: max-height .5s ease-out; * /
-			/* chapter infor really short, so if animation time too long, the animation seems not smooth * /			
-		} */
 
 		details[open]+div.detailContent {
 			/* Set a max-height value enough to show all the content */
@@ -492,6 +483,7 @@
 			font-weight: bold;
 			color: green;
 			/* margin-top: -2px; */
+			/* margin: auto 0px; */
 			font-size: xx-large;
 
 			/* Prevent user select the timer text when double click on it */
@@ -512,14 +504,10 @@
 			& > .plt-slash{
 				/* padding: 0 5px; */
 				width: 1em;
-				color: #000;				
-				/* font-size: 1.2em; */
-				/* margin-top: -3px; */
-				
-				/* these two are already set right above*/
-				/* display: flex;
-				align-items: center; */
 				justify-content: center;
+				/* margin-top: -3px; */
+				color: #000;
+
 				/* draw the slash by css inside ::before pseudo, adapt from https://stackoverflow.com/questions/39244591/making-a-longer-and-slightly-more-diagonal-slash-in-css */
 				&::before{
 					content: "";
@@ -537,7 +525,6 @@
 			& > .plt-time{
 				justify-content: end;
 			} */
-			
 			/* class to blink #elmPlayingTime when audio is paused */
 			&.paused {
 				& > :is(.plt-time, .plt-duration){
@@ -549,6 +536,7 @@
 				}
 			}
 		}
+
 		@media (hover:hover) and (pointer:fine){
 			/* on desktop browser, move #elmPlayingTime up abit to make it vertically middle of its container */
 			#elmPlayingTime{ 
@@ -558,6 +546,7 @@
 				}
 			}
 		}
+
 		@keyframes timer-blink-kf{
 			0% {
 				opacity: 1;
@@ -581,7 +570,7 @@
 
 		div:has(> #elmPlayingTime) {
 			/* the div container which is direct father of #elmPlayingTime */
-			padding: 0 .3em 0 .15em;
+			padding: 0 .15em;
 			/* to prevent #elmPlayingTime being broken into two line when screen width shrink */
 			font-size: xx-large;
 			/* max-height: 1.6em; */
@@ -603,7 +592,7 @@
 			align-items: center;
 			/* justify-items: stretch; */
 			grid-template-rows: 1.5em;
-			column-gap: 5px;
+			/* column-gap: 5px; */
 			/* push both elmPlayingTime and Loading into same cell */
 			& > :not(:first-child){grid-area: 1/2/1/2;} 
 		}
@@ -657,7 +646,7 @@
 			--size: 1.9em;
 			width: var(--size);
 			height: var(--size);
-			/* margin-right: .5em; */
+			margin-right: 5px;
 			display: flex;
 			align-items: center;
 			
@@ -1102,9 +1091,9 @@
 			font-size: 30px !important;
 		}
 
-		/* .\!text-\[35px\] {
+		.\!text-\[35px\] {
 			font-size: 35px !important;
-		} */
+		}
 
 		.\!text-\[40px\] {
 			font-size: 40px !important;
@@ -1114,9 +1103,9 @@
 			font-size: 50px !important;
 		}
 
-		/* .\!text-\[55px\] {
+		.\!text-\[55px\] {
 			font-size: 55px !important;
-		} */
+		}
 
 		.\!text-\[80px\] {
 			font-size: 80px !important;
@@ -1244,7 +1233,7 @@
 		/* Info section */
 		.ap-info {
 			width: 100%;
-			/* position: relative; */
+			position: relative;
 			-webkit-align-self: flex-start;
 			-ms-flex-item-align: start;
 			align-self: flex-start;
@@ -1252,10 +1241,7 @@
 		}
 
 		.ap-title-time{
-			/* display: flex;
-			flex-flow: row nowrap;
-			align-items: flex-start;
-			justify-content: space-between;	 */	
+			
 			display: grid;
 			grid-template-columns: minmax(100px, 1fr) minmax(50px, auto);
 			align-items: center;
@@ -1265,8 +1251,6 @@
 				font-size: .9em;
 			}
 			& > .ap-title {
-				/* position: relative;
-				flex: 1 1 350px; */
 				padding-right: 10px;
 				text-align: left;
 				white-space: nowrap;
@@ -1560,111 +1544,7 @@
 			opacity: 1;
 		}
 
-		/* ------------HANDLING RESPONSIVE--------------- */
-		/* @media(min-width:850px) {
-			.ap-title {
-				max-width: 330px;
-			}
-		}
-
-		@media(min-width:950px) {
-			.ap-title {
-				max-width: 440px;
-			}
-		}
-
-		@media(min-width:1050px) {
-			.ap-title {
-				max-width: 580px;
-				/* Wide screen such as iPad Pro or desktop, make title wider * /
-			}
-		}
-
-		@media(max-width:850px) {
-			.ap-title {
-				max-width: 200px;
-				/* visibility: hidden; * /
-				/* Hide title but keeps it there to take the space for progress bar display vertically center * /
-			}
-		} */
-
-		/* @media(max-width:800px) {
-		.ap-sub-panel > .ap-controls {
-			-webkit-box-flex: 1;
-			-webkit-flex: 1;
-				-ms-flex: 1;
-					flex: 1;
-		}
-		} */
-
-		@media(max-width:680px) {
-			.ap-container {
-				/* min-width: 400px; */
-				width: 100%;
-				height: auto;
-				background-color: transparent;
-				border: none;
-			}
-
-			.ap-panel {
-				-webkit-flex-wrap: wrap;
-				-ms-flex-wrap: wrap;
-				flex-wrap: wrap;
-				justify-content: space-evenly;
-				height: auto;
-			}
-
-			.ap--track {
-				margin-bottom: 10px;
-				padding: 8px 10px;
-				background-color: #ddd;
-				/* #56AEFF #B1D4E0*/
-				border-radius: 10px;
-				-webkit-box-ordinal-group: 2;
-				-webkit-order: 1;
-				-ms-flex-order: 1;
-				order: 1;
-				-webkit-box-flex: 1;
-				-webkit-flex: 1 1 100%;
-				-ms-flex: 1 1 100%;
-				flex: 1 1 100%;
-			}
-
-			.ap--playback {
-				/* Only .ap--playback take extra space, .ap--settings keeps flex-grow=0 so take no extra space */
-				-webkit-box-flex: 1;
-				-webkit-flex: 1 1 70%;
-				-ms-flex: 1 1 70%;
-				flex: 1 1 70%;
-				-webkit-box-ordinal-group: 3;
-				-webkit-order: 2;
-				-ms-flex-order: 2;
-				order: 2;
-			}
-
-			.ap--settings {
-				-webkit-box-ordinal-group: 4;
-				-webkit-order: 3;
-				-ms-flex-order: 3;
-				order: 3;
-			}
-
-			.ap--playback>.ap-controls {
-				-webkit-box-flex: 1;
-				-webkit-flex: 1;
-				/* 25% */
-				-ms-flex: 1;
-				/* 25% */
-				flex: 1;
-				/* 25% */
-			}
-
-			/* .ap-title,
-			.ap-time {
-				display: none;
-			} */
-		}
-
+		/* ------------HANDLING RESPONSIVE--------------- */		
 		/* @media(max-width:450px) {
 		.ap-panel {
 			flex-direction: row;
@@ -1760,11 +1640,9 @@
 			/* --__s: 240px;
 			--__c: #b5c7f520; */
 
-			/* Using content-visibility to speed-up performance, adapt from https://css-tricks.com/almanac/properties/c/content-visibility/ 
-			However, somehow content-visibility is messing up with counter 'list-item' to make it reset at every section, so I removed it
-
+			/* Using content-visibility to speed-up performance, adapt from https://css-tricks.com/almanac/properties/c/content-visibility/ */
 			content-visibility: auto;
-  			contain-intrinsic-size: 5005px;  */
+  			contain-intrinsic-size: 5005px; 
 		}
 
 		:is(ol#elmPlaylist, ol.lstBookTitlesSetting) li {
@@ -1777,7 +1655,7 @@
 			padding: 10px 0px 5px 7px;
 			border-bottom: 1px solid #730a50c4;
 			cursor: pointer;
-			transition: color 0.4s;			
+			transition: color 0.4s;
 
 			&:hover {
 				background: linear-gradient(to right, rgba(255, 138, 0, 0.2), #fff) !important;
@@ -1792,7 +1670,6 @@
 			}
 
 			&::before {
-				/* note that 'list-item' is built-in counters of <ol> element that control their numbering. So we do not need to do counter-set/counter-reset or counter-increment manually */
 				/* counter-increment: list-item; */
 				content: counter(list-item);
 				/* counter(list-item, decimal-leading-zero) to have leading 0 */
@@ -4997,11 +4874,12 @@
 		right: .25em;
 		top: 50%;
 		translate: 0 -50%;        
-		filter: var(--select-book-group-filter);
+		filter: var(--select-book-group-filter);		
 	  }
 	  &:hover::after{
 		filter: var(--select-hover-bground-filter);
 	  }
+	  
 
 	   /* make this Div just one line, its content may be truncated */
 	   &.single-line{
@@ -5050,16 +4928,9 @@
 	/* Customized class for chapter-list SDD. This class will apply for SDD outermost container .sdd-wrapper. If we need to change the css for any component inside .sdd-wrapper, we specify the query-selector path for that component and put css for that component inside that path */
 	.sdd-wrapper.sdd-wrapper-chapterList{
 
-		& .sdd-controls{
-			&::after{			
-				background-image: url('https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/stack-icon.svg');
-				/* background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.88 111.96"> <path d="M61.15 0 0 26.52l61.41 24.96 61.47-24.88zm61.73 57.12L95.46 45.31 62.73 58.56c-.88.36-1.83.33-2.65 0L27.27 45.22 0 57.05 61.41 82zM96.14 75.56 62.73 89.08c-.88.36-1.83.33-2.65 0L26.59 75.47 0 87.01l61.41 24.96 61.47-24.88z"/></svg>'); */
-				background-size: 1.3em;
-				filter: var(--select-book-group-filter);
-			}
-			/* &:hover::after{
-				filter: var(--select-hover-bground-filter);
-			} */
+		& .sdd-controls::after{
+			background-image: url('https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/stack-icon.svg');
+			background-size: 1.3em;
 		}
 		& .input-wrapper input.sdd-search-box{
 			caret-color: var(--select-book-group-color);
@@ -6161,740 +6032,740 @@
 		</div>
 	</div>
 
+
 	<!-- <script src="config.js"></script>
 	<script src="data.js?v=1.112"></script>
 	 -->
 	
-	
 	<!-- Script that deal with loading js script files that contains page configuration and database, then loadPage() -->
 	<script>
-	"use strict";
-		/* Class deal with DB files being loaded as js script elements */
-		class DBFiles{
-
-			/** Enum to define the loadMode of script file, especially for DB file  */
-			static LMODE = Object.freeze({
-				/* @value 0: Database file would not be loaded */		
-				noShow: 0,
-				/* @value 1: Database file is freshly-loaded, meaning even the file has been loaded before and being stored in browser's cache, the cache will be ignore and the page will load file from server */
-				freshLoad: 1,
-				/* @value 2: Database file is cache-loaded. If the file has been cached by browser before, the page will use that cache version of file for better performance and save bandwidth */
-				cacheLoad:2
-				/* @value -1 : called from Setting.addJsDatabaseFileReport() to load information of a database that was not choosen for showing when page load (its loadMode in xDBFilesCfg == 0). This loadMode is treated as loadMode=2 */
-				//,tempLoad: -1
-				/* for some DB that currently has loadMode = noShow(0) but it has new edition, we temporarily change it loadMode to delayFresh(-2), so that when completing reload (fresh) new edition of that DB, we would know to change its loadMode back to noShow */
-				//,delayFresh: -2
-			});
-
-			/** LoadJS: class to load multiple js libraries and return a promise or an array of promise
-			* @adapt_from https://github.com/MiguelCastillo/load-js/tree/master. See that github for usage and options, although I has renamed some flag name to to descibe more correcly their functionality, also I added some new @atttributes to meet my needs for this app (see @CUSTOMIZED_PROPERTIES section below).
-			See _DEFAULT_OPTIONS in exec() function for the default value for all flags
-
-			* @ORIGINAL_PROPERTIES
-				@property type: @defaults to 'text/javascript'.
-				@property async: @defaults to false.
-				@property charset: @defaults to utf-8.
-				@property id: no default value. If id is not set, loadJs will hash the script url (without parameters - string after '?') and make it to be the script id
-				@property url: Location of the script to load. Required if no text is provided.
-				@property text: Script code to execute. Required if no url is provided.
-
-				@flag cacheEnable {@defaults to true} (I rename from original name 'cache'): flag to determine if item with ID or URL is to be cached. if this flag set to false, its promise will not be update the the loadJs internal cache
-				@flag allowExternal {@defaults to true}: flag to handle situations when the DOM already has a script element with the same ID or URL as what loadJS is being told to load. By default, loadJs will ignore the script with similar url (same without parameter) that not loaded by loadJs. If set to false, loadJS will use script elements that already exist in the DOM. To turn off this behavior, set allowExternal to false. 
-				@flag debug {@defaults to false}: flag to show debug message.
-
-			* @CUSTOMIZED_PROPERTIES 
-				@flag allowReload {@defaults to false}: the flag to tell loadJs to overload the old js file (which also had been loaded by loadJs). I use for config.js to detect if there is new database version or on Setting.addJsDatabaseFileReport(). Let see a case when loadJS has loaded a js file, e.g 'data_0.js', now that file is loaded again (also by loadJS), if this flag is missing or false, we can't load again the same file. This is different from @property allowExternal is that  allowExternal compared with js script NOT loaded by loadJS (might be a markup that was hard-coded or dynamiclly loaded by other agency )
-				@flag freshLoad {@defaults to false}: the flag to tell if the script should be fresh-load (=true) or got from cache (false or missing), if applicable. 
-					@note that when freshLoad = true, @flag allowReload is also set to true. Also, there is a @property urlVersion is attached to script element which store the lastest version of script url, which can be used to update back in function which invoked loadJS
-				@flag removeMarkup {@defaults to true}: the flag to tell if the script mark-up should be delete out of DOM or keep it in the DOM (false). Even of markup being removed out of DOM, its data still being kept in window variables, so we still being able to process script data
-
-				@attribute extAttr {@defaults to empty json {} }. extAttr will keep all @properties that user want to attach to script element for later usage:
-					@attribute fileNo: store the ordernal number of current database file, which act as an Id to identify a Database File
-					@attribute jsDBName: name of database file, also the name of database variable inside that file (they must be the same). For now, each file should have only one data variable, such as data_0.js has only one const json-like object 'data_0'
-					@attribute loadMode: the mode to load the Database file. See LMODE for detail information of each type of loadMode
-						
-					@note See createScript() for the handy, customized property that added to script element like id, jsDBName, loadMode, urlVersion, watermark, type, charset
-			* @USAGE
-					@way 1: loadJS("https://code.jquery.com/jquery-2.2.1.js")
-					 .then(function() {});
-					@way 2: loadJS(["https://code.jquery.com/jquery-2.2.1.js", "https://unpkg.com/react@15.3.1/dist/react.min.js"])
-					 .then(function() {}); 
-					@way 3: loadJS({
-							url: "data_1.js?v=3333",
-							freshLoad: true,
-							extAttr: {
-								fileNo: 1,
-								jsDBName: 'data_1', 
-								allowReload: true,
-								loadMode: -1
-							}
-						})
-						.then(_ => {})
-						See Setting.addJsDatabaseFileReport() for one example of usage that customize for this App
-					@way 4: loadJS([{
-					 		url: "data_1.js?v=3333",
-							removeMarkup: false,
-							extAttr: {
-								fileNo: 1,
-								jsDBName: 'data_1', 
-								allowReload: true,
-								loadMode: -1
-							}
-						}, {
-							async: true,
-							url: "https://unpkg.com/react@15.3.1/dist/react.min.js"
-						}])
-						.then(_ => {})
-					@otherway : can use loadJS to load script code instead of url as above ways
-			* @RETURN
-				 * if @items is one item, it will return the script element directly
-				 * if @items is array of items, it will return the array of result json which has one of following formats:
-				 * 	- success: {status: 'fulfilled', value: ...the script element...}
-				 * 	- failed:  {status: 'rejected', reason: ...the script element...}
-			*/
-			static loadJS = (function createLoadJS() {
-				var _loadJsInternalCache = {}; //store scrips promise that being loaded by Loadjs
-				var head = document.getElementsByTagName("head")[0] || document.documentElement;
-				const _WATERMARK = "Chinhvtr";
-
-				/* HELPER FUNCTIONS */
-				/** get script THAT NOT LOADED by LoadJS */
-				/* function getScriptById(id) {
-					var script = id && document.getElementById(id);
-
-					if (script && script.watermark !== _WATERMARK) {
-						console.warn("load-js: duplicate script with id:", id);
-						return script;
-					}
-				}
-				
-				function getScriptByUrl(url) {
-					var script = url && document.querySelector("script[src='" + url + "']");
-
-					if (script && script.watermark !== _WATERMARK) {
-						console.warn("load-js: duplicate script with url:", url);
-						return script;
-					}
-				} */
-
-				/** get script that NOT loaded by LoadJS 
-				 * @param url {string}: the url or the id of scipt
-				 * @param byUrlOrId {boolean}:
-				 * 		@value true (default): search script by url without param (string after '?')
-				 * 		@value false: search by id
-				 * @return
-				 * 	- the first found script element if found
-				 * 	- null if not found
-				*/
-				function getExternalScript(url, byUrlOrId = true) {
-					if(!url) return null;
-
-					if(byUrlOrId) url = url.split("?")[0];
-					const _queryStr = byUrlOrId? "script[src^='" + url + "']" : "script[id='" + url + "']";
-
-					const _scripts = document.querySelectorAll(_queryStr);
-					let _foundScript = null;
-
-					_scripts.forEach(_script => {
-						if (!_foundScript && _script.watermark !== _WATERMARK) {
-							console.warn("loadJS: found external script (one that not loaded by loadJs) with " + (byUrlOrId?"url":"id") + ":", url);
-							_foundScript =_script;
-						}
-					});
-
-					return _foundScript;					
-				}
-
-				/** simple hash function to hash any string to 7-chars string, this used to create an (nearly) unique id for the script. For now, I use String.prototype.hashCode */
-				/* function simpleHash(str) {
-					let hash = 0
-					for (let i = 0; i < str.length; i++) {
-						hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0
-					}
-					return (hash >>> 0).toString(36)
-				} */
-
-				/** append script text (set in options.text) in the case that options.url is missing. Because options.text contain the js code already, so script should be loaded immediately without any delay, meaning no need to handle the async state of the script 
-				 * @param head: the document.head element
-				 * @param script: the script element that created by createScript() but not yet append to the DOM
-				*/
-				function appendScriptByText(head, script) {
-					head.appendChild(script);
-					return Promise.resolve(script);
-				}
-
-				/** append script by url (speified in options.url), so we use Promise to handle async state of script load 
-				 * @param head: the document.head element
-				 * @param script: the script element that created by createScript() but not yet append to the DOM
-				*/
-				function appendScriptByUrl(head, script) {
-					return new Promise(function(resolve, reject) {
-					// Handle Script loading
-					var done = false;
-
-					// Attach handlers for all browsers.
-					//
-					// References:
-					// http://stackoverflow.com/questions/4845762/onload-handler-for-script-tag-in-internet-explorer
-					// http://stevesouders.com/efws/script-onload.php
-					// https://www.html5rocks.com/en/tutorials/speed/script-loading/
-					//
-					script.onload = script.onreadystatechange = function() {
-						if (!done && (!script.readyState || script.readyState === "loaded" || script.readyState === "complete")) {
-						done = true;
-
-						// Handle memory leak in IE
-						script.onload = script.onreadystatechange = null;
-						resolve(script);
-						}
-					};
-
-					script.onerror = reject;
-
-					head.appendChild(script);
-					});
-				}
-
-				/* IMPORTAN FUNCTIONS */
-
-				/** function to create script and attached properties, attributes to script element for later processing when script file is loaded or failed-loading. Note that for now, the script has not been appended to the DOM
-				 * @param option: json of all attributes that need to config the script element and some other atttribute added to elements for using later. See https://github.com/MiguelCastillo/load-js/tree/master for list of default attribute like type, async, charset, id, url, text, cache (I renamed to 'cacheEnable'), debug
-				 * ADDED: jsDBName, loadMode, allowReload, urlVersion
-				 * @return the script element
-				 */
-				function createScriptElem(options) {
-					var script = document.createElement("script");
-					/* some built-in attribute of a script element, see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script for the full list */
-					script.charset = options.charset || "utf-8";
-					script.type = options.type || "text/javascript";
-					script.async = !!options.async; //default false
-					//in exec() we already create an options.id if user not clearly specify it
-					script.id = options.id; 
-					//script.id = (options.id || options.url).split("?")[0]; //without param of url if there any
-
-					/* customized attribute to meet user extra need */
-					//attach all extra/extented attributes that user need to attach to script for later handy usage
-					script.extAttr = options.extAttr || {};
-					//attach a watermark to know that the script is loaded by loadJs or not
-					script.watermark = _WATERMARK;
-					//adding timestamp for ease of debugging when loadJS internal cache hit
-					script.timestamp = (new Date()).toLocaleString();
-
-					/* Using version paramet '?v={version_number}' to force the browser to re-load and script file (mostly through file url) */
-					const _DEF_VERSION = Math.round(performance.now()); //101;
-					let _dbUrl = options.url;
-					const _versReg = _dbUrl.match(/v\=(\d+)/);
-					if(_versReg){
-						let _version = parseInt(_versReg[1]);
-						if(isNaN(_version)) _version = _DEF_VERSION;
-						// freshLoad = true, we need to re-load the script even there is old version in the cache. For the specific case of this page when loading DB stored in script file, we do fresh-load only when loadMode == 1 (and we need to specify freshLoad attribute when invoking loadJs). Other mode loadMode= -1 (called from addJsDatabaseFileReport()) or =2, using cache if applicable
-						// We archive fresh-load by changing the version so the js file load will ignore browser's cache.
-						if(options.freshLoad)  _dbUrl = _dbUrl.replace(_versReg[0], "v=" + (++_version));
-					}
-					else _dbUrl += (_dbUrl.indexOf("?")>-1? "": "?") + "v=" + _DEF_VERSION; //assign a initial version number
-					
-					//save new versionning into urlVersion of script element, so later in loadPage, we can update the new version into xDBFilesCfg.toLoad[index].dbUrl. Note that I don't want to use script.src since it is absolute address while script.urlVersion is relative address (shorter)
-					script.urlVersion = options.url = _dbUrl;
-
-					if (options.url) { script.src = options.url; }
-					if (options.text) { script.text = options.text; }
-					return script;
-				}
-
-				/** function to create script and append it to the DOM. Note that this function only support for one script only. This function also handle some situation like duplicate load by loadJs or duplicate with hard-coded markup.
-				 * @param option: config for the single script to be load
-				 * @return a promise wrapping the script
-				 */
-				function exec(options) {
-					// if user only invokde loadJS with a string as parameter like loadJS('https://code.jquery.com/jquery-2.2.1.js'), consider as loading by url
-
-					/* Create default value for options attributes when missing */
-					if (typeof options === "string") {
-						options = {
-							url: options
-						};
-					}
-
-					//default flags if not otherwise specify differently when invoking loadJS()
-					const _DEFAULT_OPTIONS = {
-						cacheEnable: true, //update script to the loadJs internal cache
-						allowExternal: false, //ignore the external having same url script (after removing parameter if any), if any
-						allowReload: false, //not allow reload if this script has been loaded before by loadJs
-						freshLoad: false, //using the browser cache if any
-						removeMarkup: true, //remove markkup out of DOM when done loading script
-						debug: false
-					}
-					options = Object.assign({}, _DEFAULT_OPTIONS, options);
-
-					// if freshload, meaning loading new version of the script without using browser caches or loadJS internal cache, so we must set allowReload = true
-					if(options.freshLoad) options.allowReload = true;
-
-					// if user not specify an id for script, we make one from its url without param
-					let _scriptId = options.id || (options.url.split('?')[0]).hashCode(); // make an id from url if option.id is not explicitly specified
-					options.id = _scriptId; //update back the maybe-new id to the option
-
-					// cache here just to avoid same js files being loaded twice in the SAME session, with requirement both are loaded by loadJS
-					let _cachedScriptEntry = _loadJsInternalCache[_scriptId]; //see if script already in loadJS cache
-
-					if (_cachedScriptEntry) {
-						if (!!options.debug) {
-							console.warn("loadJS: Script hit - this script has been loaded by loadJS in current page session. id:", _scriptId, "; url:", options.url);
-						}
-						//if options.allowReload = true: return script Promise right away without reloading it
-						if(!options.allowReload)
-							return _cachedScriptEntry;
-					}
-					//check allowExternal only when no _cachedScriptEntry because when there is _cachedScriptEntry, allowExternal is checked when the first time this script is loaded by loadJS
-					else if (options.allowExternal) {
-						// not found script in the cache AND options.allowExternal = true or missing, we need to look in the DOM to see if there any script (of cource, not loaded by loadJS). In case found, use that script without having loadJs reloaded that script
-
-						let el = getExternalScript(options.url) ;//getScriptById(options.id) || getScriptByUrl(options.url);
-
-						// found an external script with similar url (but not loaded by loadJs)
-						if (el) {
-							// Promise.resolve(el) is the same with 'new Promise( (resolve, reject) => resolve(el) )'
-							let promise = Promise.resolve(el);
-							//store external script promise into cache
-							if (_scriptId) { _loadJsInternalCache[_scriptId] = promise; }
-							return promise;
-						}
-					}					
-
-					if (!options.url && !options.text) {
-						throw new Error("load-js: must provide a url or text to load");
-					}
-
-					// depding on the type of script (code or url), we need different function to append the script and handle async nature of the script to the DOM
-					const _scriptElem = createScriptElem(options);
-					var pendingPromise = (options.url ? appendScriptByUrl : appendScriptByText)(head, _scriptElem);
-
-					//if options.removeMarkup is true of missing, remove the script markup in document.head, so if other inspect the code would not see the script had been loaded to the page which could cause confusing for them when inspecting the code.
-					if(options.removeMarkup !== false)
-						//finally is to do performing cleanup/finalizing after the previous operations are complete (doesn't matter successfull to failed).
-						pendingPromise.finally(_ => {
-							_scriptElem.remove();
-						});
-
-					//if cacheEnable is not explicitly set to false, save this script inside _loadJsInternalCache for later check of duplication
-					if (_scriptId && options.cacheEnable !== false) { _loadJsInternalCache[_scriptId] = pendingPromise; }
-
-					return pendingPromise;
-				}
-
-				/** load one script or array of script 
-				 * @param items is one item or array of items. Each item can be a string which contains url of the script or a json. If item is an json, the json is actually the option which has attributes as described in wrapper loadJS comments above
-				 * 
-				 * @return
-				 * if @items is one item, it will return the script element directly
-				 * if @items is array of items, it will return the array of result json which has one of following formats:
-				 * 		success: {status: 'fulfilled', value: ...the script element...}
-				 * 		failed:  {status: 'rejected', reason: ...the script element...}
-				 * See createScript() for the handy, customized property that added to script element like id, jsDBName, loadMode, urlVersion, watermark, type, charset
-				*/
-				return function load(items) {
-					return items instanceof Array ? Promise.allSettled(items.map(exec)) : exec(items);
-				}
-			})();
-
-			/** Function to deploy data inside DB js file into the page, that is to load the Book Kit variables inside each Database file named {_jsDBName} into a collection {ssData.jsDBFiles} along with database file _loadMode */
-			static deployDB(_jsDBName, _loadMode) {
-				const bookKitVars = []; //store the names of attributes (each actually is book Kit variable) of the current data variable (like data_0)
-				this.name = _jsDBName; //store data variable names inside the variable content
-				for (const key of Object.getOwnPropertyNames(this)) {
-					//console.log(key);
-					if (key.match(/\_Data$/) && (typeof this[key] == 'object')) {
-						//console.log(key + ":" + (typeof this[key]));
-						bookKitVars.push(key);
-					}
-				}
-
-				// new item of ssData.jsDBFiles for _jsDBName
-				const _newJsDBFile = { dbName: this.name, dbs : bookKitVars, loadMode: _loadMode};
-				// find index of current item in ssData.jsDBFiles having dbName == _jsDBName
-				const _jsDBFileIdx = ssData.jsDBFiles.findIndex(_dbFile => _dbFile.dbName == _jsDBName );
-
-				if(_jsDBFileIdx == -1)
-					// not found, just push it in
-					ssData.jsDBFiles.push(_newJsDBFile);
-				else
-					//found, replace old item with new one
-					ssData.jsDBFiles.splice(_jsDBFileIdx, 1, _newJsDBFile);
-			}
-
-			/** Compare {edt} attribute (edition) from xDBFilesCfg.toLoad[index].edt with _DEFAULT_CFG.cDBFilesEdt.edt[index] to see if there is later version of any of data_{index} DB files. If there is, UPDATE edt IMMEDIATELY.
-			 * @param _ivkFrom: invoked from, mostly for controlling the message
-			 * 		@value 0: invoked from loadPage()
-			 * 		@value 1: invoked from Setting.handyCheckDBsEdition()
-			 * 		@note: for now, this param is redundant and is not usable
-			 * @return 
-			 * 		@value null is there is no new update on any DB files
-					@value an json: see the 'return' directive at the very end of function for detailed information
-			*/
-			static checkDBFilesEdition(_ivkFrom){
-				const _DEF_DB_EDITION = 100; //initial edition of any DBFile
-				
-				//array store DB dbName (like 'data_0', 'data_1') that has new edition that is to be fresh load (load ignoring browser'cache).
-				let _DBsHasNewEdition = [];
-				
-				//the counter to count the number of DBs that has NO edt attributes before. This only happen when there is no xDBFilesCfg in local storage (which only the case when the page is loaded very firs time OR local storage has been completely wiped-out)
-				let _DBsLoadedVeryFirstTimeCounter = 0;
-
-				xDBFilesCfg.toLoad.forEach((_dbItem, i) => {
-					
-					let _latestDbEdition = _DEF_DB_EDITION;
-					//Check Edition of a DB files, if it is smaller than the lastest (in _DEFAULT_CFG.cDBFilesEdt.edt array)
-					if(_DEFAULT_CFG?.cDBFilesEdt?.edt ?? false){
-						_latestDbEdition = i < _DEFAULT_CFG.cDBFilesEdt.edt.length ? _DEFAULT_CFG.cDBFilesEdt.edt[i] :  _DEF_DB_EDITION;
-					}
-
-					//if current edition of inspected DBItem is not set yet (when page runs clean - meaning cache and localStore of last session is all wiped out) OR not the lastest (need update)
-					if(!_dbItem.hasOwnProperty("edt") || _dbItem.edt <  _latestDbEdition) {
-						//store DBs already cached but has later edition
-						if(!_dbItem.hasOwnProperty("edt")) _DBsLoadedVeryFirstTimeCounter++;
-
-						//Important: update the edition number IMMEDIATELY and DIRECTLY into xDBFilesCfg.toLoad[index].edt
-						_dbItem.edt =  _latestDbEdition;
-
-						//store dbName of DB having new edition
-						_DBsHasNewEdition.push(_dbItem.dbName);
-					}
-				});				
-
-				return _DBsHasNewEdition.length > 0 ? 
-					{	// array contains dbName of all DB having new edition
-						DBsHasNewEdition: _DBsHasNewEdition,
-						// true if all DB having new edition is actually has no .edt before (meaning page is loaded very first time of just being fully wiped out all its localStorage)
-						noDBsBefore: _DBsLoadedVeryFirstTimeCounter == _DBsHasNewEdition.length
-					} : 
-					//if there is no DBs having new edition, return null
-					null;
-			}
-
-			/** Function to download and load-up all DB script file, update its version into xDBFilesCfg.toLoad[index].dbUrl. Doing some extra work by the callbacks _promiseCB, _allSettleCB
-			 * @param _ivkFrom: invoked from, used for doing some extra work depending on where this function is invoked from, and for controlling the toast message
-			 * 		@value 0: invoked from loadPage()
-			 * 		@value 1: invoked from ssData.setting.handyCheckDBsEdition
-			 * @param _promiseCB {function} the callback function when EACH script promise suceed
-			 * @param _allSettleCB {function} the callback function when ALL scripts promise are settled (does not matter successfully or not)
-			 * @return 
-			 * 		@value array of dbName of all DBs having new edition
-			*/
-			static importDBfromFiles(_ivkFrom, _promiseCB, _allSettleCB){
-				//make an alias for xDBFilesCfg.toLoad
-				let toLoadArr = xDBFilesCfg.toLoad;
-
-				//check if there is new DB files updated, mark those DBs has new edition or has no cache with loadMode = 1 (fresh Load) so that DBFiles.loadJS will do the rest to load latest version of those new DB files. Note that this function could override loadMode for some DB files on check failCount above
-				// this array store list of DB files that has newer editions. If none has or fail to load 'config.js', it is null. See return in DBFiles.checkDBFilesEdition for the format of returned value
-				let _newEditionDBs = DBFiles.checkDBFilesEdition(0);
-
-				let _DBsHasNewEdition = [];
-				//notify user about DBs having new edition
-				if(_newEditionDBs){
-					/** the function to create notification message to user of the detail of new DBs 
-					 * @param _DBarray the array of DBs file_no that need to create message, such as [0, 1, 3]
-					*/
-					const _newDBNotifyMsg = (_DBarray) => {
-						let _msg = '';
-						if(_DBarray.length > 0)
-							_msg = (_msg==''?'': '<br>') + `${_DBarray.length > 1?"Các ":""}CSDL ${ _DBarray.map(t => "<mark style='color:red;font-weight:bold'>"+t+"</mark>").join(", ") } có phiên bản mới`;
-						return _msg;
-					}
-
-					let _msg = '';
-
-					//empty function, this function is used as toast callback when user manually check new edition (when page is running), then it found a shown DB (loadMode = 1,2) having new edition, so when the toast is timed-out, this callback will be invoked to ask user to refesh the page to get new DB updated
-					let _toastCallback = _ => {};
-
-					//get the list of all DBs having new edition
-					_DBsHasNewEdition = _newEditionDBs.DBsHasNewEdition;
-
-					//_newEditionDBs.noDBsBefore = true when all DBs (in xDBFilesCfg.toLoad) load into page not yet has 'edt' attribute, meaning this might be the very first time page is loaded or xState was completely wiped-out
-					if(_newEditionDBs.noDBsBefore){
-						if(_ivkFrom==0 )
-						_msg = 'Sử dụng app lần đầu tiên hoặc dữ liệu lưu của các phiên làm việc trước của app đã bị xóa sạch!';
-					}
-					else{
-						//get all DBs has new edition but is set to be hidden
-						const _DBloadHide = _DBsHasNewEdition.filter(_dbName => 
-							toLoadArr.find(_dbItem => _dbItem.dbName == _dbName).loadMode == DBFiles.LMODE.noShow
-						);
-
-						//get all DBs has new edition and is set to be shown
-						const _DBloadShow = _DBsHasNewEdition.filter(_dbName => !_DBloadHide.includes(_dbName)
-						);
-
-						// show toast for DBs having new edition and also set to be shown
-						if(_DBloadShow.length > 0){
-							let _localMsg = _newDBNotifyMsg(_DBloadShow);
-							if(_localMsg != '')
-								_msg += _localMsg + ', đã được App tự động ' + (_ivkFrom == 0? 'cập nhật.' : 'tải xuống (Dữ liệu mới chỉ cập nhật khi nạp lại trang Web.).');
-						}
-
-						// show toast for DBs having new edition but set to be hidden
-						if(_DBloadHide.length > 0){
-							let _localMsg = _newDBNotifyMsg(_DBloadHide);
-							if(_localMsg != '')
-								_msg += (_msg == ''? '': '<br>') + _localMsg + ', đã được App tự động cập nhật nhưng đang ở chế độ ẩn.';
-						}
-
-						//set toast callback when is invoked from Setting.handyCheckDBsEdition()
-						if(_DBloadHide.length < _DBsHasNewEdition.length && _ivkFrom == 1)
-						_toastCallback = _ => {
-								if(confirm("CSDL có phiên bản mới. Cần nạp lại trang Web để cập nhật dữ liệu mới.\n\n Sẽ chỉ mất vài giây. Bạn có muốn nạp lại trang Web ngay bây giờ?"))
-								//Force a hard reload to clear the cache if supported by the browser
-									window.location.reload(true);
-							}
-					}
-
-					if(toast && _ivkFrom == 1)
-						toast.showToast(_msg, toast.ToastType.Infor, {duration: 1.5e4, cbEnd: _toastCallback}); 
-					else
-						//since Toast object has not been loaded, so we put it into delayedNotification
-						ssData.delayedNotification.push({msg: _msg, option: {duration: 1.5e4}});
-				}
-				
-				//function to check if a DB has new edition
-				const _newDBcheck = _dbItem => {
-					if(_DBsHasNewEdition.length == 0) return false;
-					return Boolean( _DBsHasNewEdition.find(_dbName => _dbItem.dbName == _dbName) );
-				}
-				//function to filter all DBs that need to download
-				const _filterFnc = _dbItem => {
-					//const _newDBcheck = _dbName => 
-					if(_ivkFrom == 0){
-						/* call from loadPage(), we need to load all DB that match one of following condition:
-						 a) cacheLoad (2) or freshLoad (1)
-						 b) all DB (even in noShow(0) mode) but has new edition. Some DB of this condition might already be in condition a) */
-						return _dbItem.loadMode != DBFiles.LMODE.noShow || _newDBcheck(_dbItem);
-					}
-					else {
-						// call from Setting.handyCheckDBsEdition(), just load the DB has new edition
-						return _newDBcheck(_dbItem);
-					}
-				}
-				//store array of script url and its option to load into loadJs
-				//loadMode: 0 - No Show. 1- Fresh load, No Cache. 2-load, using cache if applicable.
-				let _jsDataFiles = toLoadArr.filter( _dbItem => _filterFnc(_dbItem) ) //filter item to be loaded (has loadMode 1 or 2)
-				.map( _dbItem =>  ({
-					url: _dbItem.dbUrl,
-					//removeMarkup: since we don't set value for this flag, its default value would be true, meaning the script markup would be removed out of DOM after being loaded (sucess or fail), so other would not see any markup in the DOM for those config.js and data_*.js files
-					//allowReload: true, //removed because when freshLoad = true, allowReload also set to true
-					freshLoad: _dbItem.loadMode == DBFiles.LMODE.freshLoad || _newDBcheck(_dbItem), //script should ignore browser's cache if its loadMode is freshLoad or it has new edition (does not matter what its loadMode is)
-					//see DBFiles.loadJS for explanation of some properties of extAttr
-					extAttr: {
-						//fileNo: _dbItem.fileNo, // this actually can derived from jsDBName below
-						jsDBName: _dbItem.dbName, 
-						loadMode: _dbItem.loadMode //this property actually not use
-					} 
-				})
-				); //map into format of options for loadJS()
-
-				DBFiles.loadJS(_jsDataFiles)
-				.then((_res) => {
-					_res.forEach(_prom => {
-						// for success loaded db file: add data to data collected variable ssData.jsDBFiles
-						if(_prom.status === "fulfilled"){
-							// because of Promise.allSettled in loadJS, so _prom.value point to script elements created inside createLoadJS
-							const _scriptElm = _prom.value;
-							const _extAttr = _scriptElm.extAttr;
-							const _jsDBName = _extAttr.jsDBName; //something like 'data_0'
-
-							//xDBFilesCfg.toLoad corresponding with current script
-							const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
+		"use strict";
+			/* Class deal with DB files being loaded as js script elements */
+			class DBFiles{
+	
+				/** Enum to define the loadMode of script file, especially for DB file  */
+				static LMODE = Object.freeze({
+					/* @value 0: Database file would not be loaded */		
+					noShow: 0,
+					/* @value 1: Database file is freshly-loaded, meaning even the file has been loaded before and being stored in browser's cache, the cache will be ignore and the page will load file from server */
+					freshLoad: 1,
+					/* @value 2: Database file is cache-loaded. If the file has been cached by browser before, the page will use that cache version of file for better performance and save bandwidth */
+					cacheLoad:2
+					/* @value -1 : called from Setting.addJsDatabaseFileReport() to load information of a database that was not choosen for showing when page load (its loadMode in xDBFilesCfg == 0). This loadMode is treated as loadMode=2 */
+					//,tempLoad: -1
+					/* for some DB that currently has loadMode = noShow(0) but it has new edition, we temporarily change it loadMode to delayFresh(-2), so that when completing reload (fresh) new edition of that DB, we would know to change its loadMode back to noShow */
+					//,delayFresh: -2
+				});
+	
+				/** LoadJS: class to load multiple js libraries and return a promise or an array of promise
+				* @adapt_from https://github.com/MiguelCastillo/load-js/tree/master. See that github for usage and options, although I has renamed some flag name to to descibe more correcly their functionality, also I added some new @atttributes to meet my needs for this app (see @CUSTOMIZED_PROPERTIES section below).
+				See _DEFAULT_OPTIONS in exec() function for the default value for all flags
+	
+				* @ORIGINAL_PROPERTIES
+					@property type: @defaults to 'text/javascript'.
+					@property async: @defaults to false.
+					@property charset: @defaults to utf-8.
+					@property id: no default value. If id is not set, loadJs will hash the script url (without parameters - string after '?') and make it to be the script id
+					@property url: Location of the script to load. Required if no text is provided.
+					@property text: Script code to execute. Required if no url is provided.
+	
+					@flag cacheEnable {@defaults to true} (I rename from original name 'cache'): flag to determine if item with ID or URL is to be cached. if this flag set to false, its promise will not be update the the loadJs internal cache
+					@flag allowExternal {@defaults to true}: flag to handle situations when the DOM already has a script element with the same ID or URL as what loadJS is being told to load. By default, loadJs will ignore the script with similar url (same without parameter) that not loaded by loadJs. If set to false, loadJS will use script elements that already exist in the DOM. To turn off this behavior, set allowExternal to false. 
+					@flag debug {@defaults to false}: flag to show debug message.
+	
+				* @CUSTOMIZED_PROPERTIES 
+					@flag allowReload {@defaults to false}: the flag to tell loadJs to overload the old js file (which also had been loaded by loadJs). I use for config.js to detect if there is new database version or on Setting.addJsDatabaseFileReport(). Let see a case when loadJS has loaded a js file, e.g 'data_0.js', now that file is loaded again (also by loadJS), if this flag is missing or false, we can't load again the same file. This is different from @property allowExternal is that  allowExternal compared with js script NOT loaded by loadJS (might be a markup that was hard-coded or dynamiclly loaded by other agency )
+					@flag freshLoad {@defaults to false}: the flag to tell if the script should be fresh-load (=true) or got from cache (false or missing), if applicable. 
+						@note that when freshLoad = true, @flag allowReload is also set to true. Also, there is a @property urlVersion is attached to script element which store the lastest version of script url, which can be used to update back in function which invoked loadJS
+					@flag removeMarkup {@defaults to true}: the flag to tell if the script mark-up should be delete out of DOM or keep it in the DOM (false). Even of markup being removed out of DOM, its data still being kept in window variables, so we still being able to process script data
+	
+					@attribute extAttr {@defaults to empty json {} }. extAttr will keep all @properties that user want to attach to script element for later usage:
+						@attribute fileNo: store the ordernal number of current database file, which act as an Id to identify a Database File
+						@attribute jsDBName: name of database file, also the name of database variable inside that file (they must be the same). For now, each file should have only one data variable, such as data_0.js has only one const json-like object 'data_0'
+						@attribute loadMode: the mode to load the Database file. See LMODE for detail information of each type of loadMode
 							
-							//this should never happen
-							if(!_dbFileCfgItm) return console.log('importDBfromFiles(): somehow there is a database script element that not found in xDBFilesCfg.toLoad');
-
-							//reset failCount
-							_dbFileCfgItm.failCount = 0;
-
-							// If flag freshLoad is set to true (when loadMode=1), loadJS.exec() will change version number in script url. So, we need to update dbUrl accordingly, so next time load the page, the page would use the right version from the browser's cache (because the browser's cache only keep the last version of script)
-							_dbFileCfgItm.dbUrl = _scriptElm.urlVersion;
-
-							//if DB file having loadMode == DBFiles.LMODE.noShow then clean its data since those data would not be shown in books list
-							if( _dbFileCfgItm.loadMode == DBFiles.LMODE.noShow ){
-
-								// for more control on clearing unneccessary data, I defer the clearing job to _promiseCB callback
-								//delete the global variable for data that set hidden to save memory
-								//window[_jsDBName] = undefined;
+						@note See createScript() for the handy, customized property that added to script element like id, jsDBName, loadMode, urlVersion, watermark, type, charset
+				* @USAGE
+						@way 1: loadJS("https://code.jquery.com/jquery-2.2.1.js")
+						 .then(function() {});
+						@way 2: loadJS(["https://code.jquery.com/jquery-2.2.1.js", "https://unpkg.com/react@15.3.1/dist/react.min.js"])
+						 .then(function() {}); 
+						@way 3: loadJS({
+								url: "data_1.js?v=3333",
+								freshLoad: true,
+								extAttr: {
+									fileNo: 1,
+									jsDBName: 'data_1', 
+									allowReload: true,
+									loadMode: -1
+								}
+							})
+							.then(_ => {})
+							See Setting.addJsDatabaseFileReport() for one example of usage that customize for this App
+						@way 4: loadJS([{
+								 url: "data_1.js?v=3333",
+								removeMarkup: false,
+								extAttr: {
+									fileNo: 1,
+									jsDBName: 'data_1', 
+									allowReload: true,
+									loadMode: -1
+								}
+							}, {
+								async: true,
+								url: "https://unpkg.com/react@15.3.1/dist/react.min.js"
+							}])
+							.then(_ => {})
+						@otherway : can use loadJS to load script code instead of url as above ways
+				* @RETURN
+					 * if @items is one item, it will return the script element directly
+					 * if @items is array of items, it will return the array of result json which has one of following formats:
+					 * 	- success: {status: 'fulfilled', value: ...the script element...}
+					 * 	- failed:  {status: 'rejected', reason: ...the script element...}
+				*/
+				static loadJS = (function createLoadJS() {
+					var _loadJsInternalCache = {}; //store scrips promise that being loaded by Loadjs
+					var head = document.getElementsByTagName("head")[0] || document.documentElement;
+					const _WATERMARK = "Chinhvtr";
+	
+					/* HELPER FUNCTIONS */
+					/** get script THAT NOT LOADED by LoadJS */
+					/* function getScriptById(id) {
+						var script = id && document.getElementById(id);
+	
+						if (script && script.watermark !== _WATERMARK) {
+							console.warn("load-js: duplicate script with id:", id);
+							return script;
+						}
+					}
+					
+					function getScriptByUrl(url) {
+						var script = url && document.querySelector("script[src='" + url + "']");
+	
+						if (script && script.watermark !== _WATERMARK) {
+							console.warn("load-js: duplicate script with url:", url);
+							return script;
+						}
+					} */
+	
+					/** get script that NOT loaded by LoadJS 
+					 * @param url {string}: the url or the id of scipt
+					 * @param byUrlOrId {boolean}:
+					 * 		@value true (default): search script by url without param (string after '?')
+					 * 		@value false: search by id
+					 * @return
+					 * 	- the first found script element if found
+					 * 	- null if not found
+					*/
+					function getExternalScript(url, byUrlOrId = true) {
+						if(!url) return null;
+	
+						if(byUrlOrId) url = url.split("?")[0];
+						const _queryStr = byUrlOrId? "script[src^='" + url + "']" : "script[id='" + url + "']";
+	
+						const _scripts = document.querySelectorAll(_queryStr);
+						let _foundScript = null;
+	
+						_scripts.forEach(_script => {
+							if (!_foundScript && _script.watermark !== _WATERMARK) {
+								console.warn("loadJS: found external script (one that not loaded by loadJs) with " + (byUrlOrId?"url":"id") + ":", url);
+								_foundScript =_script;
 							}
-							else{
-								// if fresh-load, then change loadMode to cache-load for next session
-								if(_dbFileCfgItm.loadMode == DBFiles.LMODE.freshLoad) {
-									_dbFileCfgItm.loadMode = DBFiles.LMODE.cacheLoad;
-									console.warn(`importDBfromFiles(): Database file ${_dbFileCfgItm.dbUrl} has change loadMode from 1 to 2 (Load from Browser's Cache on next session)`);
+						});
+	
+						return _foundScript;					
+					}
+	
+					/** simple hash function to hash any string to 7-chars string, this used to create an (nearly) unique id for the script. For now, I use String.prototype.hashCode */
+					/* function simpleHash(str) {
+						let hash = 0
+						for (let i = 0; i < str.length; i++) {
+							hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0
+						}
+						return (hash >>> 0).toString(36)
+					} */
+	
+					/** append script text (set in options.text) in the case that options.url is missing. Because options.text contain the js code already, so script should be loaded immediately without any delay, meaning no need to handle the async state of the script 
+					 * @param head: the document.head element
+					 * @param script: the script element that created by createScript() but not yet append to the DOM
+					*/
+					function appendScriptByText(head, script) {
+						head.appendChild(script);
+						return Promise.resolve(script);
+					}
+	
+					/** append script by url (speified in options.url), so we use Promise to handle async state of script load 
+					 * @param head: the document.head element
+					 * @param script: the script element that created by createScript() but not yet append to the DOM
+					*/
+					function appendScriptByUrl(head, script) {
+						return new Promise(function(resolve, reject) {
+						// Handle Script loading
+						var done = false;
+	
+						// Attach handlers for all browsers.
+						//
+						// References:
+						// http://stackoverflow.com/questions/4845762/onload-handler-for-script-tag-in-internet-explorer
+						// http://stevesouders.com/efws/script-onload.php
+						// https://www.html5rocks.com/en/tutorials/speed/script-loading/
+						//
+						script.onload = script.onreadystatechange = function() {
+							if (!done && (!script.readyState || script.readyState === "loaded" || script.readyState === "complete")) {
+							done = true;
+	
+							// Handle memory leak in IE
+							script.onload = script.onreadystatechange = null;
+							resolve(script);
+							}
+						};
+	
+						script.onerror = reject;
+	
+						head.appendChild(script);
+						});
+					}
+	
+					/* IMPORTAN FUNCTIONS */
+	
+					/** function to create script and attached properties, attributes to script element for later processing when script file is loaded or failed-loading. Note that for now, the script has not been appended to the DOM
+					 * @param option: json of all attributes that need to config the script element and some other atttribute added to elements for using later. See https://github.com/MiguelCastillo/load-js/tree/master for list of default attribute like type, async, charset, id, url, text, cache (I renamed to 'cacheEnable'), debug
+					 * ADDED: jsDBName, loadMode, allowReload, urlVersion
+					 * @return the script element
+					 */
+					function createScriptElem(options) {
+						var script = document.createElement("script");
+						/* some built-in attribute of a script element, see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script for the full list */
+						script.charset = options.charset || "utf-8";
+						script.type = options.type || "text/javascript";
+						script.async = !!options.async; //default false
+						//in exec() we already create an options.id if user not clearly specify it
+						script.id = options.id; 
+						//script.id = (options.id || options.url).split("?")[0]; //without param of url if there any
+	
+						/* customized attribute to meet user extra need */
+						//attach all extra/extented attributes that user need to attach to script for later handy usage
+						script.extAttr = options.extAttr || {};
+						//attach a watermark to know that the script is loaded by loadJs or not
+						script.watermark = _WATERMARK;
+						//adding timestamp for ease of debugging when loadJS internal cache hit
+						script.timestamp = (new Date()).toLocaleString();
+	
+						/* Using version paramet '?v={version_number}' to force the browser to re-load and script file (mostly through file url) */
+						const _DEF_VERSION = Math.round(performance.now()); //101;
+						let _dbUrl = options.url;
+						const _versReg = _dbUrl.match(/v\=(\d+)/);
+						if(_versReg){
+							let _version = parseInt(_versReg[1]);
+							if(isNaN(_version)) _version = _DEF_VERSION;
+							// freshLoad = true, we need to re-load the script even there is old version in the cache. For the specific case of this page when loading DB stored in script file, we do fresh-load only when loadMode == 1 (and we need to specify freshLoad attribute when invoking loadJs). Other mode loadMode= -1 (called from addJsDatabaseFileReport()) or =2, using cache if applicable
+							// We archive fresh-load by changing the version so the js file load will ignore browser's cache.
+							if(options.freshLoad)  _dbUrl = _dbUrl.replace(_versReg[0], "v=" + (++_version));
+						}
+						else _dbUrl += (_dbUrl.indexOf("?")>-1? "": "?") + "v=" + _DEF_VERSION; //assign a initial version number
+						
+						//save new versionning into urlVersion of script element, so later in loadPage, we can update the new version into xDBFilesCfg.toLoad[index].dbUrl. Note that I don't want to use script.src since it is absolute address while script.urlVersion is relative address (shorter)
+						script.urlVersion = options.url = _dbUrl;
+	
+						if (options.url) { script.src = options.url; }
+						if (options.text) { script.text = options.text; }
+						return script;
+					}
+	
+					/** function to create script and append it to the DOM. Note that this function only support for one script only. This function also handle some situation like duplicate load by loadJs or duplicate with hard-coded markup.
+					 * @param option: config for the single script to be load
+					 * @return a promise wrapping the script
+					 */
+					function exec(options) {
+						// if user only invokde loadJS with a string as parameter like loadJS('https://code.jquery.com/jquery-2.2.1.js'), consider as loading by url
+	
+						/* Create default value for options attributes when missing */
+						if (typeof options === "string") {
+							options = {
+								url: options
+							};
+						}
+	
+						//default flags if not otherwise specify differently when invoking loadJS()
+						const _DEFAULT_OPTIONS = {
+							cacheEnable: true, //update script to the loadJs internal cache
+							allowExternal: false, //ignore the external having same url script (after removing parameter if any), if any
+							allowReload: false, //not allow reload if this script has been loaded before by loadJs
+							freshLoad: false, //using the browser cache if any
+							removeMarkup: true, //remove markkup out of DOM when done loading script
+							debug: false
+						}
+						options = Object.assign({}, _DEFAULT_OPTIONS, options);
+	
+						// if freshload, meaning loading new version of the script without using browser caches or loadJS internal cache, so we must set allowReload = true
+						if(options.freshLoad) options.allowReload = true;
+	
+						// if user not specify an id for script, we make one from its url without param
+						let _scriptId = options.id || (options.url.split('?')[0]).hashCode(); // make an id from url if option.id is not explicitly specified
+						options.id = _scriptId; //update back the maybe-new id to the option
+	
+						// cache here just to avoid same js files being loaded twice in the SAME session, with requirement both are loaded by loadJS
+						let _cachedScriptEntry = _loadJsInternalCache[_scriptId]; //see if script already in loadJS cache
+	
+						if (_cachedScriptEntry) {
+							if (!!options.debug) {
+								console.warn("loadJS: Script hit - this script has been loaded by loadJS in current page session. id:", _scriptId, "; url:", options.url);
+							}
+							//if options.allowReload = true: return script Promise right away without reloading it
+							if(!options.allowReload)
+								return _cachedScriptEntry;
+						}
+						//check allowExternal only when no _cachedScriptEntry because when there is _cachedScriptEntry, allowExternal is checked when the first time this script is loaded by loadJS
+						else if (options.allowExternal) {
+							// not found script in the cache AND options.allowExternal = true or missing, we need to look in the DOM to see if there any script (of cource, not loaded by loadJS). In case found, use that script without having loadJs reloaded that script
+	
+							let el = getExternalScript(options.url) ;//getScriptById(options.id) || getScriptByUrl(options.url);
+	
+							// found an external script with similar url (but not loaded by loadJs)
+							if (el) {
+								// Promise.resolve(el) is the same with 'new Promise( (resolve, reject) => resolve(el) )'
+								let promise = Promise.resolve(el);
+								//store external script promise into cache
+								if (_scriptId) { _loadJsInternalCache[_scriptId] = promise; }
+								return promise;
+							}
+						}					
+	
+						if (!options.url && !options.text) {
+							throw new Error("load-js: must provide a url or text to load");
+						}
+	
+						// depding on the type of script (code or url), we need different function to append the script and handle async nature of the script to the DOM
+						const _scriptElem = createScriptElem(options);
+						var pendingPromise = (options.url ? appendScriptByUrl : appendScriptByText)(head, _scriptElem);
+	
+						//if options.removeMarkup is true of missing, remove the script markup in document.head, so if other inspect the code would not see the script had been loaded to the page which could cause confusing for them when inspecting the code.
+						if(options.removeMarkup !== false)
+							//finally is to do performing cleanup/finalizing after the previous operations are complete (doesn't matter successfull to failed).
+							pendingPromise.finally(_ => {
+								_scriptElem.remove();
+							});
+	
+						//if cacheEnable is not explicitly set to false, save this script inside _loadJsInternalCache for later check of duplication
+						if (_scriptId && options.cacheEnable !== false) { _loadJsInternalCache[_scriptId] = pendingPromise; }
+	
+						return pendingPromise;
+					}
+	
+					/** load one script or array of script 
+					 * @param items is one item or array of items. Each item can be a string which contains url of the script or a json. If item is an json, the json is actually the option which has attributes as described in wrapper loadJS comments above
+					 * 
+					 * @return
+					 * if @items is one item, it will return the script element directly
+					 * if @items is array of items, it will return the array of result json which has one of following formats:
+					 * 		success: {status: 'fulfilled', value: ...the script element...}
+					 * 		failed:  {status: 'rejected', reason: ...the script element...}
+					 * See createScript() for the handy, customized property that added to script element like id, jsDBName, loadMode, urlVersion, watermark, type, charset
+					*/
+					return function load(items) {
+						return items instanceof Array ? Promise.allSettled(items.map(exec)) : exec(items);
+					}
+				})();
+	
+				/** Function to deploy data inside DB js file into the page, that is to load the Book Kit variables inside each Database file named {_jsDBName} into a collection {ssData.jsDBFiles} along with database file _loadMode */
+				static deployDB(_jsDBName, _loadMode) {
+					const bookKitVars = []; //store the names of attributes (each actually is book Kit variable) of the current data variable (like data_0)
+					this.name = _jsDBName; //store data variable names inside the variable content
+					for (const key of Object.getOwnPropertyNames(this)) {
+						//console.log(key);
+						if (key.match(/\_Data$/) && (typeof this[key] == 'object')) {
+							//console.log(key + ":" + (typeof this[key]));
+							bookKitVars.push(key);
+						}
+					}
+	
+					// new item of ssData.jsDBFiles for _jsDBName
+					const _newJsDBFile = { dbName: this.name, dbs : bookKitVars, loadMode: _loadMode};
+					// find index of current item in ssData.jsDBFiles having dbName == _jsDBName
+					const _jsDBFileIdx = ssData.jsDBFiles.findIndex(_dbFile => _dbFile.dbName == _jsDBName );
+	
+					if(_jsDBFileIdx == -1)
+						// not found, just push it in
+						ssData.jsDBFiles.push(_newJsDBFile);
+					else
+						//found, replace old item with new one
+						ssData.jsDBFiles.splice(_jsDBFileIdx, 1, _newJsDBFile);
+				}
+	
+				/** Compare {edt} attribute (edition) from xDBFilesCfg.toLoad[index].edt with _DEFAULT_CFG.cDBFilesEdt.edt[index] to see if there is later version of any of data_{index} DB files. If there is, UPDATE edt IMMEDIATELY.
+				 * @param _ivkFrom: invoked from, mostly for controlling the message
+				 * 		@value 0: invoked from loadPage()
+				 * 		@value 1: invoked from Setting.handyCheckDBsEdition()
+				 * 		@note: for now, this param is redundant and is not usable
+				 * @return 
+				 * 		@value null is there is no new update on any DB files
+						@value an json: see the 'return' directive at the very end of function for detailed information
+				*/
+				static checkDBFilesEdition(_ivkFrom){
+					const _DEF_DB_EDITION = 100; //initial edition of any DBFile
+					
+					//array store DB dbName (like 'data_0', 'data_1') that has new edition that is to be fresh load (load ignoring browser'cache).
+					let _DBsHasNewEdition = [];
+					
+					//the counter to count the number of DBs that has NO edt attributes before. This only happen when there is no xDBFilesCfg in local storage (which only the case when the page is loaded very firs time OR local storage has been completely wiped-out)
+					let _DBsLoadedVeryFirstTimeCounter = 0;
+	
+					xDBFilesCfg.toLoad.forEach((_dbItem, i) => {
+						
+						let _latestDbEdition = _DEF_DB_EDITION;
+						//Check Edition of a DB files, if it is smaller than the lastest (in _DEFAULT_CFG.cDBFilesEdt.edt array)
+						if(_DEFAULT_CFG?.cDBFilesEdt?.edt ?? false){
+							_latestDbEdition = i < _DEFAULT_CFG.cDBFilesEdt.edt.length ? _DEFAULT_CFG.cDBFilesEdt.edt[i] :  _DEF_DB_EDITION;
+						}
+	
+						//if current edition of inspected DBItem is not set yet (when page runs clean - meaning cache and localStore of last session is all wiped out) OR not the lastest (need update)
+						if(!_dbItem.hasOwnProperty("edt") || _dbItem.edt <  _latestDbEdition) {
+							//store DBs already cached but has later edition
+							if(!_dbItem.hasOwnProperty("edt")) _DBsLoadedVeryFirstTimeCounter++;
+	
+							//Important: update the edition number IMMEDIATELY and DIRECTLY into xDBFilesCfg.toLoad[index].edt
+							_dbItem.edt =  _latestDbEdition;
+	
+							//store dbName of DB having new edition
+							_DBsHasNewEdition.push(_dbItem.dbName);
+						}
+					});				
+	
+					return _DBsHasNewEdition.length > 0 ? 
+						{	// array contains dbName of all DB having new edition
+							DBsHasNewEdition: _DBsHasNewEdition,
+							// true if all DB having new edition is actually has no .edt before (meaning page is loaded very first time of just being fully wiped out all its localStorage)
+							noDBsBefore: _DBsLoadedVeryFirstTimeCounter == _DBsHasNewEdition.length
+						} : 
+						//if there is no DBs having new edition, return null
+						null;
+				}
+	
+				/** Function to download and load-up all DB script file, update its version into xDBFilesCfg.toLoad[index].dbUrl. Doing some extra work by the callbacks _promiseCB, _allSettleCB
+				 * @param _ivkFrom: invoked from, used for doing some extra work depending on where this function is invoked from, and for controlling the toast message
+				 * 		@value 0: invoked from loadPage()
+				 * 		@value 1: invoked from ssData.setting.handyCheckDBsEdition
+				 * @param _promiseCB {function} the callback function when EACH script promise suceed
+				 * @param _allSettleCB {function} the callback function when ALL scripts promise are settled (does not matter successfully or not)
+				 * @return 
+				 * 		@value array of dbName of all DBs having new edition
+				*/
+				static importDBfromFiles(_ivkFrom, _promiseCB, _allSettleCB){
+					//make an alias for xDBFilesCfg.toLoad
+					let toLoadArr = xDBFilesCfg.toLoad;
+	
+					//check if there is new DB files updated, mark those DBs has new edition or has no cache with loadMode = 1 (fresh Load) so that DBFiles.loadJS will do the rest to load latest version of those new DB files. Note that this function could override loadMode for some DB files on check failCount above
+					// this array store list of DB files that has newer editions. If none has or fail to load 'config.js', it is null. See return in DBFiles.checkDBFilesEdition for the format of returned value
+					let _newEditionDBs = DBFiles.checkDBFilesEdition(0);
+	
+					let _DBsHasNewEdition = [];
+					//notify user about DBs having new edition
+					if(_newEditionDBs){
+						/** the function to create notification message to user of the detail of new DBs 
+						 * @param _DBarray the array of DBs file_no that need to create message, such as [0, 1, 3]
+						*/
+						const _newDBNotifyMsg = (_DBarray) => {
+							let _msg = '';
+							if(_DBarray.length > 0)
+								_msg = (_msg==''?'': '<br>') + `${_DBarray.length > 1?"Các ":""}CSDL ${ _DBarray.map(t => "<mark style='color:red;font-weight:bold'>"+t+"</mark>").join(", ") } có phiên bản mới`;
+							return _msg;
+						}
+	
+						let _msg = '';
+	
+						//empty function, this function is used as toast callback when user manually check new edition (when page is running), then it found a shown DB (loadMode = 1,2) having new edition, so when the toast is timed-out, this callback will be invoked to ask user to refesh the page to get new DB updated
+						let _toastCallback = _ => {};
+	
+						//get the list of all DBs having new edition
+						_DBsHasNewEdition = _newEditionDBs.DBsHasNewEdition;
+	
+						//_newEditionDBs.noDBsBefore = true when all DBs (in xDBFilesCfg.toLoad) load into page not yet has 'edt' attribute, meaning this might be the very first time page is loaded or xState was completely wiped-out
+						if(_newEditionDBs.noDBsBefore){
+							if(_ivkFrom==0 )
+							_msg = 'Sử dụng app lần đầu tiên hoặc dữ liệu lưu của các phiên làm việc trước của app đã bị xóa sạch!';
+						}
+						else{
+							//get all DBs has new edition but is set to be hidden
+							const _DBloadHide = _DBsHasNewEdition.filter(_dbName => 
+								toLoadArr.find(_dbItem => _dbItem.dbName == _dbName).loadMode == DBFiles.LMODE.noShow
+							);
+	
+							//get all DBs has new edition and is set to be shown
+							const _DBloadShow = _DBsHasNewEdition.filter(_dbName => !_DBloadHide.includes(_dbName)
+							);
+	
+							// show toast for DBs having new edition and also set to be shown
+							if(_DBloadShow.length > 0){
+								let _localMsg = _newDBNotifyMsg(_DBloadShow);
+								if(_localMsg != '')
+									_msg += _localMsg + ', đã được App tự động ' + (_ivkFrom == 0? 'cập nhật.' : 'tải xuống (Dữ liệu mới chỉ cập nhật khi nạp lại trang Web.).');
+							}
+	
+							// show toast for DBs having new edition but set to be hidden
+							if(_DBloadHide.length > 0){
+								let _localMsg = _newDBNotifyMsg(_DBloadHide);
+								if(_localMsg != '')
+									_msg += (_msg == ''? '': '<br>') + _localMsg + ', đã được App tự động cập nhật nhưng đang ở chế độ ẩn.';
+							}
+	
+							//set toast callback when is invoked from Setting.handyCheckDBsEdition()
+							if(_DBloadHide.length < _DBsHasNewEdition.length && _ivkFrom == 1)
+							_toastCallback = _ => {
+									if(confirm("CSDL có phiên bản mới. Cần nạp lại trang Web để cập nhật dữ liệu mới.\n\n Sẽ chỉ mất vài giây. Bạn có muốn nạp lại trang Web ngay bây giờ?"))
+									//Force a hard reload to clear the cache if supported by the browser
+										window.location.reload(true);
+								}
+						}
+	
+						if(toast && _ivkFrom == 1)
+							toast.showToast(_msg, toast.ToastType.Infor, {duration: 1.5e4, cbEnd: _toastCallback}); 
+						else
+							//since Toast object has not been loaded, so we put it into delayedNotification
+							ssData.delayedNotification.push({msg: _msg, option: {duration: 1.5e4}});
+					}
+					
+					//function to check if a DB has new edition
+					const _newDBcheck = _dbItem => {
+						if(_DBsHasNewEdition.length == 0) return false;
+						return Boolean( _DBsHasNewEdition.find(_dbName => _dbItem.dbName == _dbName) );
+					}
+					//function to filter all DBs that need to download
+					const _filterFnc = _dbItem => {
+						//const _newDBcheck = _dbName => 
+						if(_ivkFrom == 0){
+							/* call from loadPage(), we need to load all DB that match one of following condition:
+							 a) cacheLoad (2) or freshLoad (1)
+							 b) all DB (even in noShow(0) mode) but has new edition. Some DB of this condition might already be in condition a) */
+							return _dbItem.loadMode != DBFiles.LMODE.noShow || _newDBcheck(_dbItem);
+						}
+						else {
+							// call from Setting.handyCheckDBsEdition(), just load the DB has new edition
+							return _newDBcheck(_dbItem);
+						}
+					}
+					//store array of script url and its option to load into loadJs
+					//loadMode: 0 - No Show. 1- Fresh load, No Cache. 2-load, using cache if applicable.
+					let _jsDataFiles = toLoadArr.filter( _dbItem => _filterFnc(_dbItem) ) //filter item to be loaded (has loadMode 1 or 2)
+					.map( _dbItem =>  ({
+						url: _dbItem.dbUrl,
+						//removeMarkup: since we don't set value for this flag, its default value would be true, meaning the script markup would be removed out of DOM after being loaded (sucess or fail), so other would not see any markup in the DOM for those config.js and data_*.js files
+						//allowReload: true, //removed because when freshLoad = true, allowReload also set to true
+						freshLoad: _dbItem.loadMode == DBFiles.LMODE.freshLoad || _newDBcheck(_dbItem), //script should ignore browser's cache if its loadMode is freshLoad or it has new edition (does not matter what its loadMode is)
+						//see DBFiles.loadJS for explanation of some properties of extAttr
+						extAttr: {
+							//fileNo: _dbItem.fileNo, // this actually can derived from jsDBName below
+							jsDBName: _dbItem.dbName, 
+							loadMode: _dbItem.loadMode //this property actually not use
+						} 
+					})
+					); //map into format of options for loadJS()
+	
+					DBFiles.loadJS(_jsDataFiles)
+					.then((_res) => {
+						_res.forEach(_prom => {
+							// for success loaded db file: add data to data collected variable ssData.jsDBFiles
+							if(_prom.status === "fulfilled"){
+								// because of Promise.allSettled in loadJS, so _prom.value point to script elements created inside createLoadJS
+								const _scriptElm = _prom.value;
+								const _extAttr = _scriptElm.extAttr;
+								const _jsDBName = _extAttr.jsDBName; //something like 'data_0'
+	
+								//xDBFilesCfg.toLoad corresponding with current script
+								const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
+								
+								//this should never happen
+								if(!_dbFileCfgItm) return console.log('importDBfromFiles(): somehow there is a database script element that not found in xDBFilesCfg.toLoad');
+	
+								//reset failCount
+								_dbFileCfgItm.failCount = 0;
+	
+								// If flag freshLoad is set to true (when loadMode=1), loadJS.exec() will change version number in script url. So, we need to update dbUrl accordingly, so next time load the page, the page would use the right version from the browser's cache (because the browser's cache only keep the last version of script)
+								_dbFileCfgItm.dbUrl = _scriptElm.urlVersion;
+	
+								//if DB file having loadMode == DBFiles.LMODE.noShow then clean its data since those data would not be shown in books list
+								if( _dbFileCfgItm.loadMode == DBFiles.LMODE.noShow ){
+	
+									// for more control on clearing unneccessary data, I defer the clearing job to _promiseCB callback
+									//delete the global variable for data that set hidden to save memory
+									//window[_jsDBName] = undefined;
+								}
+								else{
+									// if fresh-load, then change loadMode to cache-load for next session
+									if(_dbFileCfgItm.loadMode == DBFiles.LMODE.freshLoad) {
+										_dbFileCfgItm.loadMode = DBFiles.LMODE.cacheLoad;
+										console.warn(`importDBfromFiles(): Database file ${_dbFileCfgItm.dbUrl} has change loadMode from 1 to 2 (Load from Browser's Cache on next session)`);
+									}
+								}
+	
+								if('function' == typeof _promiseCB){
+									// load DB into ssData.jsDBFiles (so books inside that DB would be show in this session) if it is not in no-show mode (loadMode !=0)
+									if (_ivkFrom == 0) _promiseCB(_scriptElm);
+									//DBFiles.deployDB.call(window[_jsDBName], _jsDBName, _extAttr.loadMode);
+								
+									// for now Setting.handyCheckDBsEdition has set no function for this callback
+									if (_ivkFrom == 1) _promiseCB(_scriptElm);
 								}
 							}
-
-							if('function' == typeof _promiseCB){
-								// load DB into ssData.jsDBFiles (so books inside that DB would be show in this session) if it is not in no-show mode (loadMode !=0)
-								if (_ivkFrom == 0) _promiseCB(_scriptElm);
-								//DBFiles.deployDB.call(window[_jsDBName], _jsDBName, _extAttr.loadMode);
-							
-								// for now Setting.handyCheckDBsEdition has set no function for this callback
-								if (_ivkFrom == 1) _promiseCB(_scriptElm);
+							// for failed loaded db file: 
+							else if(_prom.status === "rejected"){
+								/* most likely the database file not exist */
+	
+								//_prom.reason.target point to script elements created inside createLoadJS
+								const _scriptElm = _prom.reason.target;
+								const _jsDBName = _scriptElm.extAttr.jsDBName;
+	
+								//mark loadMode of failly-loaded database file to be 'No Show' and increase failCount
+								const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
+								if(_dbFileCfgItm){
+									_dbFileCfgItm.loadMode = DBFiles.LMODE.noShow;
+									if(typeof _dbFileCfgItm.failCount == 'number')_dbFileCfgItm.failCount++; else _dbFileCfgItm.failCount = 1;
+									console.log(`Database file ${_dbFileCfgItm.dbUrl} has change loadMode to 0 (No show on next session)`);
+								}
 							}
+						});
+	
+						if('function' == typeof _allSettleCB) _allSettleCB();
+	
+						
+					})
+					return _DBsHasNewEdition;
+				}			
+			}
+	
+			/* Function is called at the very beginning when page is load. It does:
+			- restore xState from localStorage, which along others page states from last sesson, it also contains which database files would be loaded, with which loadMode
+			- load the Databases file with the loadMode stored in xState
+			- call init() function
+			 */
+			function loadPage(){
+				//note that since "config.js" has no suffix "?v=", so it is treated as loadMode = 1 because it will be added suffixe ?v={performance.noe()}
+				//{url: "config.js", removeMarkup: false}
+				DBFiles.loadJS( "config.js" ).then((_ret) => {
+					/* STEP B: Lấy lại xState, xDBFilesCfg lưu trong Storage từ phiên trước; This have been moved to init() */
+					function getFromStorage(_storageName){ //wrap function to restore json variable from localStorage
+						let resState = localStorage.getItem(_storageName);
+						if (resState != null) {
+							try {
+								resState = JSON.parse(resState);
+							} catch (e) { resState = null }
 						}
-						// for failed loaded db file: 
-						else if(_prom.status === "rejected"){
-							/* most likely the database file not exist */
-
-							//_prom.reason.target point to script elements created inside createLoadJS
-							const _scriptElm = _prom.reason.target;
-							const _jsDBName = _scriptElm.extAttr.jsDBName;
-
-							//mark loadMode of failly-loaded database file to be 'No Show' and increase failCount
-							const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
-							if(_dbFileCfgItm){
-								_dbFileCfgItm.loadMode = DBFiles.LMODE.noShow;
-								if(typeof _dbFileCfgItm.failCount == 'number')_dbFileCfgItm.failCount++; else _dbFileCfgItm.failCount = 1;
-								console.log(`Database file ${_dbFileCfgItm.dbUrl} has change loadMode to 0 (No show on next session)`);
-							}
-						}
-					});
-
-					if('function' == typeof _allSettleCB) _allSettleCB();
-
+						return resState;
+					}
+	
+					/* I. Initiate some important environment variables */
+					xState = getFromStorage('xState') ?? structuredClone(_DEFAULT_CFG.xState); //restore xState from localStorage
+					//this to add some attributes that add might just be added while xState has been initialized quite a go
+					xState = Object.assign({},_DEFAULT_CFG.xState, xState);
+	
+					// initialize history object if somehow it is not yet existed
+					if(!xState.hasOwnProperty("history")) xState.history = structuredClone(_DEFAULT_CFG.xState.history);
+					//this line is used to update new property 'books' of xState.history. TODO: This is redundant if user wipeout all localStorage data, and cann be moved after someimt
+					xState.history = Object.assign({},_DEFAULT_CFG.xState.history, xState.history);
+	
+					xDBFilesCfg = getFromStorage('xDBFilesCfg') ?? structuredClone(_DEFAULT_CFG.xDBFilesCfg); //restore xDBFilesCfg from localStorage
 					
+					//initiate empty xState.toastCfg 
+					if(!xState.hasOwnProperty("toastCfg")) xState.toastCfg={};
+	
+					//this to add some attributes that add might just be added while xState has been initialized quite a go
+					xDBFilesCfg = Object.assign({},_DEFAULT_CFG.xDBFilesCfg, xDBFilesCfg);
+	
+					//initiate last checked time
+					ssData.lastDBCheck = Date.now();
+	
+					//initiate delayedNotification storage for delayed (postponed) notification to user (especially when toast object has not created like when invoking from this loadPage() function)
+					if(!ssData.hasOwnProperty("delayedNotification")) ssData.delayedNotification = [];
+	
+					//_DEFAULT_CFG.xDBFilesCfg looks like {"len":3,"toLoad":null};
+					//in case new database just being added, the len in the cfg changes
+					//for now, I fix number of databases on _DEFAULT_CFG.xDBFilesCfg.len
+					xDBFilesCfg.len = _DEFAULT_CFG.xDBFilesCfg.len; //Math.max( (xDBFilesCfg.len ?? 3), _DEFAULT_CFG.xDBFilesCfg.len);
+					
+					/* II.A. Prepairing xDBFilesCfg.toLoad array before actually loading the DBs and book data inside them */
+					//initiate xDBFilesCfg.toLoad array if it not yet exist (this only happen when page loaded for very first time or local storge was been completely wiped out)
+					if(!(xDBFilesCfg.toLoad instanceof Array))  xDBFilesCfg.toLoad = [];
+					let toLoadArr = xDBFilesCfg.toLoad; //don't swap this line and above
+	
+					/* II. load the DB files */
+					const _DEF_LOADMODE = DBFiles.LMODE.cacheLoad;  //default loadMode is load, use cache
+					// fill in items that localStorage's xDBFilesCfg does not have. This might happens when new database files being added to the page
+					const _DB_MAX_FAILCOUNT = 10; //maximum fail count for an DB files before it is put into 'No Show' mode				
+	
+					const _DB_FILE_REFIX = "data_";
+					//standard, initial database file information based on the len in config
+					let _toLoadArrTemp = [...Array(xDBFilesCfg.len).keys()].map(i => {
+						return {fileNo: i, //order number of Database file, act as an Id to identify a Database File
+							dbName: `${_DB_FILE_REFIX}${i}`,  //name of Database variable inside file
+							dbUrl: `${_DB_FILE_REFIX}${i}.js`, //Database file url
+							loadMode: _DEF_LOADMODE, //default: database to be cache loaded
+							failCount: 0} //count the number of fail when load this database
+					});
+	
+					//if current cached has more number of databases than the config setting, remove them out of toLoadArr
+					if(_toLoadArrTemp.length < toLoadArr.length){
+						let _removedDBs = "";
+						for(let i=_toLoadArrTemp.length; i<toLoadArr.length; i++)
+						_removedDBs += "<mark>" + toLoadArr[i].dbName + "</mark>";
+						ssData.delayedNotification.push({msg: "Database " + _removedDBs + " bị loại khỏi app.", option: {duration: 1e4}});
+						//naive way to remove the database out of toLoadArr. Only work correctly if databases are in order like data_0, data_1, data_2, data_3,...
+						toLoadArr.length = _toLoadArrTemp.length;
+					}
+					//add database to toLoadArr if there any new database in _toLoadArrTemp (which made from the config setting)
+					const _pageLoadedFirstTime = toLoadArr.length == 0;
+					for(let i=0; i<_toLoadArrTemp.length; i++) {
+						const _toLoadItemTmp = _toLoadArrTemp[i];
+						if( !toLoadArr.find(_item => _item.fileNo == _toLoadItemTmp.fileNo) ) {
+							toLoadArr.push(_toLoadItemTmp);
+							//only notify of new DBs if this it not the very first time the page is loaded (so there is no cache for DBs yet)
+							if(!_pageLoadedFirstTime) ssData.delayedNotification.push({msg: "Có database <mark>" + _toLoadItemTmp.dbName + "</mark> mới được thêm vào app.", option: {duration: 1e4}});
+						}
+					}
+					
+					// if all data files having loadMode = 0 (no load) then mark the data_0 loadMode = 2 so there is at least one database to be loaded
+					if(toLoadArr.every(_lm => _lm.loadMode == DBFiles.LMODE.noShow)){
+						toLoadArr.find(_lm => _lm.fileNo == 0).loadMode = _DEF_LOADMODE; //load, use cache
+					}
+	
+					//for item that has too many times fail when loading, just mark it to 'No show' so the page won't bother load it, except when its loadMode == 1 (forcing fresh load)
+					toLoadArr.forEach((_dbItem, i) => {
+						//mark no show if failCOunt > 10
+						if(_dbItem.loadMode == DBFiles.LMODE.cacheLoad && _dbItem.failCount > _DB_MAX_FAILCOUNT) _dbItem.loadMode = DBFiles.LMODE.noShow;
+					});
+	
+					ssData.jsDBFiles = []; //initialize jsFiles for deployDB() to put data into
+	
+					/* II.B downloading DBs from js script files and loading book data into the page */
+	
+					/** function to be invoked as a callback for importDBfromFiles() each time a script promise successfully loaded 
+					 * @param _scriptElem {promise} the script promise that wrap script element
+					*/
+					const _promiseCB = _scriptElm => {
+						const _extAttr = _scriptElm.extAttr;
+						const _jsDBName = _extAttr.jsDBName; //something like 'data_0'
+						//xDBFilesCfg.toLoad corresponding with current script
+						const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
+	
+						//note that the case loadMode==noShow (0), importDBfromFiles() has taken care to delete the global variable for data that set hidden to save memory. Here, we only do the deploy data inside database that set to be shown: cacheLoad(2), freshLoad(1)
+						if(_dbFileCfgItm.loadMode > 0)
+							DBFiles.deployDB.call(window[_jsDBName], _jsDBName, _extAttr.loadMode);
+						else
+							window[_jsDBName] = undefined;
+					}
+					//now, actually download the DB script file and deploy data inside (if DB is not in hidden mode), then run the init()
+					DBFiles.importDBfromFiles(
+						//mark that invoke from loadPage()
+						0, 
+						//callback function which will be invoked each time a DB script file is loaded succesfully
+						_promiseCB,
+						//callback function which is invoked when all DBs has been loaded (each might be sucessful or failed)
+						init
+					);
 				})
-				return _DBsHasNewEdition;
-			}			
-		}
-
-		/* Function is called at the very beginning when page is load. It does:
-		- restore xState from localStorage, which along others page states from last sesson, it also contains which database files would be loaded, with which loadMode
-		- load the Databases file with the loadMode stored in xState
-		- call init() function
-		 */
-		function loadPage(){
-			//note that since "config.js" has no suffix "?v=", so it is treated as loadMode = 1 because it will be added suffixe ?v={performance.noe()}
-			//{url: "config.js", removeMarkup: false}
-			DBFiles.loadJS( "config.js" ).then((_ret) => {
-				/* STEP B: Lấy lại xState, xDBFilesCfg lưu trong Storage từ phiên trước; This have been moved to init() */
-				function getFromStorage(_storageName){ //wrap function to restore json variable from localStorage
-					let resState = localStorage.getItem(_storageName);
-					if (resState != null) {
-						try {
-							resState = JSON.parse(resState);
-						} catch (e) { resState = null }
-					}
-					return resState;
-				}
-
-				/* I. Initiate some important environment variables */
-				xState = getFromStorage('xState') ?? structuredClone(_DEFAULT_CFG.xState); //restore xState from localStorage
-				//this to add some attributes that add might just be added while xState has been initialized quite a go
-				xState = Object.assign({},_DEFAULT_CFG.xState, xState);
-
-				// initialize history object if somehow it is not yet existed
-				if(!xState.hasOwnProperty("history")) xState.history = structuredClone(_DEFAULT_CFG.xState.history);
-				//this line is used to update new property 'books' of xState.history. TODO: This is redundant if user wipeout all localStorage data, and cann be moved after someimt
-				xState.history = Object.assign({},_DEFAULT_CFG.xState.history, xState.history);
-
-				xDBFilesCfg = getFromStorage('xDBFilesCfg') ?? structuredClone(_DEFAULT_CFG.xDBFilesCfg); //restore xDBFilesCfg from localStorage
-				
-				//initiate empty xState.toastCfg 
-				if(!xState.hasOwnProperty("toastCfg")) xState.toastCfg={};
-
-				//this to add some attributes that add might just be added while xState has been initialized quite a go
-				xDBFilesCfg = Object.assign({},_DEFAULT_CFG.xDBFilesCfg, xDBFilesCfg);
-
-				//initiate last checked time
-				ssData.lastDBCheck = Date.now();
-
-				//initiate delayedNotification storage for delayed (postponed) notification to user (especially when toast object has not created like when invoking from this loadPage() function)
-				if(!ssData.hasOwnProperty("delayedNotification")) ssData.delayedNotification = [];
-
-				//_DEFAULT_CFG.xDBFilesCfg looks like {"len":3,"toLoad":null};
-				//in case new database just being added, the len in the cfg changes
-				//for now, I fix number of databases on _DEFAULT_CFG.xDBFilesCfg.len
-				xDBFilesCfg.len = _DEFAULT_CFG.xDBFilesCfg.len; //Math.max( (xDBFilesCfg.len ?? 3), _DEFAULT_CFG.xDBFilesCfg.len);
-				
-				/* II.A. Prepairing xDBFilesCfg.toLoad array before actually loading the DBs and book data inside them */
-				//initiate xDBFilesCfg.toLoad array if it not yet exist (this only happen when page loaded for very first time or local storge was been completely wiped out)
-				if(!(xDBFilesCfg.toLoad instanceof Array))  xDBFilesCfg.toLoad = [];
-				let toLoadArr = xDBFilesCfg.toLoad; //don't swap this line and above
-
-				/* II. load the DB files */
-				const _DEF_LOADMODE = DBFiles.LMODE.cacheLoad;  //default loadMode is load, use cache
-				// fill in items that localStorage's xDBFilesCfg does not have. This might happens when new database files being added to the page
-				const _DB_MAX_FAILCOUNT = 10; //maximum fail count for an DB files before it is put into 'No Show' mode				
-
-				const _DB_FILE_REFIX = "data_";
-				//standard, initial database file information based on the len in config
-				let _toLoadArrTemp = [...Array(xDBFilesCfg.len).keys()].map(i => {
-					return {fileNo: i, //order number of Database file, act as an Id to identify a Database File
-						dbName: `${_DB_FILE_REFIX}${i}`,  //name of Database variable inside file
-						dbUrl: `${_DB_FILE_REFIX}${i}.js`, //Database file url
-						loadMode: _DEF_LOADMODE, //default: database to be cache loaded
-						failCount: 0} //count the number of fail when load this database
+				.catch(err => {
+					console.error(err);
+					alert("Không nạp được file config.js, trang Web không thể hoạt động.");
 				});
-
-				//if current cached has more number of databases than the config setting, remove them out of toLoadArr
-				if(_toLoadArrTemp.length < toLoadArr.length){
-					let _removedDBs = "";
-					for(let i=_toLoadArrTemp.length; i<toLoadArr.length; i++)
-					_removedDBs += "<mark>" + toLoadArr[i].dbName + "</mark>";
-					ssData.delayedNotification.push({msg: "Database " + _removedDBs + " bị loại khỏi app.", option: {duration: 1e4}});
-					//naive way to remove the database out of toLoadArr. Only work correctly if databases are in order like data_0, data_1, data_2, data_3,...
-					toLoadArr.length = _toLoadArrTemp.length;
-				}
-				//add database to toLoadArr if there any new database in _toLoadArrTemp (which made from the config setting)
-				const _pageLoadedFirstTime = toLoadArr.length == 0;
-				for(let i=0; i<_toLoadArrTemp.length; i++) {
-					const _toLoadItemTmp = _toLoadArrTemp[i];
-					if( !toLoadArr.find(_item => _item.fileNo == _toLoadItemTmp.fileNo) ) {
-						toLoadArr.push(_toLoadItemTmp);
-						//only notify of new DBs if this it not the very first time the page is loaded (so there is no cache for DBs yet)
-						if(!_pageLoadedFirstTime) ssData.delayedNotification.push({msg: "Có database <mark>" + _toLoadItemTmp.dbName + "</mark> mới được thêm vào app.", option: {duration: 1e4}});
-					}
-				}
-				
-				// if all data files having loadMode = 0 (no load) then mark the data_0 loadMode = 2 so there is at least one database to be loaded
-				if(toLoadArr.every(_lm => _lm.loadMode == DBFiles.LMODE.noShow)){
-					toLoadArr.find(_lm => _lm.fileNo == 0).loadMode = _DEF_LOADMODE; //load, use cache
-				}
-
-				//for item that has too many times fail when loading, just mark it to 'No show' so the page won't bother load it, except when its loadMode == 1 (forcing fresh load)
-				toLoadArr.forEach((_dbItem, i) => {
-					//mark no show if failCOunt > 10
-					if(_dbItem.loadMode == DBFiles.LMODE.cacheLoad && _dbItem.failCount > _DB_MAX_FAILCOUNT) _dbItem.loadMode = DBFiles.LMODE.noShow;
-				});
-
-				ssData.jsDBFiles = []; //initialize jsFiles for deployDB() to put data into
-
-				/* II.B downloading DBs from js script files and loading book data into the page */
-
-				/** function to be invoked as a callback for importDBfromFiles() each time a script promise successfully loaded 
-				 * @param _scriptElem {promise} the script promise that wrap script element
-				*/
-				const _promiseCB = _scriptElm => {
-					const _extAttr = _scriptElm.extAttr;
-					const _jsDBName = _extAttr.jsDBName; //something like 'data_0'
-					//xDBFilesCfg.toLoad corresponding with current script
-					const _dbFileCfgItm = xDBFilesCfg.toLoad.find(_item => _item.dbName == _jsDBName);
-
-					//note that the case loadMode==noShow (0), importDBfromFiles() has taken care to delete the global variable for data that set hidden to save memory. Here, we only do the deploy data inside database that set to be shown: cacheLoad(2), freshLoad(1)
-					if(_dbFileCfgItm.loadMode > 0)
-						DBFiles.deployDB.call(window[_jsDBName], _jsDBName, _extAttr.loadMode);
-					else
-						window[_jsDBName] = undefined;
-				}
-				//now, actually download the DB script file and deploy data inside (if DB is not in hidden mode), then run the init()
-				DBFiles.importDBfromFiles(
-					//mark that invoke from loadPage()
-					0, 
-					//callback function which will be invoked each time a DB script file is loaded succesfully
-					_promiseCB,
-					//callback function which is invoked when all DBs has been loaded (each might be sucessful or failed)
-					init
-				);
-			})
-			.catch(err => {
-				console.error(err);
-				alert("Không nạp được file config.js, trang Web không thể hoạt động.");
-			});
-		}
+			}
 	</script>
 
 	<!-- SMALL, HANDY NON-UI FUNCTIONS -beauty -->
@@ -7014,12 +6885,12 @@
 		} */
 
 		/** convert second to a human-readable format
-		 * @param sec {number}: the amount of seconds to be formatted
-		 * @param _verbose (optional)
-		 * 		- missing or 0: format to HHHH:Mm:ss
-		 * 		- 1: format to DD Ngày, HH:Mm:ss
-		 * 		- 2: format to DD Ngày, HH Giờ, MM Phút, SS Giây
-		 */
+			* @param sec {number}: the amount of seconds to be formatted
+			* @param _verbose (optional)
+			* 		- missing or 0: format to HHHH:Mm:ss
+			* 		- 1: format to DD Ngày, HH:Mm:ss
+			* 		- 2: format to DD Ngày, HH Giờ, MM Phút, SS Giây
+			*/
 		const toHhMmSs = (sec, _verbose = 0) => {
 			if (isNaN(sec)) return "-:--";
 
@@ -7296,19 +7167,19 @@
 			};
 
 			/** Adapt from https://trekhleb.medium.com/weighted-random-in-javascript-4748ab3a1500
-			 * Picks the random item based on its weight.
-			 * The items with higher weight will be picked more often (with a higher probability).
-			 *
-			 * For example:
-			 * - items = ['banana', 'orange', 'apple']
-			 * - weights = [0, 0.2, 0.8]
-			 * - weightedRandom(items, weights) in 80% of cases will return 'apple', in 20% of cases will return
-			 * 'orange' and it will never return 'banana' (because probability of picking the banana is 0%)
-			 *
-			 * @param {any[]} items
-			 * @param {number[]} weights
-			 * @returns {{item: any, index: number}}
-			 */
+				* Picks the random item based on its weight.
+				* The items with higher weight will be picked more often (with a higher probability).
+				*
+				* For example:
+				* - items = ['banana', 'orange', 'apple']
+				* - weights = [0, 0.2, 0.8]
+				* - weightedRandom(items, weights) in 80% of cases will return 'apple', in 20% of cases will return
+				* 'orange' and it will never return 'banana' (because probability of picking the banana is 0%)
+				*
+				* @param {any[]} items
+				* @param {number[]} weights
+				* @returns {{item: any, index: number}}
+				*/
 			/* eslint-disable consistent-return */
 			function weightedRandom(items, weights) {
 			if (items.length !== weights.length) {
@@ -7476,7 +7347,7 @@
 					@property persistance {boolean}: true then this Toast would not be wiped out by basic dismissAll() function (see that function for more)
 					@property out {boolean}: specify this is at out-phase
 					@property cbEnd {function}: callback function that if is spedified, will be invoked when the toast end and about to vanish
-			 */
+				*/
 			function makeToast(_msg, _toastType, options) {
 				
 				_toastType = _toastType ?? ToastType.Infor;
@@ -7519,7 +7390,7 @@
 				<div class="toast__icon">${makeSvgFromSprite("svgIconToast" + _toastType)}</div>
 				<div class="toast__msg">${_msg}</div>
 				<div class="toast-progress"></div>
-                `;
+				`;
 
 				//set in & out animation for toast 
 				const ANIM_IN_DUR = 500, ANIM_OUT_DUR = 500;
@@ -7652,7 +7523,7 @@
 				/* constructor and show the initial message, remember the Toast element
 					@param options {json}
 						- persistance: true if this toast not be wiped out by basic dismissAll()
-				 */
+					*/
 				constructor(msg, toastType, options) {
 					if (depressToastFlag) { //if the Toast not allow to show
 						depressToastFlag = false; //turn back the flag
@@ -7860,8 +7731,8 @@
 			let xData = ssData.xData; //abbreviate for xData
 
 			/** 
-			 *  Useful function using outside
-			 */
+				*  Useful function using outside
+				*/
 			/* Function to find the book from xData by bookId */
 			const findBookFromId = (bookId) => {
 				const _bIdx = ssData.bIds.indexOf(bookId);
@@ -7912,8 +7783,8 @@
 			}
 
 			/** 
-			 *  Main functions of BOOKDATA
-			 */
+				*  Main functions of BOOKDATA
+				*/
 
 			/* Prepare, collect, update all data (see each step for more detail) for page to work.
 			Because of storage and performance reason, some data is store separatedly (such as book group/category is stored in xBookGrp variable, but its configuration like visible/hidden, their display order is stored in xState.grpCfg) and need to gather back to some app variable for the app to work correctly
@@ -8116,7 +7987,7 @@
 			}
 
 			/*** THIS FUNCTION  FOR grpLine==0 (which in fact 2 level grouping "Book Set > Book > MC" ) 
-			 * Adding and grouping books titles to sddBookTitlesList dropdown list for special case (case 0) where books are group in categories, each book may have different MC (e.g, Tay Du Ky, Sherlock Holmes) or different Authors (Buddha sermon) who will be listed into radio buttons.
+				* Adding and grouping books titles to sddBookTitlesList dropdown list for special case (case 0) where books are group in categories, each book may have different MC (e.g, Tay Du Ky, Sherlock Holmes) or different Authors (Buddha sermon) who will be listed into radio buttons.
 			Each item of book select box is just represent for real book items in xData array, the real books lies in radios buttons of elmDivMcRadioCtn element
 				@hiddenparam bookGrpWay: the order to put the title. For now, this function and next function only serves for bookGrpWay===0  (see xBookGrp, xSate.grpLine, xData.grp), so this parameter is missed
 				@param _currBookId: bookId of the current playing book. There is a case that book is playing belong to group that is hidden by user (in setting class). In that case, This parameter is used to show the group and only current book (which is a bit different from user-setting) so that user has smooth experience when listning
@@ -8125,7 +7996,7 @@
 			*/
 			function popuGrpBookTitles(_currBookId, _repopulateSDD = false) {
 				/** function to generate setting for loading book sets and group of book sets (book kits) into SDD 
-				 * @return the full setting for populating sddBookTitlesList SDD. This full setting includes commonn setting, render, callback function and most importantly including data
+					* @return the full setting for populating sddBookTitlesList SDD. This full setting includes commonn setting, render, callback function and most importantly including data
 				*/
 				function genGrpBookSddSetting(){
 					const bookGrpWay = 0; //this special categorization always at index 0
@@ -8319,10 +8190,10 @@
 				};
 			
 				/** Function to find groupId which contains the book having _bookId
-				 * @param _bookId {8-chars-long string}: the id of the book need to find
-				 * @return the group id of the book {_bookId} if found
-				 * 	if not found, retuen group id of the very first book in the book list
-				 */
+					* @param _bookId {8-chars-long string}: the id of the book need to find
+					* @return the group id of the book {_bookId} if found
+					* 	if not found, retuen group id of the very first book in the book list
+					*/
 				function findGroupIdForBook(_bookId) {
 					/* find the groupId from bookId */
 					const _findGroupId = (_bookId) => {
@@ -8410,7 +8281,7 @@
 
 						/* let bIndex = bookGrpItem[i].gbId - 1; //book Index in xData is book Stt - 1
 						let _xData = ssData.xData;
-						 */
+							*/
 						//create option
 						const _book = findBookFromId(bookGrpItem[i].bookId); // _xData[bIndex];
 						//calculate book statistics if it not yet generated
@@ -8490,8 +8361,8 @@
 			}
 
 			/** Short function to select the current book (WITHOUT re-populating Book list) for different case of Group Way (grpLine) 
-			 * @param _bookId {8-chars-string}: the book Id
-			 * @param _bookGrpWay {0 or 1 or 2}: the groupWay to group or sort books, which is 0 1 2
+				* @param _bookId {8-chars-string}: the book Id
+				* @param _bookGrpWay {0 or 1 or 2}: the groupWay to group or sort books, which is 0 1 2
 			*/
 			function goGetBook(_bookId, _bookGrpWay) {
 				if (_bookGrpWay == undefined) _bookGrpWay = xState.grpLine;
@@ -8521,7 +8392,7 @@
 
 			//selBookGroup.addEventListener('change', selBookGroup_onchange, true);
 			/* function to handle change the way to group book titles. Note that this function just change appearance of book list box, it does NOT touch to chapter and what is currently playing
-			 */
+				*/
 			selBookGroup.onchange = () => {
 				//I. save new grpLine to xState
 				const newGrpIdx = xState.grpLine = parseInt(selBookGroup.value);
@@ -8570,8 +8441,8 @@
 			prepareData(); //collect all data to xData and xBookGrp
 
 			/** 
-			 *  BookData prototype functions
-			 */
+				*  BookData prototype functions
+				*/
 
 			/* Create real media links, cover image, original (outside) url,... for parts that have wildcart. For now, there are two kinds of wildcart:
 			- book wildcart: the setting is set in "wc" attribute of the books. See data-beautify.js for the format of this setting
@@ -8925,11 +8796,11 @@
 			}
 			
 			/** Handy function to calculate the total duration for a book from a chapter number to the end of the book. If calculate for the whole book, result will be saved into statistics attribute book data. Next time calculate for whole book again, the result will get from book data without re-calculating.
-			 * @param bData {jSon, string}: if bData type is string, it is bookId. Otherwise, it is json data of the whole book
-			 * @param fromChap: the chapter number, which is its index in the chapter list PLUS 1, that the summation start to the end of the book
-			 * @return {totalDur: total duration, chaptersCount: number of chapters being counted} 
-			 * also, add statistics attribute into book data with the same format.
-			 */
+				* @param bData {jSon, string}: if bData type is string, it is bookId. Otherwise, it is json data of the whole book
+				* @param fromChap: the chapter number, which is its index in the chapter list PLUS 1, that the summation start to the end of the book
+				* @return {totalDur: total duration, chaptersCount: number of chapters being counted} 
+				* also, add statistics attribute into book data with the same format.
+				*/
 			BookData.prototype.bookStatistics = (bData, fromChap) => {
 				
 				if(typeof bData == "string") bData = findBookFromId(bData);
@@ -8964,9 +8835,9 @@
 			}
 
 			/** Handy function to get statistics for a collection of books. By the same time, it will calculate the total duration for each book at add that value to "totalDur" attribute of its data
-			 * @param books {array}: array of book data (which should be subset of ssData.xData)
-			 * @return {totalDur: total duration, booksCount: number of books, chaptersCount: number of chapters insides} 
-			 */
+				* @param books {array}: array of book data (which should be subset of ssData.xData)
+				* @return {totalDur: total duration, booksCount: number of books, chaptersCount: number of chapters insides} 
+				*/
 			BookData.prototype.booksStatistics = (books) => {
 				return books.reduce((_accumulator, _book) => {
 					_accumulator.booksCount++;
@@ -9005,8 +8876,8 @@
 			}
 			
 			/** 
-			 *  Public methods
-			 */
+				*  Public methods
+				*/
 			return {
 				goGetBook: goGetBook, //function to show a book by specified its stt.
 				findBookFromId: findBookFromId, //function to find a book by its bookId
@@ -9537,7 +9408,7 @@
 
 		/* user changes to other books
 			bookValue: value of selected item of elmSelBookTitles, not selected index in the elmSelBookTitles element, which in fact is stt of book in ssData.xData
-		 */
+			*/
 		function changeBook(bookValue) {
 			//bookValue = parseInt(bookValue);
 
@@ -9618,11 +9489,11 @@
 			</div>`;
 
 			/** function to format the subtitle, for now, it italic the number (which usually be the chapter number of text book) 
-			 * @param subTit {string, undefined} the sub title
-			 * @param _for {boolean}
-			 * 		@value true: create html code for option of ssData.sddChaptersList
-			 * 		@value false: create html code for li element of ol#elmPlaylist
-			 * @example convert '80: Thái Dương thủ; 81: Ám giới; 82: Tần trong Tần Mục' into '<i>80</i>: Thái Dương thủ; <i>81</i>: Ám giới'
+				* @param subTit {string, undefined} the sub title
+				* @param _for {boolean}
+				* 		@value true: create html code for option of ssData.sddChaptersList
+				* 		@value false: create html code for li element of ol#elmPlaylist
+				* @example convert '80: Thái Dương thủ; 81: Ám giới; 82: Tần trong Tần Mục' into '<i>80</i>: Thái Dương thủ; <i>81</i>: Ám giới'
 			*/
 			const formatSubTit = (subTit, _for) => {
 				if(!subTit) return "";
@@ -10118,16 +9989,16 @@
 				_ipSleepTimer.setAttribute("pattern", _pattern.source); //pattern to check valid
 				_popupDiv.querySelector("label[for]").innerHTML = "Nhập thời gian dừng phát truyện theo định dạng, bấm Enter để đặt hẹn giờ:<br>— <b>HH[<i>delimiter</i>]mm</b>; ví dụ: <b>1h20</b> = 1 giờ 20 phút<br>— <b>mm</b>; ví dụ: <b>45</b> = 45 phút.<br/>Trong đó <b>HH</b> là số giờ, <b>mm</b> là số phút;  <b>[<i>delimiter</i>]</b> có thể là một trong các kí tự <b>H</b>, <b>h</b>, <b>G</b>, <b>g</b>, <b>.</b>, <b>-</b>, <b>:</b>";			
 				
-				 //show the popup and put focus on the textbox
+					//show the popup and put focus on the textbox
 				_popupDiv.classList.add("shortPoupShow");
 				_ipSleepTimer.focus({ focusVisible: true, preventScroll: false });
 
 				if (!_ipSleepTimer.onkeyup) { //check this, so these event defined only one time
 
 					/** function convert back and ford from time to time string
-					 * @time {string, number}
-					 * if number, it conver time to time string. E.g: 60 -> '1h', 75 -> '1h15'
-					 * if string, it conver time string to time (number). E.g: '1h' -> 60, '1h15' -> 75, '75' -> 75
+						* @time {string, number}
+						* if number, it conver time to time string. E.g: 60 -> '1h', 75 -> '1h15'
+						* if string, it conver time string to time (number). E.g: '1h' -> 60, '1h15' -> 75, '75' -> 75
 					*/
 					function convertSleepTime(time){
 						if(typeof time == 'number'){
@@ -10155,11 +10026,11 @@
 					}
 					
 					/** initial the global variable to keep the sleep timer state where
-					 * @timer store the amount of seconds the audio will be paused
-					 * @endTime store the point of time the audio is paused
-					 * @stObj store the setInterval variable  
-					 * @count store the number of steps (each step is 1 second) left to reach to timer end. Because setInterval not working properly when tab is inactive, so we need to regularly update this property to best match the real time going by.
-					 */
+						* @timer store the amount of seconds the audio will be paused
+						* @endTime store the point of time the audio is paused
+						* @stObj store the setInterval variable  
+						* @count store the number of steps (each step is 1 second) left to reach to timer end. Because setInterval not working properly when tab is inactive, so we need to regularly update this property to best match the real time going by.
+						*/
 					ssData.sleep = {
 						timer: 0, 
 						endTime: null, 
@@ -10195,9 +10066,9 @@
 						}
 
 						/** function to stop Sleep-Timer 
-						 * @param interuptOldTimer {boolean}
-						 * 	@value false or missing: meaning the current Sleep timer reach to the end, so we need to stop it
-						 * 	@value true: user decide to disable current sleep timer
+							* @param interuptOldTimer {boolean}
+							* 	@value false or missing: meaning the current Sleep timer reach to the end, so we need to stop it
+							* 	@value true: user decide to disable current sleep timer
 						*/
 						const stopSleepTimer = interuptOldTimer => {
 							const _sleepObj = ssData.sleep;
@@ -10585,10 +10456,10 @@
 			}
 
 			/** show/hide the workart image and hide/show the NoInternet svg image
-			 * @param _show {boolean}. Default is navigator.onLine value
-			 * 	true: show the workart and hide the NoInternet icon
-			 * 	false: vice versa
-			 */
+				* @param _show {boolean}. Default is navigator.onLine value
+				* 	true: show the workart and hide the NoInternet icon
+				* 	false: vice versa
+				*/
 			static showNoInternet(_show = navigator.onLine ){
 				document.getElementById("elmArtwork").parentElement.classList.toggle("elm-hidden", !_show);
 				document.querySelector(".noInternetImg").classList.toggle("elm-hidden", _show);
@@ -10606,8 +10477,8 @@
 				if (!_urlPath.match(/www\.google|medialib\.qlgd/)) return _callback({ success: 0, msg: "" }); //archive\.org|
 
 				/** format number of bytes into highest unit possible 
-				 * @return {str: string of formatted size with unit, idx: the index of unit in UNITS array}: idx is added for purpose of formating
-				 * @refer at: https://www.30secondsofcode.org/js/s/pretty-print-number-of-bytes/
+					* @return {str: string of formatted size with unit, idx: the index of unit in UNITS array}: idx is added for purpose of formating
+					* @refer at: https://www.30secondsofcode.org/js/s/pretty-print-number-of-bytes/
 				*/
 				const prettyBytes = (num, precision = 2, addSpace = false) => {
 					const UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
@@ -10749,7 +10620,7 @@
 			}
 
 			/** Add a new play book to history. This is called from changeBook() function. The book will be added to the end of history.hisList
-			 * @param _bookId {8-chars string} the book Id
+				* @param _bookId {8-chars string} the book Id
 			*/
 			static addToHistory(_bookId) {				
 				let _hist = xState.history;
@@ -10771,11 +10642,11 @@
 			}
 			
 			/** function to get adjacent book in history list. If it not exist, clear all not-exist-anymore book from history list AND xState and get again
-			 * @param dir {1 or -1}: 1: get next book in history list. -1: get previous
-			 * 		Or in some rare case (such as calling from bookDataInitial() ), dir=0 just to clean the history and get the last book in history list
-			 * @return: - if after being purged, the list is empty, it return {null}.
-			 * 			- if the adjacent book is out of range of history List (-1 or hisList.length), return {undefined}.
-			 * 			- else the book data of the adjacent book in history list.
+				* @param dir {1 or -1}: 1: get next book in history list. -1: get previous
+				* 		Or in some rare case (such as calling from bookDataInitial() ), dir=0 just to clean the history and get the last book in history list
+				* @return: - if after being purged, the list is empty, it return {null}.
+				* 			- if the adjacent book is out of range of history List (-1 or hisList.length), return {undefined}.
+				* 			- else the book data of the adjacent book in history list.
 			*/
 			getAdjHist(dir){
 				let _hist = xState.history;
@@ -10797,11 +10668,11 @@
 			}
 
 			/** function to clean history in the case that some books stored in xState.history that not existed anymore (because of the change in DBs setting (DB which contains that book is not being set to load in this page session) or the change in DB itself)
-			 * @note after being purged, the xState.history.currHis also being updated so that it still point to the same-old book it has pointed to before being purged.
-			 * @note after being purge, if the hisList is empty, we will get some random-existed book to be the initial book, this book will be loaded when the page loaded
-			 * @important this is only being invoked from BookData.bookDataInitial() to clean the history before working on the page
-			 
-			 * @return: the newly-updated xState.history.currHist
+				* @note after being purged, the xState.history.currHis also being updated so that it still point to the same-old book it has pointed to before being purged.
+				* @note after being purge, if the hisList is empty, we will get some random-existed book to be the initial book, this book will be loaded when the page loaded
+				* @important this is only being invoked from BookData.bookDataInitial() to clean the history before working on the page
+				
+				* @return: the newly-updated xState.history.currHist
 			*/
 			static cleanHist(){
 				
@@ -10922,8 +10793,8 @@
 			}
 
 			/** Clear all information saved in xState, not just books reading history, but also other information such as last playing time, grpLine, urlLine 
-			 * @param mode 
-			  		@value 0 or missing: completely wipe out xState (which store environment variable across page session) and xDBFilesCfg (which store setting for DBs file)
+				* @param mode 
+						@value 0 or missing: completely wipe out xState (which store environment variable across page session) and xDBFilesCfg (which store setting for DBs file)
 					@value 1: just clean xState, keep xDBFilesCfg so next session, the page would load only DBs that user set
 			*/
 			static wipeAll(mode) {
@@ -11002,7 +10873,7 @@
 							return _ghostNode;
 						};
 						var ghostNode = createDragImage(dragged, event.pageX, event.pageY);
-      					_dt.setDragImage(ghostNode, offsetX, offsetY);
+							_dt.setDragImage(ghostNode, offsetX, offsetY);
 						//event.dataTransfer.setDragImage(_item, 664, 44);
 						//dragItems.forEach(_item => _item.querySelector("div:has(> span.dbFileBookList)")?.classList.add("elm-hidden"));
 					};
@@ -11076,8 +10947,8 @@
 			const xBookGrp = ssData.xBookGrp;
 			
 			/**
-			 * HELPER FUNCTIONS
-			  */
+				* HELPER FUNCTIONS
+				*/
 			//setting for circle progress button
 			function handleBufferBarChkbox() {
 				let _chkHideBufferBar = document.getElementById("chkHideBufferBar");
@@ -11160,8 +11031,8 @@
 			};
 
 			/**
-			 * TABS FUNCTIONS
-			 */
+				* TABS FUNCTIONS
+				*/
 
 			//ol that display all sub-group and books of a group way
 			const lstBookTitlesSetting = document.getElementById("lstBookTitlesSetting");
@@ -11486,7 +11357,7 @@
 					@param _choiceLabel {string}: a title for current config
 					@param _checkedIdx {integer}: a number (start from -1) to specify which radio button would be checked. set @null to check no button
 					@param _innerHTMLOnly {boolean, optional}: @true if return innerHTML. Default return outterHTML
-				 */
+					*/
 				function makeToastRadios(_cfgName, _choiceLabel, _checkedIdx, _innerHTMLOnly) {
 					let _resHtml = "";
 					let _attrStr = "toastSetting_" + _cfgName;
@@ -11613,7 +11484,7 @@
 					/** Function to update UI for animation radio buttons
 						@param _disabled {boolean}: to disable (true) or enable (false) the whole div container of all animation choices
 						@param _checkedIdx {integer start from -1}: to check the radio having attribute 'data-aindex' of {_checkedIdx}. Set _checkedIdx = @null to check none.
-					 */
+						*/
 					function fancyRadioAnimWrapperUI(_disabled, _checkedIdx){
 						/* if(_checkedIdx == -1 || _checkedIdx == null) delete xToastCfg.animation
 						else xToastCfg.animation = _checkedIdx; */
@@ -11631,7 +11502,7 @@
 						@param _animDirArray {array}: the array of animDir choices. This depend on Toast location and Animation type
 						@param _disabled {boolean}: to disable (true) or enable (false) the whole div container of all animation choices
 						@param _checkedIdx {integer start from -1}: to check the radio having attribute 'data-aindex' of {_checkedIdx}. Set _checkedIdx = @null to check none.
-					 */
+						*/
 					function makeAnimDirChoices(_animDirArray, _disabled, _checkedIdx){
 						if(_checkedIdx == -1 || _checkedIdx == null) delete xToastCfg.animDir
 						else xToastCfg.animDir = _checkedIdx;
@@ -11649,9 +11520,9 @@
 				const _toastChoices = toast.getToastConfig(); //page toast setting
 				const _toastCfg = xState?.toastCfg ?? {}; //user toast setting
 				/** Function to mark a label that randomly chosen by the page
-				 * @_container {HTMLElement}: the div container that contains all radio+label which present a choice for a toast config (such as mode, theme, animation)
-				 * @_choiceIdx {integer from 0}: the index of a choice made by the page (where user does not choose any choice for this toast config)
-				  */
+					* @_container {HTMLElement}: the div container that contains all radio+label which present a choice for a toast config (such as mode, theme, animation)
+					* @_choiceIdx {integer from 0}: the index of a choice made by the page (where user does not choose any choice for this toast config)
+					*/
 				const _markLabel = (_container, _choiceIdx) => {
 					//removed the mark of old marked label
 					_container.querySelectorAll("label.fancyRadioLabel.fancyRadioLabelRandomChoose").forEach(_lbl => _lbl.classList.remove("fancyRadioLabelRandomChoose"));
@@ -11671,9 +11542,9 @@
 			/* Function to deal with adding Database files and display its content including db variables, Book Kits inside and books in each bookKit */
 			function addJsDatabaseFileReport(){
 				/** generate HTML for statistics of a books collection 
-				 * @param _dbSummary {json}: which normally the returned value of BookData.prototype.booksStatistics()
-				 * @param _verbose {boolean}: default false. If true, adding names in Vietnamese of each statistic value
-				 * @return HTML code
+					* @param _dbSummary {json}: which normally the returned value of BookData.prototype.booksStatistics()
+					* @param _verbose {boolean}: default false. If true, adding names in Vietnamese of each statistic value
+					* @return HTML code
 				*/
 				const statisticsHTML = (_dbSummary, _verbose = false) => {
 					//📚📜🎧
@@ -11691,14 +11562,14 @@
 				}
 					
 				/** Display information of all Book of a Book Kit - which is a database variable whose name is _jsDBName (see the code)
-				 * @param _liElem {HTMLElement} the li element of ol#lstJsFileDataSetting element. We extract dbName from this _liElem, and use the global variable has that {dbName} to extract information and put on _liElem
-				 * @param _failCount 
+					* @param _liElem {HTMLElement} the li element of ol#lstJsFileDataSetting element. We extract dbName from this _liElem, and use the global variable has that {dbName} to extract information and put on _liElem
+					* @param _failCount 
 					@value == undefined (is missing)
 					- show Book infor if _jsDBName has data
 					- show notification if variable whose name is {_jsDBName} not exists
 					@value _failCount == number (usually > 10): show error notification
 
-				 * @return: - null if {_jsDBName} not exists
+					* @return: - null if {_jsDBName} not exists
 						- json in format {bookSetsCount: , booksCount: , chaptersCount: , totalDur: } store statistics for the whole database inside DB files
 				*/
 				function addJsDataFilesDetails(_liElem, _failCount){
@@ -11773,9 +11644,9 @@
 				}
 				
 				/** getting book data inside an Database. If it is already exist (because the DB has been loaded before, by loadPage() for example), use that data. If it is not, using loadJS to download the DB file and use book data inside downloaded file to show the book report for that DB.
-				 * This function alse is taken care of create html overlay for li element (which contain the report for each database), downloading database from js DB file (when necessary) and making details reports and statistical to put
-				 * @param _jsDBName {string}: the name of the DB file also name of single variable inside it, such as 'data_0', 'data_3'
-				 */
+					* This function alse is taken care of create html overlay for li element (which contain the report for each database), downloading database from js DB file (when necessary) and making details reports and statistical to put
+					* @param _jsDBName {string}: the name of the DB file also name of single variable inside it, such as 'data_0', 'data_3'
+					*/
 				function showingDataReportFromDB(_jsDBName){
 					// xDBFilesCfg item contain config data of current _jsDBName
 					const _jsFileItem = xDBFilesCfg.toLoad.find(_item => _item.dbName === _jsDBName);
@@ -11998,10 +11869,10 @@
 			
 			/** Function to reload 'config.js', chech edition number to see if there is any DBs having new edition. If there are, download the new edition (and version) of those DBs. If among them, there is DBs that currently not in hidden mode (loadMode = cacheLoad(2) or freshLoad(1)), ask user to restart the page to get data inside those DBs got updated
 			If found some DB having new edition (does not matter that DB is in hidden or shown mode), this function also update the report for those DB in JsFileDataSetting Setting tab. However, for now it does not update the total statisticals (at the bottom of the tab) for all the shown books
-			 * @param _showFailedCheck (boolean): 
-			 	@value true show the toast that tell there is no new DBs or failed to load config.js.
+				* @param _showFailedCheck (boolean): 
+					@value true show the toast that tell there is no new DBs or failed to load config.js.
 				@value false (default), not show the message
-			 * @return nothing
+				* @return nothing
 			*/
 			function _handyCheckDBsEdition(_showFailedCheck = false){
 				//success or not, we need to update this lastDBCheck, otherwise in case of continuos fails (lost internet, for example), page will keep checking updates
@@ -12108,8 +11979,8 @@
 				let _bookStt = 0;				
 
 				/** function to create html code for a book in history
-				 * @param _bookId {8-char string} the book id that got from history to show information (mostly about chapter that user was listenning but not finished)
-				  */
+					* @param _bookId {8-char string} the book id that got from history to show information (mostly about chapter that user was listenning but not finished)
+					*/
 				const _makeTreeLi = _bookId => {
 					//the data from xData for the book
 					const bData = ssData.bookData.findBookFromId(_bookId);
@@ -12394,7 +12265,7 @@
 					<legend>Phím tắt trong cửa số cấu hình</legend>
 					${listHotKeys(ssData.hotKeys.settingModal, ", ")}
 				</fieldset>
-				 <fieldset style="align-self: stretch;">
+					<fieldset style="align-self: stretch;">
 					<legend>Hints</legend>
 					<div style='grid-column: span 2;text-align: justify;'>Với các biểu tượng và một số thành phần không biết ý nghĩa, người dùng có thể di chuột lên (với máy tính) hoặc bấm vào/nhấn giữ (với thiết bị cầm tay thông minh) để hiện tooltip (chữ trắng, nền đen mờ) hướng dẫn về chức năng và thông tin bổ sung (nếu có) của thành phần đó.</div>
 				</fieldset>
@@ -12413,8 +12284,8 @@
 			}
 			
 			/**
-			 * SETTING MODAL FUNCTIONS
-			 */
+				* SETTING MODAL FUNCTIONS
+				*/
 
 			//store one copy of xState.toastCfg when openning the setting then compare later when close setting to see if there is any change
 			let _toastConfigSetting = {};
@@ -12519,7 +12390,7 @@
 				*/
 				const pageKeyDown = (evt) => {
 					/** function to active adjacent tab 
-					 * @param _goNext {boolean} true - go next; false: go previous
+						* @param _goNext {boolean} true - go next; false: go previous
 					*/
 					const _goAdjTab = _goNext => {
 						const _len = _allTabCheckboxs.length;
@@ -12597,8 +12468,8 @@
 			}			
 			
 			/** function to filter to keep only dbName and loadMode properties of toLoad array, so the page will not false-alarm that there is a change in DB setting (even change might be on dbUrl or edition), filter this way, we will know exactly when user change the loadMode of a DB
-			 * @param _DBFileCfg kind of _DBFileCfg
-			 * @return let say an item of @param _DBFileCfg.toLoad is '{"fileNo":3,"dbName":"data_3","dbUrl":"data_3.js?v=178","loadMode":0,"failCount":0,"edt":117}', the returned json of that item now is only {"dbName":"data_3", "loadMode":0}
+				* @param _DBFileCfg kind of _DBFileCfg
+				* @return let say an item of @param _DBFileCfg.toLoad is '{"fileNo":3,"dbName":"data_3","dbUrl":"data_3.js?v=178","loadMode":0,"failCount":0,"edt":117}', the returned json of that item now is only {"dbName":"data_3", "loadMode":0}
 			*/
 			const _filterDBFileCfg = _DBFileCfg => xDBFilesCfg.toLoad.map(_itm => { return {dbName: _itm.dbName, loadMode: _itm.loadMode} });
 
@@ -12893,7 +12764,7 @@
 				xAudio.onwaiting = () => {console.log("Waiting")};
 				//The progress event is fired periodically as the browser loads a resource.
 				xAudio.onprogress = () => {console.log("Progress")};
-				  */
+					*/
 
 				//when the user agent is trying to fetch media data, but data is unexpectedly not forthcoming.
 				xAudio.onstalled = (event) => { //this is similar to onwaiting ?
@@ -12966,7 +12837,7 @@
 				@param _justReload {boolean} :
 					TRUE: If failed, just trying audio.load() to reload audio sr, skip step 3 of tryingLoadAudio()
 					FALSE: if failed again after audio.load(), try others url src
-			 */
+				*/
 			function loadSrc(_src, _justReload) {
 
 				//reset the value that is used to lighten the heavy-burden of updateTime() function, that is, just update UI after some specific interval of time, not in every audio 'timeupdate' event firing
@@ -12988,7 +12859,7 @@
 			param _justReload {boolean}
 				True: just try reload current source without trying other url src line (skip step 3 above)
 				False: include step 3
-			 */
+				*/
 			function tryingLoadAudio(_justReload) {
 				if (!checkInternetAlive()) return; //check internet connection, if lost: change button UI and return
 
@@ -13178,12 +13049,12 @@
 			/** Display Play/Pause/Loading icons and enable/disable for play-pause button depending on playing state of audio element. The fastforward, rewind button got enable/disable accordingly 
 				@param _playIconType: 
 					-1: show spinning loading icon, and the same time, disable all 3 buttons
-					 0 - show Pause icon on play-pause button (meaning audio is playing)
-					 1 - show Play icon on play-pause button (meaning audio is paused)
+						0 - show Pause icon on play-pause button (meaning audio is playing)
+						1 - show Play icon on play-pause button (meaning audio is paused)
 				@param _disableButton: enable/disable 3 buttons
 					-1: do nothing
-					 0: disable
-					 1: enable
+						0: disable
+						1: enable
 			
 			*/
 			let switchPlayPauseButton = (_playIconType, _disableButton) => {
@@ -13222,11 +13093,11 @@
 			}
 
 			/** function to update the text for #elmPlayingTime
-			 * @param _parts {json} has following properties
-			 * 	@property time: the current playing time
-			 * 	@property slash: the text put in the slash. This property should never be used since slash in div.plt-slash is drawn by css (not using the char /)
-			 * 	@property dur: the audio duration
-			  */
+				* @param _parts {json} has following properties
+				* 	@property time: the current playing time
+				* 	@property slash: the text put in the slash. This property should never be used since slash in div.plt-slash is drawn by css (not using the char /)
+				* 	@property dur: the audio duration
+				*/
 			function retextPlayingTime(_parts){
 				//map the name of property with the index of corresponding element in elmPlayingTime.children
 				const _map = {time: 0, slash: 1, dur: 2};
@@ -13236,8 +13107,8 @@
 			/** Switch appearance of Playing time 
 			@param _state {integer}: how playing time would be show up
 				-1: internet connection lost, showing "No internet" on playingTime Elem
-				 0: show spinning clock to tell user that chapter is loading
-				 1: show current time / duration telling that audio is playing
+					0: show spinning clock to tell user that chapter is loading
+					1: show current time / duration telling that audio is playing
 			*/
 			function switchBigPlayingTime(_state) {
 				//playing time
@@ -13518,8 +13389,8 @@
 
 			/** Draw the Circle ProgressBar surround the play and pause buttons. There are two ways to archive this, old way (seems very costly) is usage of --audio-playing-current-progress-percent variable in div[name="divContainer"] element. 
 			2nd way, using js to change directly to svg "stroke-dashoffset" attribute. This implement the 2nd way
-			 @param currPercent {float from 0 to 1}: the current percentage of playing
-			 */
+				@param currPercent {float from 0 to 1}: the current percentage of playing
+				*/
 			function updateCircleProgressBar(currPercent) {
 				let _prgress = 383.3; //default value, which make progress go to 0%
 				if (isFinite(currPercent)) //currPercent is not infinity or NaN
@@ -13538,7 +13409,7 @@
 			// the updateBufferCanvas counter, which count the times heavy-load UI repaint in updateTime() such as paint progressBar, Circle Progress Bar, preload bar,... The updateBufferCanvas (which uses canvas to show the detailed picture of audio buffer) is called after _ubcCounter reach to a specific number (e.g 10), because updateBufferCanvas() is way more heavy than the other UI repaint
 			let _ubcCounter = 0;
 			/** This function is called on audio timeUpdate event which happens 4 times a seconds. This function is in charge of updating UI for the audio 
-			 * @param forceHeavyUIUpdate {boolean}: value true will make heavy UI update right away without waiting after a specific of time (usually 1% of audio duration, depending on value of @_HEAVY_UPDATE_INTERVAL ). For now, the value true is only invoked from audio onseeked event. Note that when updateTime is invoked from event such as timeUpdate, forceHeavyUIUpdate is an event object (not a boolean value)
+				* @param forceHeavyUIUpdate {boolean}: value true will make heavy UI update right away without waiting after a specific of time (usually 1% of audio duration, depending on value of @_HEAVY_UPDATE_INTERVAL ). For now, the value true is only invoked from audio onseeked event. Note that when updateTime is invoked from event such as timeUpdate, forceHeavyUIUpdate is an event object (not a boolean value)
 			*/
 			function updateTime(forceHeavyUIUpdate = false) {
 				// this is to prevent override "No Internet" message when connection lost
@@ -13729,23 +13600,23 @@
 	<script>
 		"use strict";
 		/** Class to create search-drop-down (SDD) element 
-		 * @params
-		 *    @sddContainerQry: string store query selector to container that contains the new created sdd
-		 *    @_setting = { 
-		 * 			@displayOneLine: true,  // the sdd display on one line, text maybe truncated
-		 * 			@maxHeight: max Height of dropdown content, in px
-		 *          @options: array of option data definition
-		 *          @optgroups:  array of option group definition or Null if no group
-		 *          @render: {
-		 *             option: function to render the option html
-		 *             optgroup_header: function to render the option group header html
-		 *          },
-		 *          @callbacks: {
-		 *             onChange: callback function that is invoked when selected item changed
-		 *          }
-		 * 		See the loadDropdown function for more attributes of _setting
-		 * 		Item of option attribute look like: 
-		 * 			{
+			* @params
+			*    @sddContainerQry: string store query selector to container that contains the new created sdd
+			*    @_setting = { 
+			* 			@displayOneLine: true,  // the sdd display on one line, text maybe truncated
+			* 			@maxHeight: max Height of dropdown content, in px
+			*          @options: array of option data definition
+			*          @optgroups:  array of option group definition or Null if no group
+			*          @render: {
+			*             option: function to render the option html
+			*             optgroup_header: function to render the option group header html
+			*          },
+			*          @callbacks: {
+			*             onChange: callback function that is invoked when selected item changed
+			*          }
+			* 		See the loadDropdown function for more attributes of _setting
+			* 		Item of option attribute look like: 
+			* 			{
 						@gId: "$11", //group id, must match the id of optgroups. If this is missing, the dropdown would not have group
 						@value: "DBR.PDS1",	//value for the option
 						@label: "[1998] Pháo đài số", //option label
@@ -13761,39 +13632,39 @@
 						@{someextra_attributes}: //some user-specified extra properties can be used to render the optgroup header
 						@attr: { "attr-gid": "$6" } //collection of attribute names and value that will be added to the optgroup for manupulating later
 					}
-		 * @PUBLIC PROPERTIES
-		 *    @value {string get/set}: the value of selected item. When set, it will not invoke callback function. User can call sdd.onchange() to invoke the callback.
-		 *    @selectedIndex {number get/set}: the selectedIndex of selected item. When set, it will not invoke callback function. User can call sdd.onchange() to invoke the callback.
-		 *    @items {arrray of HTMLElement get}: list of all items
-		 *    @length {number get}: number of items
-		 *    @settings {json get}: the setting to create this SDD but {options} and {optgroups} has been removed
-		 *    @rootElement {HTMLElement get}: the root HTML Element that wrap all sdd
-		 *	  @displayElement {HTMLElement get}: the div element that left off to display the selected item when sdd closed
-		 *	  @hotKeys: list of hotkeys information that supported by SDD, in the form {task: task_id, kCode: evt.code of the pressed key, desc: task description}. Note that some keys in this list comprising with modifier-key set in setting.makeSelectKey can do another task
-		 * 
-		 * @PUBLIC FUNCTIONS
-		 *    @loadDropdown(_settingParam, selectInit): load data for the Dropdown, where _settingParam is user-defined setting, which later be added with default setting. selectInit is the index(number)/value(string) of initialized seleted item.
-		 *    @onchange(): function to invoke onChange(seletedItem) callback. This can be called after assign value/selectedIndex to make a new selectedItem to update the change
-		 *    @selectItem: see selectItem for details
-		 *    @sddUnregisterEvents: remove all event listener that added by this class
-		 * 	  @toggle: function to toggle (open/close) the dropdown
-		 * 
-		 * @USAGE: 
-		 *  Way 1, load sdd as create it: 
-		 *     const sddDropdown = new SddDropdown(".sdd-container", _setting);
-		 *  Way 2: create then load both setting and data at the same time. This way, _setting must contain attribute both for setting and data. See BookData.popuGrpBookTitles and BookData.popuBookTitles for example of this way
-		 *     const sddDropdown = new SddDropdown(".sdd-container");
-		 * 	Then
-		 * 		sddDropdown.loadDropdown(_setting
-		 * 	  Or
-		 *		sddDropdown.loadDropdown(_setting, ssData.sddChaptersList.LOAD_MODE_ENUM.All, 5);
-		 * Way 3: load the setting and then load the data, separatedly. See changBook() for the example using this
-		 * 		const sddDropdown = new SddDropdown(".sdd-container");
-		 * 		sddDropdown.loadDropdown(_setting, ssData.sddChaptersList.LOAD_MODE_ENUM.SettingLoadOnly); //this _setting does not have to has data options, optgroups
-		 *  	sddDropdown.loadDropdown({options:..., optgroups: ...}, ssData.sddChaptersList.LOAD_MODE_ENUM.DataLoadOnly);
+			* @PUBLIC PROPERTIES
+			*    @value {string get/set}: the value of selected item. When set, it will not invoke callback function. User can call sdd.onchange() to invoke the callback.
+			*    @selectedIndex {number get/set}: the selectedIndex of selected item. When set, it will not invoke callback function. User can call sdd.onchange() to invoke the callback.
+			*    @items {arrray of HTMLElement get}: list of all items
+			*    @length {number get}: number of items
+			*    @settings {json get}: the setting to create this SDD but {options} and {optgroups} has been removed
+			*    @rootElement {HTMLElement get}: the root HTML Element that wrap all sdd
+			*	  @displayElement {HTMLElement get}: the div element that left off to display the selected item when sdd closed
+			*	  @hotKeys: list of hotkeys information that supported by SDD, in the form {task: task_id, kCode: evt.code of the pressed key, desc: task description}. Note that some keys in this list comprising with modifier-key set in setting.makeSelectKey can do another task
+			* 
+			* @PUBLIC FUNCTIONS
+			*    @loadDropdown(_settingParam, selectInit): load data for the Dropdown, where _settingParam is user-defined setting, which later be added with default setting. selectInit is the index(number)/value(string) of initialized seleted item.
+			*    @onchange(): function to invoke onChange(seletedItem) callback. This can be called after assign value/selectedIndex to make a new selectedItem to update the change
+			*    @selectItem: see selectItem for details
+			*    @sddUnregisterEvents: remove all event listener that added by this class
+			* 	  @toggle: function to toggle (open/close) the dropdown
+			* 
+			* @USAGE: 
+			*  Way 1, load sdd as create it: 
+			*     const sddDropdown = new SddDropdown(".sdd-container", _setting);
+			*  Way 2: create then load both setting and data at the same time. This way, _setting must contain attribute both for setting and data. See BookData.popuGrpBookTitles and BookData.popuBookTitles for example of this way
+			*     const sddDropdown = new SddDropdown(".sdd-container");
+			* 	Then
+			* 		sddDropdown.loadDropdown(_setting
+			* 	  Or
+			*		sddDropdown.loadDropdown(_setting, ssData.sddChaptersList.LOAD_MODE_ENUM.All, 5);
+			* Way 3: load the setting and then load the data, separatedly. See changBook() for the example using this
+			* 		const sddDropdown = new SddDropdown(".sdd-container");
+			* 		sddDropdown.loadDropdown(_setting, ssData.sddChaptersList.LOAD_MODE_ENUM.SettingLoadOnly); //this _setting does not have to has data options, optgroups
+			*  	sddDropdown.loadDropdown({options:..., optgroups: ...}, ssData.sddChaptersList.LOAD_MODE_ENUM.DataLoadOnly);
 		*/
 		function SddDropdown(sddContainerQry, _settingParam) {
-  			let _uid = "id" + Math.random().toString(16).substr(2, 8); //class id for internally used
+				let _uid = "id" + Math.random().toString(16).substr(2, 8); //class id for internally used
 			if(!new.target) return console.error("SddDropdown class must be constructed with 'new' keyword");
 
 			//private variables
@@ -13987,9 +13858,9 @@
 			});
 			
 			/** Select adjacent item without firing onChange event
-			 * @param _dir {1, -1}: 1 next item. -1: previous item
-			 * @return null: if adjacent item is out of bound (index -1 or _items.length) or _selectedItem currently undefined
-			 */
+				* @param _dir {1, -1}: 1 next item. -1: previous item
+				* @return null: if adjacent item is out of bound (index -1 or _items.length) or _selectedItem currently undefined
+				*/
 			const goAdjacent = _dir => {
 				let _currIdx = _items.indexOf(_selectedItem);
 
@@ -14014,7 +13885,7 @@
 					.replace(/"/g, "&quot;");
 				};
 			/** populate options and optGroup for Dropdown 
-			 * @param initSelectedItem {string, number}: the default item to be the selected one when dropdown created. if string, it is value of selected item. If number, it is selected index
+				* @param initSelectedItem {string, number}: the default item to be the selected one when dropdown created. if string, it is value of selected item. If number, it is selected index
 			*/
 			function populateDropdown(initSelectedItem) {
 				if(!_settings) return; // if there is no setting assign, do nothing
@@ -14029,9 +13900,9 @@
 				sddDropdownContent.appendChild(sddDropdownStatusBar);
 	
 				/** make item for dropdown 
-				 * @param optionData {json}: the pure data to create option. The {_settings.render.option} function will make option HTML from pure data
-				 * @param i {integer}: index of the option in {_settings.options}, mostly for the purpose of adding order number  (for now), which is in <em> element and being added to the first child of option
-				 * @param grpDisabled {boolean}: if parent group is disabled, all its children option being disabled accordingly.
+					* @param optionData {json}: the pure data to create option. The {_settings.render.option} function will make option HTML from pure data
+					* @param i {integer}: index of the option in {_settings.options}, mostly for the purpose of adding order number  (for now), which is in <em> element and being added to the first child of option
+					* @param grpDisabled {boolean}: if parent group is disabled, all its children option being disabled accordingly.
 				*/
 				const makeOptionItem = (optionData, i, grpDisabled = false) => {
 					const item = document.createElement("div");
@@ -14081,9 +13952,9 @@
 				};
 	
 				/** Create optGroup
-				 * @param grp {json}: item of _settings.optgroups array, contain information about a group
-				 * @param grpI {number}: the index of current group in _settings.optgroups
-				 */
+					* @param grp {json}: item of _settings.optgroups array, contain information about a group
+					* @param grpI {number}: the index of current group in _settings.optgroups
+					*/
 				const makeOptionGroup = (grp, grpI) => {
 					let _optGroupDiv = document.createElement("DIV");
 					_optGroupDiv.classList.add("optgroup");
@@ -14159,7 +14030,7 @@
 					selectItem(initSelectedItem, false); //force raising onchange() event and invoking SDD.callbacks.onChange() callback fn.
 				}
 			}
-  
+	
 			/* The following provides all the internal functions for dropdown to work. */
 
 			/* delegation events handler catched on sddDropdownContent to handle click event on its div children, each of them is a dropdown item */
@@ -14168,11 +14039,11 @@
 				if (target) setSelected(target);
 				evt.stopPropagation(); //prevent bubbling up
 			}
-  
+	
 			/** Sets the selected item in the dropdown menu of available options. *
-			 * @param option {HTMLElement}: the option to be set active
-			 * @param scroll {boolean, true}: scroll to its position or not
-			 * @param toMiddle {boolean, false}: if true, scroll so that the option is in the middle of its container. 
+				* @param option {HTMLElement}: the option to be set active
+				* @param scroll {boolean, true}: scroll to its position or not
+				* @param toMiddle {boolean, false}: if true, scroll so that the option is in the middle of its container. 
 			*/
 			function setActiveOption(option, scroll = true, toMiddle = false, behavior) {
 				if (!option) return;
@@ -14475,27 +14346,27 @@
 			}
 
 			/** function to invoke and notify an action when a specified hotkey associated with that fuction is pressed.
-			 * @param evt {KeyboardEvent}: the event associated with key action((key down, key up or key press)
-			 * @param hotkeyOptions {json}: list of all supported hotkey. See SddDropdown.onKeyDown function for an example of its format. Each item is a json has following attributes
-			 * 		@propety task {string}: the task id
-			 * 		@propety kCode {array of string}: the array of keycode, can include modifer key (such as Ctrl, Alt, Shift, MetaKey) seperated by '+' to comprises the shortcut hotkey e.g: ["PageUp", "Alt+Home"], ["Ctrl+A", "Shift+ArrowLeft"] or even ['Alt+ShiftLeft']. Note that for a composite shortcut, there are two part. For example, shortcut like 'Ctrl+Shift+KeyA', the first part is modifier keys (Ctrl+Shift), the second part is evt.code (KeyA). But for shortcut like 'Shift+ControlRight', the action is only trigger if any Shift key is pressed AND Right Control key is pressed (that is, evt.code=='ControlRight'; in this case ControlRight is second part)
-			 * 		@propety ignoreModifier {boolean, optional}: If set to {true}, the modifier pressed along with hotkey will be ignored. In normal case when ignoreModifier=true or missing,  if kCode:["PageUp"], then only PageUp key alone will trigger the function, Ctrl+PageUp, Shift+PageUp will not. ignoreModifier:true is applied for some hotkey is actually modifier key (such as ShiftLeft or ControlRight) or some function that associate with different modifier key to make different action like audio seeking, audio volumn changing or SDD selecting while changing active option
-			 *  	@propety desc {string}: the descrition of the job will be carried out
-			 * 		@propety noNotify {boolean, optional}: if specified true, the description of the task will not be notified to user when it is invoked
-			 * 		@propety callback {function}: the function will be invoked when the corresponding key (and modifier key) is pressed
-			 * @param keyPreventation {number}: to stopPropagation or preventDefault. Convert {keyPreventation} decimal number to binary number. {evt} will stopPropagation when bit 0 = 1, {evt} will preventDefault when bit 1 = 1:
-			 * 	= 0: no stopPropagation, no preventDefault
-			 *  = 1: stopPropagation, no preventDefault
-			 *  = 2: no stopPropagation, preventDefault
-			 *  = 3: stopPropagation and preventDefault
-			 * @param notifyFnc {function}: the function, if specified, which show the functionality of hotkey action to the user. The default is simple Infor toast
-			 */
+				* @param evt {KeyboardEvent}: the event associated with key action((key down, key up or key press)
+				* @param hotkeyOptions {json}: list of all supported hotkey. See SddDropdown.onKeyDown function for an example of its format. Each item is a json has following attributes
+				* 		@propety task {string}: the task id
+				* 		@propety kCode {array of string}: the array of keycode, can include modifer key (such as Ctrl, Alt, Shift, MetaKey) seperated by '+' to comprises the shortcut hotkey e.g: ["PageUp", "Alt+Home"], ["Ctrl+A", "Shift+ArrowLeft"] or even ['Alt+ShiftLeft']. Note that for a composite shortcut, there are two part. For example, shortcut like 'Ctrl+Shift+KeyA', the first part is modifier keys (Ctrl+Shift), the second part is evt.code (KeyA). But for shortcut like 'Shift+ControlRight', the action is only trigger if any Shift key is pressed AND Right Control key is pressed (that is, evt.code=='ControlRight'; in this case ControlRight is second part)
+				* 		@propety ignoreModifier {boolean, optional}: If set to {true}, the modifier pressed along with hotkey will be ignored. In normal case when ignoreModifier=true or missing,  if kCode:["PageUp"], then only PageUp key alone will trigger the function, Ctrl+PageUp, Shift+PageUp will not. ignoreModifier:true is applied for some hotkey is actually modifier key (such as ShiftLeft or ControlRight) or some function that associate with different modifier key to make different action like audio seeking, audio volumn changing or SDD selecting while changing active option
+				*  	@propety desc {string}: the descrition of the job will be carried out
+				* 		@propety noNotify {boolean, optional}: if specified true, the description of the task will not be notified to user when it is invoked
+				* 		@propety callback {function}: the function will be invoked when the corresponding key (and modifier key) is pressed
+				* @param keyPreventation {number}: to stopPropagation or preventDefault. Convert {keyPreventation} decimal number to binary number. {evt} will stopPropagation when bit 0 = 1, {evt} will preventDefault when bit 1 = 1:
+				* 	= 0: no stopPropagation, no preventDefault
+				*  = 1: stopPropagation, no preventDefault
+				*  = 2: no stopPropagation, preventDefault
+				*  = 3: stopPropagation and preventDefault
+				* @param notifyFnc {function}: the function, if specified, which show the functionality of hotkey action to the user. The default is simple Infor toast
+				*/
 			SddDropdown.prototype.runHotkey = function(evt, hotkeyOptions, keyPreventation = 3, notifyFnc = _msg => toast.showToast(_msg, toast.ToastType.Infor) ){
 				/** function to find if a keycode that is part of a shortcut
-				 * @param _shortcut {string} the comprised key set in kCode attribute of hotkeyOptions item. E.g: "KeyZ", "Ctrl+keyA" or "Shift+ArrowLeft"
-				 * @param _code {string} the keyCode that user pressed, usually got from evt.code. E.g "KeyA", "ArrowLeft"
-				 * @note need to check if @_code is empty (of which all hotkey in @hotkeyOptions will be matched), because this happen sometime when typing a Vietnamese keyword such as 'TĐ' (this might be the problem of Vietnamese typer such as UniKey)
-				 */
+					* @param _shortcut {string} the comprised key set in kCode attribute of hotkeyOptions item. E.g: "KeyZ", "Ctrl+keyA" or "Shift+ArrowLeft"
+					* @param _code {string} the keyCode that user pressed, usually got from evt.code. E.g "KeyA", "ArrowLeft"
+					* @note need to check if @_code is empty (of which all hotkey in @hotkeyOptions will be matched), because this happen sometime when typing a Vietnamese keyword such as 'TĐ' (this might be the problem of Vietnamese typer such as UniKey)
+					*/
 				const _matchKeycode = (_shortcut, _code) => _code && _shortcut.match(new RegExp(`\\b${_code}\\b`,"i")); //'\\b' to make sure to match whole word
 
 				//console.log(evt.code);
@@ -14559,10 +14430,10 @@
 			}
 	
 			/** Toggle for Display and Hide Dropdown.
-			 * @evt {any}
-			 * 	- click event: when user click on SDD to expand/collapse it
-			 * 	- keyboard event: when user press a key to expand the SDD (from page) or ESC to collapse the SDD (from SDD search box)
-			 * 	- -1: called from closeIfClickedOutside function
+				* @evt {any}
+				* 	- click event: when user click on SDD to expand/collapse it
+				* 	- keyboard event: when user press a key to expand the SDD (from page) or ESC to collapse the SDD (from SDD search box)
+				* 	- -1: called from closeIfClickedOutside function
 			*/
 			function toggleDropdown(evt) {
 				//idea to animation collapse/expand is borrowed from https://css-tricks.com/using-css-transitions-auto-dimensions/
@@ -14748,7 +14619,7 @@
 		
 				sddSearchBox.value = searchStr; //get back the value of sddSearchBox
 				searchStr = searchStr.trim(); //should not toLowerCase() here, because this will prevent "search by first char" mode, where all chars of searchStr is capital
-		 		*/
+					*/
 
 				resetFilter();
 				searchStr = searchStr.replaceAll(/\s\s+/g, " ").trim(); //should not toLowerCase() here, because this will prevent "search by first char" mode, where all chars of searchStr is capital
@@ -14847,10 +14718,10 @@
 			}
 	
 			/** toggle all option groups. There two place invoked this function:
-			 * 1. When user click the .close-open-groups-button 
-			 * 2. On onkeydown function which handle event when user press Tab or Shift + Tab
-			 * @param evt: the event, not really necessary here
-			 * @param type {number}: this param is only available for this function is invoked in key event handler.
+				* 1. When user click the .close-open-groups-button 
+				* 2. On onkeydown function which handle event when user press Tab or Shift + Tab
+				* @param evt: the event, not really necessary here
+				* @param type {number}: this param is only available for this function is invoked in key event handler.
 				* 	@value 0 or missing (usually for Tab key), close or opens all optgroups (depending on the last state the button open or close or partially close)
 				* 	@value 1 (usually for Shift+Tab key): close all optGroups except the one containing selected option and the one containing active option
 			*/
@@ -14961,11 +14832,11 @@
 			}
 			
 			/** Function to switch search mode from Exact search and diacritics Search
-			 * @param _evt_forcedState {missing or boolean}:
-			 * 	- if missing: this function just do the swap state 
-			 * 	- if is an event: this function is invoked from '.search-diacritics-option-button' button event handler (see sddRegisterEvents, sddUnregisterEvents below) or by hotkey in onKeyDown() event handler , so it just do the swap state and change button appearance
-			 * 	- if a boolean specified, this function force _settings.diacriticsFilterMode to be its value and change the button appearance, accordingly.
-			 */
+				* @param _evt_forcedState {missing or boolean}:
+				* 	- if missing: this function just do the swap state 
+				* 	- if is an event: this function is invoked from '.search-diacritics-option-button' button event handler (see sddRegisterEvents, sddUnregisterEvents below) or by hotkey in onKeyDown() event handler , so it just do the swap state and change button appearance
+				* 	- if a boolean specified, this function force _settings.diacriticsFilterMode to be its value and change the button appearance, accordingly.
+				*/
 			function setDiacriticsFilterMode(_evt_forcedState){
 				const _sddDiacriticsOptionBtn = sddInputWrapper.querySelector(".search-diacritics-option-button");
 				let _mode;
@@ -15059,10 +14930,10 @@
 				if(_alignRightElementsDoneFlag) return;
 
 				/** function to do right-align for sub-component of SDD
-				 * @param _subQueryStr {string} the query selector string to specify the subcomponent
-				 * 	@value missing or undefined, it will take the default value of parameter '_subContainerElemQueryStr' of _rightAlignElems() function, which for now is "div.sdd-dropdown-item"
-				 * @value not undefined, we need specify the child of div.sdd-dropdown-item to do righ-align on, for example: "div.sdd-dropdown-item > .item-2nd-main-div"
-				 */
+					* @param _subQueryStr {string} the query selector string to specify the subcomponent
+					* 	@value missing or undefined, it will take the default value of parameter '_subContainerElemQueryStr' of _rightAlignElems() function, which for now is "div.sdd-dropdown-item"
+					* @value not undefined, we need specify the child of div.sdd-dropdown-item to do righ-align on, for example: "div.sdd-dropdown-item > .item-2nd-main-div"
+					*/
 				const _doSubAlignRight = _subQueryStr => {
 					const _allSections = sddDropdownContent.querySelectorAll("div.optgroup > section");
 					//if having group and user set (which actually default) _settings.rightAlignInEachOptGroup = true
@@ -15100,28 +14971,28 @@
 			}
 	
 			/** Sets the dropdown_content scrollTop to display the option 
-			 * @param option {element}: the option need to scroll to if it is not shown in the viewport
-			 * @param behavior {string, 'auto'}: the scroll behavior
-			 * @param toMiddle {boolean, false}: 
-			 * 	if @value = true, scroll so that the {option} locates at middle of dropdown. 
-			 *  if @value = false: 	
-			 * 		- option is in the view, do nothing
-			 * 		- option is hidden above the dropdown, it will be scroll to top of dropdown
-			 *  	- option is hidden below the dropdown, it will be scroll to bottom of dropdown
+				* @param option {element}: the option need to scroll to if it is not shown in the viewport
+				* @param behavior {string, 'auto'}: the scroll behavior
+				* @param toMiddle {boolean, false}: 
+				* 	if @value = true, scroll so that the {option} locates at middle of dropdown. 
+				*  if @value = false: 	
+				* 		- option is in the view, do nothing
+				* 		- option is hidden above the dropdown, it will be scroll to top of dropdown
+				*  	- option is hidden below the dropdown, it will be scroll to bottom of dropdown
 			*/
 			function scrollToOption(option, behavior = "auto", toMiddle = false) {
 				_scrollToElement(sddDropdownContent, option, behavior, toMiddle);
 			}
 
 			/** Sets the dropdown_content scrollTop to display the option
-			 * @param container {HTMLElement}: the container where the scroll take place, the one that contains the @option 
-			 * @param option {HTMLElement}: the option need to scroll to if it is hidden
-			 * @param behavior {string, 'auto'}: the scroll behavior, 'auto' ỏ 'smooth'
-			 * @param toMiddle {boolean, false}: 
-			 * 	if true, scroll so that the {option} locates at middle of dropdown. 
-			 *  if false: 	- option is in the view, do nothing
-			 * 				- option is hidden above the dropdown, it will be scroll to top of dropdown
-			 *  			- option is hidden below the dropdown, it will be scroll to bottom of dropdown
+				* @param container {HTMLElement}: the container where the scroll take place, the one that contains the @option 
+				* @param option {HTMLElement}: the option need to scroll to if it is hidden
+				* @param behavior {string, 'auto'}: the scroll behavior, 'auto' ỏ 'smooth'
+				* @param toMiddle {boolean, false}: 
+				* 	if true, scroll so that the {option} locates at middle of dropdown. 
+				*  if false: 	- option is in the view, do nothing
+				* 				- option is hidden above the dropdown, it will be scroll to top of dropdown
+				*  			- option is hidden below the dropdown, it will be scroll to bottom of dropdown
 			*/
 			function _scrollToElement(container, option, behavior = "auto", toMiddle = false) {
 				if (!option) return;
@@ -15158,11 +15029,11 @@
 			}
 
 			/** function to set the avatar for SDD. Avatar is a small icon that appear at the right end of representativeDiv - the div that is left when SDD closes. The purpose of this function is to re-use svg icons that loaded in the page to be used as background of representativeDiv::after pseudo
-			 * @param _spriteIcon : 
-			 * 	@value svg or symbol (svg sprite) element that contain the svg markup. Something like document.getElementById("icnSvgChapGroupIcon")
-			 * 	@value an url, something like 'https://uxwing.com/wp-content/themes/uxwing/download/file-and-folder-type/multiple-layers-icon.svg'
-			 * 	@value string but not url, we will take as id of svg icon or svg sprite, something like icnSvgChapGroupIcon
-			  */
+				* @param _spriteIcon : 
+				* 	@value svg or symbol (svg sprite) element that contain the svg markup. Something like document.getElementById("icnSvgChapGroupIcon")
+				* 	@value an url, something like 'https://uxwing.com/wp-content/themes/uxwing/download/file-and-folder-type/multiple-layers-icon.svg'
+				* 	@value string but not url, we will take as id of svg icon or svg sprite, something like icnSvgChapGroupIcon
+				*/
 			function _setSDDAvatar(_spriteIcon){
 				function svgSprite2Background(_sprite){
 					//see https://pqina.nl/blog/set-svg-background-image-fill-color/ for the most simple format of svg as a background
@@ -15232,7 +15103,7 @@
 				/* TODO: add case-sensitive and case-insensitive mode if needed. This require modify asciifold */
 
 				/** Search mode: the algorithm to break string into word when searching. This mode and _diacriticsFilterMode would define how to match searched result. For now, all the search is case-insensitive.
-				 * Default is Break mode*/
+					* Default is Break mode*/
 				const _WORD_MODE = Object.freeze({
 					/* The mode that seach string is all number and \. (can add more separate letter when needed)(regex = /^[\d.]+$/). This mode is mostly used for searching the order number of an SDD option. Beside that, this mode is only used for decoration. E.g, keyword '123' or '123.' would automatically turn this mode on */
 					'Number': 'Số',
@@ -15259,9 +15130,9 @@
 				//break queryStr into keys
 				let _searchKeys = [];
 				/** get/set the queryString.
-				 * @get : return the searchKeys that being broken-up from queryStr
-				 * @set : set searchKeys from queryStr that usable for other function such as matchSearch or highlight. This set is usually called from filterItems() when there is new queryString, this call by the same time will break queryString into _searchKeys
-				 */
+					* @get : return the searchKeys that being broken-up from queryStr
+					* @set : set searchKeys from queryStr that usable for other function such as matchSearch or highlight. This set is usually called from filterItems() when there is new queryString, this call by the same time will break queryString into _searchKeys
+					*/
 				Object.defineProperty(this, "queryString", {
 					get() {
 						return _searchKeys;
@@ -15364,8 +15235,8 @@
 				})();
 	
 				/** Function to keep diacratics or normalize string and convert (almost) all dicratic unicode chars (which can see in Vietnamese, Polish,.., language) into 26-letter latin characters 
-				 * @param txtContent {string}: the string need to removed diacratics (or not, depending on _diacriticsFilterMode mode, and value of forceRemoveDiacratics)
-				 * @param forceRemoveDiacratics {boolean}: if true (default false), it force to remove diacritics no matter what the value of _diacriticsFilterMode
+					* @param txtContent {string}: the string need to removed diacratics (or not, depending on _diacriticsFilterMode mode, and value of forceRemoveDiacratics)
+					* @param forceRemoveDiacratics {boolean}: if true (default false), it force to remove diacritics no matter what the value of _diacriticsFilterMode
 				*/
 				const uni2Latin = (txtContent, forceRemoveDiacratics = false) => {
 					txtContent =  txtContent.replaceAll(/\s\s+/g, " ").trim();
@@ -15381,8 +15252,8 @@
 				};
 	
 				/** Prepare list of string-regex keywords that ready for regex matching. Depending on @queryStr , this also decide the word-search mode
-				 * @param queryStr {string}: the search string that used as keyword to search through the SDD
-				 * @return an {array of string}: depending on the queryStr, a corresponding mode would turn on (see the comments in _WORD_MODE enum and the code below)
+					* @param queryStr {string}: the search string that used as keyword to search through the SDD
+					* @return an {array of string}: depending on the queryStr, a corresponding mode would turn on (see the comments in _WORD_MODE enum and the code below)
 					* @mode FirstLetter: array of regex so that each item correspond with one upper-case letter in Query string
 					* @mode Phrase: array of one string that match (in the way of indexOf matching) query string
 					* @mode Number and Break: break queryStr into list of keywords, sort by decending order of keyword length. Function returns array of all keyword which are separated by space in queryStr, with converting special escape character like ^$\...
@@ -15552,9 +15423,9 @@
 				};
 	
 				/**
-				 * removeHighlight fn copied from highlight v5 and
-				 * edited to remove with(), pass js strict mode, and use without jquery
-				 */
+					* removeHighlight fn copied from highlight v5 and
+					* edited to remove with(), pass js strict mode, and use without jquery
+					*/
 				const removeHighlight = (elem) => {
 					var elements = elem.querySelectorAll("span.highlight");
 					Array.prototype.forEach.call(elements, function (el) {
@@ -15719,9 +15590,9 @@
 			/* _sddState is variable stored states for current instance of SDD. */
 			let _sddState = null;
 			/** populate the data and functionalities for dropdown 
-			 * @param _settingParam {json, required}: can be just the setting, can be just the data {option, optgroups} or all the setting, depending the @param loadMode
-			 * @param loadMode {SddDropdown.LOAD_MODE_ENUM, optional - default loadSDDMode.All} to specify which mode to load. See enum loadSDDMode above for details
-			 * @param initSelectedItem {integer, string, HTMLElement - optional}: the index, value or Div.sdd-dropdown-item option for the item to be set selected when SDD just got populated. See selectItem() function for the requirement of this param
+				* @param _settingParam {json, required}: can be just the setting, can be just the data {option, optgroups} or all the setting, depending the @param loadMode
+				* @param loadMode {SddDropdown.LOAD_MODE_ENUM, optional - default loadSDDMode.All} to specify which mode to load. See enum loadSDDMode above for details
+				* @param initSelectedItem {integer, string, HTMLElement - optional}: the index, value or Div.sdd-dropdown-item option for the item to be set selected when SDD just got populated. See selectItem() function for the requirement of this param
 			*/
 			function loadDropdown(_settingParam, loadMode = loadSDDMode.All, initSelectedItem){
 				if ("object" !== typeof _settingParam) 
@@ -15890,9 +15761,9 @@
 			//register event handlers for sdd to response to user (mouse, keyboard, etc) actions
 			sddRegisterEvents();
 		}
-  
+	
 		/* //Usage: const sddDropdown = new SddDropdown(".sdd-container", _setting);
-  
+	
 		const sddDropdown = new SddDropdown(".sdd-container");
 		sddDropdown.loadDropdown(_setting, 5); 
 		*/
