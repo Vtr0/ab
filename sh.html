@@ -29,7 +29,19 @@
 			-webkit-font-smoothing: antialiased;
 		}
 
+		/* SETTING SOME VARIABLE TO CUSTOMIZE THE PAGE */
 		body {
+			/* Font size of Chapter title (span) in Playlist item (li) */
+			--playlist-item-title-font-size: 21px;
+			--playlist-item-title-font-weight: 400;
+
+			--button-border-style: 1px solid #bdbec0;
+			/* some rules to control hover over button and select box */
+			--button-hover-border-color: #8d28a5;
+			--button-hover-bground-color: #e5e7eb;
+			/* the filter that shift color of backgound svg image of select boxes from Black to --button-hover-bground-color */
+			--select-hover-bground-filter: invert(19%) sepia(33%) saturate(6688%) hue-rotate(278deg) brightness(91%) contrast(89%);
+
 			/* Fun corner: change color of selBookGroup and elmSelBookTitles by the selected value of selBookGroup */
 			--select-book-group-color: darkblue;
 			/* filter to change color from Black to darkblue */
@@ -45,19 +57,7 @@
 				--select-book-group-filter: invert(22%) sepia(99%) saturate(1440%) hue-rotate(95deg) brightness(90%) contrast(105%);
 			}					
 		}
-
-		/* SETTING SOME VARIABLE TO CUSTOMIZE THE PAGE */
-		:root {
-			/* Font size of Chapter title (span) in Playlist item (li) */
-			--playlist-item-title-font-size: 21px;
-			--playlist-item-title-font-weight: 400;
-			--button-hover-bground-color: #e5e7eb;
-			--select-hover-bground-filter: invert(19%) sepia(33%) saturate(6688%) hue-rotate(278deg) brightness(91%) contrast(89%);
-			/* the filter that shift color of backgound svg image of select boxes from Black to --button-hover-bground-color */
-			--button-hover-border-color: #8d28a5;
-			--button-border-style: 1px solid #bdbec0;
-		}
-
+		
 		audio {
 			width: 100%;
 			display: none;
@@ -1544,7 +1544,74 @@
 			opacity: 1;
 		}
 
-		/* ------------HANDLING RESPONSIVE--------------- */		
+		/* ------------HANDLING RESPONSIVE--------------- */
+		@media(max-width:680px) {
+			.ap-container {
+				/* min-width: 400px; */
+				width: 100%;
+				height: auto;
+				background-color: transparent;
+				border: none;
+			}
+
+			.ap-panel {
+				-webkit-flex-wrap: wrap;
+				-ms-flex-wrap: wrap;
+				flex-wrap: wrap;
+				justify-content: space-evenly;
+				height: auto;
+			}
+
+			.ap--track {
+				margin-bottom: 10px;
+				padding: 8px 10px;
+				background-color: #ddd;
+				/* #56AEFF #B1D4E0*/
+				border-radius: 10px;
+				-webkit-box-ordinal-group: 2;
+				-webkit-order: 1;
+				-ms-flex-order: 1;
+				order: 1;
+				-webkit-box-flex: 1;
+				-webkit-flex: 1 1 100%;
+				-ms-flex: 1 1 100%;
+				flex: 1 1 100%;
+			}
+
+			.ap--playback {
+				/* Only .ap--playback take extra space, .ap--settings keeps flex-grow=0 so take no extra space */
+				-webkit-box-flex: 1;
+				-webkit-flex: 1 1 70%;
+				-ms-flex: 1 1 70%;
+				flex: 1 1 70%;
+				-webkit-box-ordinal-group: 3;
+				-webkit-order: 2;
+				-ms-flex-order: 2;
+				order: 2;
+			}
+
+			.ap--settings {
+				-webkit-box-ordinal-group: 4;
+				-webkit-order: 3;
+				-ms-flex-order: 3;
+				order: 3;
+			}
+
+			.ap--playback>.ap-controls {
+				-webkit-box-flex: 1;
+				-webkit-flex: 1;
+				/* 25% */
+				-ms-flex: 1;
+				/* 25% */
+				flex: 1;
+				/* 25% */
+			}
+
+			/* .ap-title,
+			.ap-time {
+				display: none;
+			} */
+		}
 		/* @media(max-width:450px) {
 		.ap-panel {
 			flex-direction: row;
