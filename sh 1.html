@@ -2085,13 +2085,13 @@
 			--tick-mid: var(--select-book-group-color); /* #007bff; */
 			--tick-large:#444;
 			--text:#111;
-			--muted:#666;			
+			--muted:#666;
 
 			/* using fixed position to position popup relative to viewport, so that placePopup() will work. Using absolute position, popup is relative to its closest positioned ancestor */
-			position: fixed; /* absolute; */
+			position: absolute; /* absolute; */
 			display:none;
-			width:480px; 
-			max-width:calc(100vw - 16px);
+			width:480px !important; 
+			max-width:calc(100vw - 16px) !important;
 			background:var(--popup-bg); 
 			border:1px solid var(--border); 
 			border-radius:12px;
@@ -2106,6 +2106,7 @@
 			align-items: center;
 			justify-content: center;
 			width: 38px;
+			--data-translateX: -80%;
 			
 			& > img{
 				width: 30px;
@@ -6740,45 +6741,47 @@
 					</div>
 
 					<!-- Speed select box with increase/decrease buttons -->
-					<button class="ap-controls" title="Chọn tốc độ phát" id="spd_btn" data-expanded="false">
+					<button class="ap-controls" data-tooltip="Chọn tốc độ phát" id="spd_btn" data-expanded="false">
 						<img class="button-svg-img" src="https://uxwing.com/wp-content/themes/uxwing/download/transportation-automotive/speed-test-icon.svg" />
 						
 						<span class="spd_btnValue">1x</span>
 					</button>
-
-					<!-- Speed Slider Popup -->
-					<div id="spd_popup" class="spd_popup" role="dialog" data-open="false">
-						<div class="spd_header">
-							<div class="spd_header_left">
-							<div id="spd_title">Chọn tốc độ</div>
-							<!-- small - and + buttons -->
-							<button id="spd_dec" class="spd_small_btn" title="Giảm 0.05">
-								<svg class="!text-[12px] button-svg-img">
-									<use href="#icnSvgMinusSign" />
-								</svg>
-							</button>
-							<button id="spd_inc" class="spd_small_btn" title="Tăng 0.05">
-								<svg class="!text-[12px] button-svg-img">
-									<use href="#icnSvgPlusSign" />
-								</svg>
-							</button>
-							</div>
-
-							<div id="spd_currentLabel" class="spd_currentLabel">1</div>
-						</div>
-
-						<div class="spd_track-wrap">
-							<div id="spd_track" class="spd_track">
-							<div id="spd_fill" class="spd_fill"></div>
-							<div id="spd_handle" class="spd_handle" role="slider"
-								tabindex="0" data-valuenow="1"></div>
-							</div>
-							<div id="spd_ticks" class="spd_ticks"></div>
-						</div>
-					</div>
+					<!-- Speed Slider Popup old position. If we put it here, its closest positioned ancestor should be .ap-container (audio controls panel - ACP), so it is very hard to control the popup position especially when  ACP stick at the bottom of screen (see function placePopup())-->
+					
 				</div>
 			</div>
 		</div>		
+
+		<!-- Speed Slider Popup - We have to put it here so its closest positioned ancestor is the BODY itself -->
+		<div id="spd_popup" class="spd_popup" role="dialog" data-open="false">
+			<div class="spd_header">
+				<div class="spd_header_left">
+				<div id="spd_title">Chọn tốc độ</div>
+				<!-- small - and + buttons -->
+				<button id="spd_dec" class="spd_small_btn" data-tooltip="Giảm 0.05 &#10; Bấm mũi tên trái hoặc xuống &#10; Bấm cùng phím Shift để giảm 0.1">
+					<svg class="!text-[12px] button-svg-img">
+						<use href="#icnSvgMinusSign" />
+					</svg>
+				</button>
+				<button id="spd_inc" class="spd_small_btn" data-tooltip="Tăng 0.05 &#10; Bấm mũi tên phải hoặc lên &#10; Bấm cùng phím Shift để tăng 0.1">
+					<svg class="!text-[12px] button-svg-img">
+						<use href="#icnSvgPlusSign" />
+					</svg>
+				</button>
+				</div>
+
+				<div id="spd_currentLabel" class="spd_currentLabel">1</div>
+			</div>
+
+			<div class="spd_track-wrap">
+				<div id="spd_track" class="spd_track">
+				<div id="spd_fill" class="spd_fill"></div>
+				<div id="spd_handle" class="spd_handle" role="slider"
+					tabindex="0" data-valuenow="1"></div>
+				</div>
+				<div id="spd_ticks" class="spd_ticks"></div>
+			</div>
+		</div>
 
 		<!-- DIV contains playing time and functional buttons -->
 		<div class="flex-container">
@@ -14162,9 +14165,9 @@
 						{task: "audio_toggleVolume", kCode: ["Delete", "KeyM"], desc: "Bật/Tắt âm lượng.", callback: volumeToggle.bind(elVolumeBtn)},
 
 						// Speed UP
-						{task: "audio_speedUp", kCode: ["Equal", "NumpadAdd"], ignoreModifier: true, desc: "Tăng tốc độ phát 0.05 từ " + xState.audio.speed, noNotify: false, callback: () => bSpeed.incStep()},
+						{task: "audio_speedUp", kCode: ["Equal", "NumpadAdd"], ignoreModifier: true, desc: "Tăng tốc độ phát 0.05 từ " + xState.audio.speed, noNotify: true, callback: () => bSpeed.incStep()},
 						// Speed DOWN
-						{task: "audio_speedDown", kCode: ["Minus", "NumpadSubtract"], ignoreModifier: true, desc: "Giảm tốc độ phát 0.05 từ " + xState.audio.speed, noNotify: false, callback: () => bSpeed.decStep()},
+						{task: "audio_speedDown", kCode: ["Minus", "NumpadSubtract"], ignoreModifier: true, desc: "Giảm tốc độ phát 0.05 từ " + xState.audio.speed, noNotify: true, callback: () => bSpeed.decStep()},
 						// Speed Normal
 						{task: "audio_normalSpeed", kCode: ["Digit0", "Numpad0"], desc: "Đưa tốc độ phát về 1.0.", callback: _ => {bSpeed.setSliderSpeed(1); xAudio.playbackRate=1}},
 
@@ -14781,7 +14784,7 @@
 				- Animation for fill and handle on change
 				- + / - buttons to increase/decrease by step
 				@param spdOption {json} Integration with external code:
-					@property currentPlaybackSpeed (number): the slider initializes to that value.
+					@property initSpeed (number): the slider initializes to that value.
 					@property onSpeedChange (callback function): The slider will call onSpeedChange(newSpeed, {fromUser: boolean}) whenever its value changes.
 				@return json, which include following property, which are all function
 					
@@ -14819,6 +14822,7 @@
 				let dragging = false;
 
 				// === helper functions ===
+				//function to avoid set speed out of range
 				function clamp(v){ return Math.min(MAX, Math.max(MIN, v)); }
 				function toFixedStep(v){
 					// ensure rounding to nearest step and avoid fp issues
@@ -14829,12 +14833,13 @@
 					// short label: 1 instead of 1.00, 1.5 instead of 1.50, no '×'
 					//if (Math.abs(v - Math.round(v)) < 1e-9) return String(Math.round(v));
 					
-					// remove trailing zeros
+					// remove trailing zeros, so 1.0 instead of 1 or 1.00; 1.5 instead of 1.50
 					return v.toFixed(2).replace(/0$/,"") ; //Number(v.toFixed(2)).toString();
 				}
-				function speedToPct(s){ return ((s - MIN)/(MAX - MIN))*100; }
+				// speed to percent
+				function speedToPercent(s){ return ((s - MIN)/(MAX - MIN))*100; }
 
-				// call external hook if present
+				// call external hook if spdOption.onSpeedChange presents
 				function callExternal(newSpeed, meta){
 					// meta: { fromUser: boolean }
 					if (typeof spdOption?.onSpeedChange === 'function'){
@@ -14846,7 +14851,7 @@
 				function setSpeed(raw, {fromUser=false} = {}){
 					const s = toFixedStep(clamp(raw));
 					current = s;
-					const pct = speedToPct(current);
+					const pct = speedToPercent(current);
 
 					// update UI
 					// animate fill and handle via CSS transitions
@@ -14893,7 +14898,7 @@
 					const steps = Math.round((MAX - MIN) / STEP);
 					for(let i=0;i<=steps;i++){
 					const v = Number((MIN + i*STEP).toFixed(2));
-					const pct = speedToPct(v);
+					const pct = speedToPercent(v);
 					const tick = document.createElement('div');
 					tick.className = 'spd_tick';
 
@@ -14918,7 +14923,7 @@
 					const labelSteps = Math.round((MAX - MIN) / LABEL_STEP);
 					for(let i=0;i<=labelSteps;i++){
 					const v = Number((MIN + i*LABEL_STEP).toFixed(2));
-					const pct = speedToPct(v);
+					const pct = speedToPercent(v);
 					const lbl = document.createElement('div');
 					lbl.className = 'spd_tick-label';
 					lbl.style.left = pct + '%';
@@ -14943,10 +14948,11 @@
 					if (vh - r.bottom > ph + gap) top = r.bottom + gap;
 					else top = r.top - ph - gap;
 
-					left = r.left + (r.width/2) - (pw/2);
-					left = Math.max(8, Math.min(left, vw - pw - gap - 8));
+					//left = r.left + (r.width/2) - (pw/2);
+					//left = Math.max(8, Math.min(left, vw - pw - gap - 8));
+					//popup.style.left = Math.round(left + window.scrollX) + 'px';
 					popup.style.top = Math.round(top + window.scrollY) + 'px';
-					popup.style.left = Math.round(left + window.scrollX) + 'px';
+					popup.style.right = '8px';
 				}
 
 				function openPopup(){
@@ -14978,8 +14984,8 @@
 					if(popup.dataset.open === 'true'){
 						//if(e.key === 'ArrowLeft'){ e.preventDefault(); e.stopPropagation(); decStep(); }
 						//if(e.key === 'ArrowRight'){ e.preventDefault(); e.stopPropagation(); incStep(); }
-						if(['ArrowUp', 'ArrowRight'].includes(e.key)){ e.preventDefault(); e.stopPropagation(); incStep(e.shiftKey); }
-						if(['ArrowDown', 'ArrowLeft'].includes(e.key)){ e.preventDefault(); e.stopPropagation(); decStep(e.shiftKey); }
+						if(['ArrowUp', 'ArrowRight', '+'].includes(e.key)){ e.preventDefault(); e.stopPropagation(); incStep(e.shiftKey); }
+						if(['ArrowDown', 'ArrowLeft', '-'].includes(e.key)){ e.preventDefault(); e.stopPropagation(); decStep(e.shiftKey); }
 					}
 
 					//e.stopPropagation();
@@ -15031,11 +15037,11 @@
 					e.stopPropagation();
 				}); */
 
-				// If external variable window.currentPlaybackSpeed exists (number), use it as initial value.
-				// Otherwise default is 1. You can also set window.currentPlaybackSpeed before this script runs.
+				// If external variable window.initSpeed exists (number), use it as initial value.
+				// Otherwise default is 1. You can also set window.initSpeed before this script runs.
 				function initInitialSpeed(){
-					if(typeof spdOption?.currentPlaybackSpeed === 'number'){
-					setSpeed(spdOption.currentPlaybackSpeed, {fromUser:false});
+					if(typeof spdOption?.initSpeed === 'number'){
+					setSpeed(spdOption.initSpeed, {fromUser:false});
 					} else {
 					setSpeed(current, {fromUser:false});
 					}
@@ -15058,12 +15064,15 @@
 					change: changeAudioSpeed,
 					decStep: decStep,
 					incStep: incStep,
-					// === public API for integration ===\// getSliderSpeed : function(){ return current; },
+					// === public API for integration ===\
+					// getSliderSpeed : function(){ return current; },
 					setSliderSpeed : function(v, {fromUser=false} = {}){ return setSpeed(v, {fromUser}); }
-					
 				}
 
-			})({currentPlaybackSpeed: xState.audio.speed}); //, onSpeedChange: function(spd){console.log(spd)}
+			})({
+					initSpeed: xState.audio.speed
+					//, onSpeedChange: function(spd){toast.showToast(`Tốc độ phát ${spd}`)}
+				}); //, onSpeedChange: function(spd){console.log(spd)}
 
 			/* ========== STICKY MODE for AUDIO CONTROL PANEL ========== */
 			/* IIFE function to set sticky mode for audio controls panel AND using IntersectionObserver watch when it is hidden */
