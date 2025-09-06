@@ -15129,6 +15129,7 @@
 						}
 						return { x: 0, y: 0 };
 					}
+					const offsets = getViewportOffsets();
 
 					// prefer below if space; else above
 					if (vh - butRect.bottom > ph + gap) {
@@ -15156,7 +15157,7 @@
 					popup.style.left = left + 'px';
 					popup.style.top = Math.round(top + window.scrollY) + 'px';
 
-					const offsets = getViewportOffsets();
+					
 					// Tính vị trí arrow dựa trên vị trí button
 					const arrowCenter = offsets.x + butRect.left + butRect.width / 2 - left;
 					const maxArrow = pw - 20; // giới hạn arrow không ra ngoài
