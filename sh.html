@@ -15120,6 +15120,16 @@
 					let top, left;
 					const gap = BTN_GAP;
 
+					function getViewportOffsets() {
+						if (window.visualViewport) {
+							return {
+							x: window.visualViewport.offsetLeft,
+							y: window.visualViewport.offsetTop
+							};
+						}
+						return { x: 0, y: 0 };
+					}
+
 					// prefer below if space; else above
 					if (vh - butRect.bottom > ph + gap) {
 						// popup below button
@@ -15141,16 +15151,17 @@
 					// clamp to screen
 					left = Math.max(10, Math.min(left, vw - pw - 16));
 					// account for scroll position
-					left = Math.round(left + window.scrollX);
+					left = Math.round(left + window.scrollX + offsets.x);
 					// set position
 					popup.style.left = left + 'px';
-					popup.style.top = Math.round(top + window.scrollY) + 'px';
+					popup.style.top = Math.round(top + window.scrollY + offsets.y) + 'px';
 
+					const offsets = getViewportOffsets();
 					// Tính vị trí arrow dựa trên vị trí button
-					const arrowCenter = butRect.left + butRect.width / 2 - left;
+					const arrowCenter = offsets.x + butRect.left + butRect.width / 2 - left;
 					const maxArrow = pw - 20; // giới hạn arrow không ra ngoài
 					const arrowLeft = Math.max(10, Math.min(maxArrow, arrowCenter));
-					toast.showToast(`bW: ${butRect.width}, bLeft: ${butRect.left}, Arrow left: ${arrowLeft.toFixed(0)}px`, toast.ToastType.Info, 1000); //debug
+					toast.showToast(`vw: ${vw}, pw: ${pw}, Arrow left: ${arrowLeft.toFixed(0)}px`, toast.ToastType.Info, 1000); //debug
 
 					// Set CSS variable --arrow-left để định vị trí arrow
 					popup.style.setProperty('--arrow-left', `${arrowLeft}px`);
