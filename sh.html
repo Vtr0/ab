@@ -15150,7 +15150,7 @@
 					const arrowCenter = butRect.left + butRect.width / 2 - left;
 					const maxArrow = pw - 20; // giới hạn arrow không ra ngoài
 					const arrowLeft = Math.max(10, Math.min(maxArrow, arrowCenter));
-					toast.showToast(`vw: ${vw}, bLeft: ${left}, Arrow left: ${arrowLeft.toFixed(0)}px`, toast.ToastType.Info, 1000); //debug
+					toast.showToast(`bW: ${butRect.width}, bLeft: ${butRect.left}, Arrow left: ${arrowLeft.toFixed(0)}px`, toast.ToastType.Info, 1000); //debug
 
 					// Set CSS variable --arrow-left để định vị trí arrow
 					popup.style.setProperty('--arrow-left', `${arrowLeft}px`);
