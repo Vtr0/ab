@@ -15152,7 +15152,7 @@
 					// clamp to screen
 					left = Math.max(10, Math.min(left, vw - pw - 16));
 					// account for scroll position
-					left = Math.round(left + window.scrollX + offsets.x);
+					left = Math.round(left + window.scrollX);
 					// set position
 					popup.style.left = left + 'px';
 					popup.style.top = Math.round(top + window.scrollY) + 'px';
