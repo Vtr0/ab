@@ -15161,7 +15161,7 @@
 					const arrowCenter = offsets.x + butRect.left + butRect.width / 2 - left;
 					const maxArrow = pw - 20; // giới hạn arrow không ra ngoài
 					const arrowLeft = Math.max(10, Math.min(maxArrow, arrowCenter));
-					toast.showToast(offsets.x +  "   " + offsets.y);
+					toast.showToast(`ox: ${offsets.x}, oy: ${offsets.y}`, toast.ToastType.Info, 1000); //debug
 					toast.showToast(`vw: ${vw}, pw: ${pw}, Arrow left: ${arrowLeft.toFixed(0)}px`, toast.ToastType.Info, 1000); //debug
 
 					// Set CSS variable --arrow-left để định vị trí arrow
