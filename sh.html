@@ -15129,7 +15129,6 @@
 						}
 						return { x: 0, y: 0 };
 					}
-					const offsets = getViewportOffsets();
 
 					// prefer below if space; else above
 					if (vh - butRect.bottom > ph + gap) {
@@ -15144,6 +15143,7 @@
 						popup.classList.remove("spd-popup-below");
     					popup.classList.add("spd-popup-above");
 					}
+					const offsets = getViewportOffsets();
 
 					// == center align with button, but keep on screen with 10px margin ==
 					// calculate left to center align with button
@@ -15156,14 +15156,11 @@
 					// set position
 					popup.style.left = left + 'px';
 					popup.style.top = Math.round(top + window.scrollY) + 'px';
-
 					
-					// Tính vị trí arrow dựa trên vị trí button
-					const arrowCenter = offsets.x + butRect.left + butRect.width / 2 - left;
-					const maxArrow = pw - 20; // giới hạn arrow không ra ngoài
+					// Calculate position for arrow
+					const arrowCenter = offsets.x + butRect.left + butRect.width / 2 - left; //offsets.x is to handle zoomed page
+					const maxArrow = pw - 20; // limit arrow position to be within popup, assuming arrow width is 20px
 					const arrowLeft = Math.max(10, Math.min(maxArrow, arrowCenter));
-					toast.showToast(`ox: ${offsets.x}, oy: ${offsets.y}`, toast.ToastType.Info, 1000); //debug
-					toast.showToast(`vw: ${vw}, pw: ${pw}, Arrow left: ${arrowLeft.toFixed(0)}px`, toast.ToastType.Info, 1000); //debug
 
 					// Set CSS variable --arrow-left để định vị trí arrow
 					popup.style.setProperty('--arrow-left', `${arrowLeft}px`);
