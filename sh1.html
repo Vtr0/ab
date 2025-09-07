@@ -15223,54 +15223,50 @@
   const btnRect = btn.getBoundingClientRect();
   const pw = popup.offsetWidth;
   const ph = popup.offsetHeight;
-  const gap = typeof BTN_GAP === 'number' ? BTN_GAP : 8;
+  const gap = BTN_GAP || 8;
 
-  // offsetParent (nơi popup được đặt)
+  // offsetParent & rect
   const offsetParent = popup.offsetParent || document.documentElement;
   const parentRect = offsetParent.getBoundingClientRect();
 
-  // Tính tọa độ thực của button trong document
-  const btnDocTop = btnRect.top + window.scrollY;
+  // Button position in document
   const btnDocLeft = btnRect.left + window.scrollX;
+  const btnDocTop = btnRect.top + window.scrollY;
 
-  // Tính vị trí popup (trong document coords)
+  // Popup top (doc coords)
   let desiredTopDoc;
   if ((window.innerHeight - btnRect.bottom) > (ph + gap)) {
-    // đủ chỗ dưới => đặt dưới
     desiredTopDoc = btnDocTop + btnRect.height + gap;
     popup.classList.remove('spd-popup-above');
     popup.classList.add('spd-popup-below');
   } else {
-    // đặt trên
     desiredTopDoc = btnDocTop - ph - gap;
     popup.classList.remove('spd-popup-below');
     popup.classList.add('spd-popup-above');
   }
 
-  // Căn giữa popup theo button (document coords)
-  const shiftFactor = 3/4; // 1/2 = center
+  // Popup left (doc coords) — with shiftFactor
+  const shiftFactor = 5/6; // chỉ để thay đổi popup lệch trái/phải một chút
   let desiredLeftDoc = btnDocLeft + (btnRect.width / 2) - (pw * shiftFactor);
 
-  // Không clamp theo viewport vì bạn muốn nó bám button ngay cả khi button off-screen
-  // Nếu cần clamp trong parent, có thể xử lý riêng
-
-  // Chuyển về tọa độ tương đối với offsetParent
+  // Convert to parent-relative coords
   const leftRelParent = Math.round(desiredLeftDoc - (parentRect.left + window.scrollX));
   const topRelParent = Math.round(desiredTopDoc - (parentRect.top + window.scrollY));
 
-  // Gán vị trí
   popup.style.left = leftRelParent + 'px';
   popup.style.top = topRelParent + 'px';
 
-  // Vị trí mũi tên trong popup
-  const btnCenterDoc = btnDocLeft + btnRect.width / 2;
+  // --- Arrow position (ALWAYS center of button) ---
+  const btnCenterDoc = btnDocLeft + (btnRect.width / 2);
   const arrowCenterInPopup = btnCenterDoc - desiredLeftDoc;
+
   const arrowMin = 10;
-  const arrowMax = Math.max(10, pw - 20);
-  const arrowLeftClamped = Math.round(Math.max(arrowMin, Math.min(arrowMax, arrowCenterInPopup)));
+  const arrowMax = Math.max(10, pw - 20); // 20 = arrow width
+  const arrowLeftClamped = Math.max(arrowMin, Math.min(arrowMax, arrowCenterInPopup));
 
   popup.style.setProperty('--arrow-left', `${arrowLeftClamped}px`);
 }
+
 
 
 				
