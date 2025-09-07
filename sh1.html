@@ -15132,55 +15132,50 @@
 					 * @return {string}: the css linear-gradient string	
 					 * 
 					*/
-					function drawSpeedLevel(useColor=true, maxVal=MAX){
-						const SPD_DATA = {
-							SLOW: { value: 0.25, color: '#4CAF50' },
-							NORMAL: { value: 0.75, color: '#2196F3' },
-							FAST: { value: 1.25, color: '#FFEB3B' },
-							VERY_FAST: { value: 2.0, color: '#FF9800' },
-							EXTREME: { value: 2.5, color: '#F44336' },
-							INSANE: { value: 3.0, color: '#B71C1C' }
-						};
-						const ALPHA = "CC"; //", 0.7"; //opacity for gradient color, e.g: "CC" for 80% opacity, FF for 100%. Append opacity to each color
+					function drawSpeedLevel(useColor = true, maxVal = MAX) {
+    const SPD_DATA = {
+        SLOW: { value: 0.25, color: '#4CAF50' },
+        NORMAL: { value: 0.75, color: '#2196F3' },
+        FAST: { value: 1.25, color: '#FFEB3B' },
+        VERY_FAST: { value: 2.0, color: '#FF9800' },
+        EXTREME: { value: 2.5, color: '#F44336' },
+        INSANE: { value: 3.0, color: '#B71C1C' }
+    };
+    const ALPHA = "CC"; // 80% opacity
 
-						// Có thể set maxVal thủ công (ví dụ 4.0) hoặc auto
-						const minVal = SPD_DATA.SLOW.value; // Mức thấp nhất
-						//const maxVal = 2.0; // hoặc: Math.max(...Object.values(SPD_DATA).map(item => item.value))
+    const minVal = SPD_DATA.SLOW.value;
 
-						let gradientStops = '';
-						let prevPercent = 0;
+    let gradientStops = '';
+    let prevPercent = 0;
 
-						for (const key in SPD_DATA) {
-							const val = SPD_DATA[key].value;
-							
-							
-							// Tính phần trăm theo khoảng min -> max
-							const percent = ((val - minVal) / (maxVal - minVal)) * 100;
-							
-							if(useColor){
-								const color = SPD_DATA[key].color;
-								gradientStops += `${color}${ALPHA} ${prevPercent}% ${percent}%, `;
-							}
-							else {
-								// Tính màu grayscale (0 = đen, 255 = trắng)
-								const shade = Math.round(255 - ((val - minVal) / (maxVal - minVal)) * 200);
-								const color = `rgb(${shade}, ${shade}, ${shade})`;
-								gradientStops += `${color} ${prevPercent}% ${percent}%, `;
-							}
+    for (const key in SPD_DATA) {
+        const val = SPD_DATA[key].value;
+        const percent = ((val - minVal) / (maxVal - minVal)) * 100;
 
-							prevPercent = percent;
-						}
+        if (useColor) {
+            const color = SPD_DATA[key].color;
+            gradientStops += `${color}${ALPHA} ${prevPercent}% ${percent}%, `;
+        } else {
+            // Tính màu từ #ccc (204) → #000 (0)
+            const ratio = (val - minVal) / (maxVal - minVal);
+            const gray = Math.round(204 - (204 * ratio)); // từ 204 giảm dần đến 0
+            const color = `rgb(${gray}, ${gray}, ${gray})`;
+            gradientStops += `${color} ${prevPercent}% ${percent}%, `;
+        }
 
-						// Nếu maxVal > giá trị cuối, giữ màu cuối đến 100%
-						if(useColor)
-							gradientStops += `${Object.values(SPD_DATA).slice(-1)[0].color}${ALPHA} ${prevPercent}% 100%`;
-						else {
-							const lastShade = Math.round(255 - ((Object.values(SPD_DATA).slice(-1)[0].value - minVal) / (maxVal - minVal)) * 255);
-							gradientStops += `rgb(${lastShade}, ${lastShade}, ${lastShade}) ${prevPercent}% 100%`;
-						}
+        prevPercent = percent;
+    }
 
-						return `linear-gradient(to right, ${gradientStops})`;
-					}
+    if (useColor) {
+        gradientStops += `${Object.values(SPD_DATA).slice(-1)[0].color}${ALPHA} ${prevPercent}% 100%`;
+    } else {
+        // Cuối cùng là #000
+        gradientStops += `rgb(0,0,0) ${prevPercent}% 100%`;
+    }
+
+    return `linear-gradient(to right, ${gradientStops})`;
+}
+
 
 					/* function drawSpeedLevelGreyScale(maxVal=MAX){
 						const SPD_DATA = {
