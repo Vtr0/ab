@@ -15120,7 +15120,7 @@
 					let top, left;
 					const gap = BTN_GAP;
 
-					/* // get visual viewport offsets (for zoomed page)
+					// get visual viewport offsets (for zoomed page)
 					// ref: https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport
 					function getViewportOffsets() {
 						if (window.visualViewport) {
@@ -15131,7 +15131,7 @@
 						}
 						return { x: 0, y: 0 };
 					}
-					const offsets = getViewportOffsets(); */
+					const offsets = getViewportOffsets();
 
 					// prefer below if space; else above
 					if (vh - butRect.bottom > ph + gap) {
@@ -15160,7 +15160,7 @@
 					popup.style.top = Math.round(top + window.scrollY) + 'px';
 					
 					// Calculate position for arrow
-					const arrowCenter = butRect.left + butRect.width / 2 - left; //offsets.x is to handle zoomed page
+					const arrowCenter = offsets.x + butRect.left + butRect.width / 2 - left; //offsets.x is to handle zoomed page
 					const maxArrow = pw - 20; // limit arrow position to be within popup, assuming arrow width is 20px
 					const arrowLeft = Math.max(10, Math.min(maxArrow, arrowCenter));
 
