@@ -15220,50 +15220,63 @@
 
 				// === interactions: open/close popup + positioning ===
 				function placePopup() {
-					const butRect = btn.getBoundingClientRect();
-					const pw = popup.offsetWidth;
-					const ph = popup.offsetHeight;
-					const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-					const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-					const offsets = window.visualViewport
-						? { x: window.visualViewport.offsetLeft, y: window.visualViewport.offsetTop }
-						: { x: 0, y: 0 };
+  // đo trong viewport coordinates
+  const btnRect = btn.getBoundingClientRect();        // viewport coords của button
+  const popupRect = popup.getBoundingClientRect();    // viewport coords hiện tại của popup
+  const pw = Math.round(popupRect.width);
+  const ph = Math.round(popupRect.height);
 
-					const gap = BTN_GAP;
-					let top, left;
+  // viewport size (dùng visualViewport nếu có)
+  const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+  const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const gap = typeof BTN_GAP === 'number' ? BTN_GAP : 8;
 
-					// Vị trí theo chiều dọc: ưu tiên bên dưới nếu đủ chỗ
-					if (vh - (butRect.bottom - offsets.y) > ph + gap) {
-						top = butRect.bottom + gap;
-						popup.classList.remove("spd-popup-above");
-						popup.classList.add("spd-popup-below");
-					} else {
-						top = butRect.top - ph - gap;
-						popup.classList.remove("spd-popup-below");
-						popup.classList.add("spd-popup-above");
-					}
+  // offsetParent (nơi popup sẽ được định vị tương đối)
+  const offsetParent = popup.offsetParent || document.documentElement;
+  const parentRect = offsetParent.getBoundingClientRect(); // viewport coords của offsetParent
 
-					// Cộng scroll + viewport offset để bám vào đúng vị trí thực
-					popup.style.top = Math.round(top + window.scrollY + offsets.y) + 'px';
+  // 1) quyết định trên/dưới (tính bằng viewport coords)
+  let desiredTopViewport;
+  if ( (vh - btnRect.bottom) > (ph + gap) ) {
+    // đủ chỗ bên dưới
+    desiredTopViewport = btnRect.bottom + gap;
+    popup.classList.remove('spd-popup-above');
+    popup.classList.add('spd-popup-below');
+  } else {
+    // xuống không đủ -> đặt phía trên
+    desiredTopViewport = btnRect.top - ph - gap;
+    popup.classList.remove('spd-popup-below');
+    popup.classList.add('spd-popup-above');
+  }
 
-					// Tính left: căn giữa theo button
-					left = butRect.left + (butRect.width / 2) - (pw / 2);
+  // 2) tính left mong muốn (theo viewport coords)
+  // thay 3/4 nếu bạn muốn shift; để an toàn dùng biến shiftFactor
+  const shiftFactor = 3/4; // nếu muốn center thì đổi thành 1/2
+  let desiredLeftViewport = btnRect.left + (btnRect.width / 2) - (pw * shiftFactor);
 
-					// Clamp để popup không ra ngoài màn hình (10px margin)
-					left = Math.max(offsets.x + 10, Math.min(left, offsets.x + vw - pw - 10));
+  // 3) clamp trong viewport (10px margin)
+  const minViewportLeft = 10;
+  const maxViewportLeft = Math.max(10, vw - pw - 10);
+  desiredLeftViewport = Math.max(minViewportLeft, Math.min(desiredLeftViewport, maxViewportLeft));
 
-					// Cộng scroll + viewport offset
-					left = Math.round(left + window.scrollX);
+  // 4) chuyển sang tọa độ tương đối với offsetParent (vì popup.position = absolute)
+  const leftRelParent = Math.round(desiredLeftViewport - parentRect.left);
+  const topRelParent  = Math.round(desiredTopViewport - parentRect.top);
 
-					popup.style.left = left + 'px';
+  // 5) set style
+  popup.style.left = leftRelParent + 'px';
+  popup.style.top  = topRelParent  + 'px';
 
-					// Tính vị trí mũi tên: chính giữa button
-					const arrowCenter = (butRect.left + butRect.width / 2) - left;
-					const maxArrow = pw - 20; // Giới hạn trong popup
-					const arrowLeft = Math.max(10, Math.min(maxArrow, arrowCenter));
+  // 6) tính vị trí mũi tên (relative to popup, dùng viewport coords)
+  const btnCenterViewport = btnRect.left + btnRect.width / 2;
+  const arrowCenterInPopup = btnCenterViewport - desiredLeftViewport; // px từ trái popup
+  const arrowMin = 10;
+  const arrowMax = Math.max(10, pw - 20);
+  const arrowLeftClamped = Math.round(Math.max(arrowMin, Math.min(arrowMax, arrowCenterInPopup)));
 
-					popup.style.setProperty('--arrow-left', `${arrowLeft}px`);
-				}
+  popup.style.setProperty('--arrow-left', `${arrowLeftClamped}px`);
+}
+
 				
 				// change the popup position when user changes ACP (audio control panel) sticky mode, so the ACP might move up or down, we need to reposition the popup so it still sticks with the button (inside ACP)
 				(function(){ 
