@@ -15334,7 +15334,7 @@
 				const onWinChange = debounce(() => {
 					console.log(window.visualViewport.scale);
 					if (window.visualViewport) {
-						if (window.visualViewport.scale !== 1) {
+						if (e.target === window.visualViewport) {
 							// currently zoomed → skip repositioning
 							return;
 						}
