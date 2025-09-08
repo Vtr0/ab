@@ -15332,13 +15332,13 @@
 				//function onWinChange(){ if(popup.dataset.open==='true') placePopup(); }
 				// Use debounce technique to lighten heavy scroll work.
 				const onWinChange = debounce(() => {
-					console.log(window.visualViewport.scale);
+					/* console.log(window.visualViewport.scale);
 					if (window.visualViewport) {
 						if (e.target === window.visualViewport) {
 							// currently zoomed → skip repositioning
 							return;
 						}
-					}
+					} */
 					// do expensive stuff in placePopup() once
 					//console.log('scroll stopped');
 					if(popup.dataset.open==='true') placePopup();
