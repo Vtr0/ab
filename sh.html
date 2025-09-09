@@ -10684,107 +10684,142 @@
 			_elmArtwork.onclick = evt => {saveState2Disk()};
 		}
 
-		/* user changes to other books
-			bookValue: value of selected item of elmSelBookTitles, not selected index in the elmSelBookTitles element, which in fact is stt of book in ssData.xData
-			*/
-		function changeBook(bookValue) {
-			//bookValue = parseInt(bookValue);
-
-			//if still the same book, then do nothing. This happens sometimes, for example when close the User-Setting windows, Page will updates all the setting changes, and finally re-load book+chapter
+		/** user changes to other books
+			@param bookValue: value of selected item of elmSelBookTitles, not selected index in the elmSelBookTitles element, which in fact is stt of book in ssData.xData
+			@param isNewLoad: true if this is a new book load, false if this is just switching between Playlist textmode and Thumbnail mode
+		*/
+		function changeBook(bookValue, isNewLoad=true) {
+			// === if still the same book, then do nothing. This happens sometimes, for example when close the User-Setting windows, Page will updates all the setting changes, and finally re-load book+chapter ===
 			if (xAudio.getAttribute("attr-Book") == bookValue) return;
 
-			//div element which contains book information
-			const elmBookInfo = document.getElementById("elmBookInfo");
-			// the <details> element which control collapsing/expanding of #elmBookInfo
-			const _detailElem = elmBookInfo.previousElementSibling;
-			//set this so that if Book infor being collapsed this moment, but later user expand Book infor, the 'ontoggle' handler of details element would know to run reposTooltips() at that point of time to fix the tooltip position
-			_detailElem.tooltipFixed = _detailElem.open;
+			/* do some preparation before loading a new book */
+			function preparation4NewBook(){
+				// === Book info element ===
+				const elmBookInfo = document.getElementById("elmBookInfo");
+				// the <details> element which control collapsing/expanding of #elmBookInfo
+				const _detailElem = elmBookInfo.previousElementSibling;
+				// Save current state for tooltip reposition when expanding later. //set this so that if Book infor being collapsed this moment, but later user expand Book infor, the 'ontoggle' handler of details element would know to run reposTooltips() at that point of time to fix the tooltip position
+				_detailElem.tooltipFixed = _detailElem.open;
 
-			// observe the _elmChapterInfor element, so when its newly added children and desendant rendered, adjust tooltips position
-			ssData.ttMutationObserver.observe(elmBookInfo, { childList: true, subtree: true });
-			// obsever if div[name="divOtherControlTop"] which contains checkbox to expand/collapse all chapter-group be show-up or hidden
-			ssData.ttMutationObserver.observe(document.querySelector('[name="divChapterGroupControls"]'), { attributes: true, attributeFilter: ["class"] });
+				// observe the _elmChapterInfor element, so when its newly added children and desendant rendered, adjust tooltips position
+				ssData.ttMutationObserver.observe(elmBookInfo, { childList: true, subtree: true });
+				// obsever if div[name="divChapterGroupControls"] which contains checkbox to expand/collapse all chapter-group be show-up or hidden
+				ssData.ttMutationObserver.observe(document.querySelector('[name="divChapterGroupControls"]'), {
+					attributes: true,
+					attributeFilter: ["class"]
+				});
 
-			historyCls.addToHistory(bookValue); //add new book to History if it was not hostory back/forward
+				// === Add book to history ===
+				historyCls.addToHistory(bookValue); //add new book to History if it was not hostory back/forward
 
-			//update state
-			xState["lb"] = bookValue;
-			//if not yet available, make a new JSON for this book
-			if (typeof xState.history.books[bookValue] == "undefined") xState.history.books[bookValue] = { "urlLine": 0 }; //urlLine remember the url link index should be played for all chapter this book if each chapter has multiple mp3 links
+				// === Update state ===
+				xState["lb"] = bookValue;
+				//if not yet available, make a new JSON for this book
+				if (typeof xState.history.books[bookValue] == "undefined")
+					xState.history.books[bookValue] = { "urlLine": 0 };//urlLine remember the url link index should be played for all chapter this book if each chapter has multiple mp3 links
+			};
+			preparation4NewBook();
 
-			let bData = ssData.bookData.findBookFromId(bookValue); // [bookValue - 1]; //bData contains all information for current book
-
-			//add the background based on its grp[0] value (which somewhat defines the type of the book)
-			const _grp0 = bData.grp[0];
-			//remove old background class if there any
-			const _clsList = document.querySelector('div[name="divCtnTop"]').classList;
-			_clsList.forEach(_cls => {if(_cls.endsWith('Bgrnd')) _clsList.remove(_cls)});
-			// for book that is buddhist sutra or sermon or book, added the lotus background
-			if(_grp0.match(/\$10[A-F]$/)) _clsList.add("lotusBgrnd");
-			if(_grp0.match(/\$([1~3]|11|12)$/)) _clsList.add("detectiveBgrnd");
-			if(_grp0.match(/\$([6-9]|4)$/)) _clsList.add("fantasticNovelBgrnd");
-			if(_grp0.match(/\$(13[ACSR]|5A|5B)$/)) _clsList.add("classicNovelBgrnd");
-			if(_grp0.match(/\$5X$/)) _clsList.add("xianxianBgrnd");
-
-			// Create real media links, cover image, original (outside) url,..., generate chaps groups from autoTap attribute for parts that have wildcart
+			// === Create real media links, cover image, original (outside) url,..., generate chaps groups from autoTap attribute for parts that have wildcart ===
 			BookData.prototype.generateWCLinks(bookValue);
 
-			let strOrgLink = "<div>Nguồn: <ul class='inlineList'>";
-			if (Array.isArray(bData.ssrc)) {
-				let i = 1;
-				bData.ssrc.forEach(s => { strOrgLink += "<li><a target='_blank' href='" + s + "'>" + (getHostName(s)) + "</a></li>" });
-			}
-			else
-				strOrgLink += `<li><a target='_blank' href='${bData.ssrc}'>${getHostName(bData.ssrc)}</a></li>`; //
-			strOrgLink += "</ul></div>";
-
-			let totalDuration = BookData.prototype.bookStatistics(bData).totalDur;
-			//for (let i = 1; i <= bData.parts.length; i++) { totalDuration += toSeconds(bData.parts[i - 1].dur); }
-
-			//update the total duration of the Book
-			const _elmBookTotalDuration = document.getElementById("elmBookTotalDuration");
-			elmBookTotalDuration.querySelector("span:first-of-type").innerHTML = toHhMmSs(totalDuration);
-			const _elmBookRealListening = elmBookTotalDuration.querySelector("span:last-of-type");
-			_elmBookRealListening.setAttribute("attr-duration", totalDuration);
-			_elmBookRealListening.innerHTML = toHhMmSs(totalDuration / xAudio.playbackRate);
-
-			/* Update book infor to detail elem at the bottom of page */
-			document.getElementById("elmBookTitle").innerHTML = bData.title + (bData.eTitle && bData.eTitle != bData.title ? " <wbr/>(" + bData.eTitle + ")" : ""); /* <wbr> and css style '#elmBookTitle{text-wrap: nowrap}' can auto-break the line after <wbr/> into new line if the whole title is more than 1 line. However, for now this seem not work in Safary */
+			//bData contains all information for current book
+			let bData = ssData.bookData.findBookFromId(bookValue);
 			
-			/** function to make general information of the books and put in bunch of li elements */
-			function makeLiGeneralInfor() {
-				/** function to generate svg icon along with tooltip and css style for each type of information
-				* @param _type: inforType, see the code for details
-				*/
-				let makeSvgStr = _type => {
-					let _iconTitle = ["Mã sách", "Số chương", "Tác giả", "Năm xuất bản", "Thể loại", "Người đọc", "Thời gian còn lại của sách", "Thời gian nghe còn lại thực tế của sách (theo tốc độ phát)", "Số nhóm chương"];
-					let _iconNames = ["icnSvgId", "icnSvgChapters", "icnSvgMaleAuthor", "icnSvgCalendar", "icnSvgBookType", "icnSvgMicrophone", "icnSvgRemainTime", "icnSvgListenTime", "icnSvgChapGroupIcon"];
-					let _inlineStyle = "", _class = "svg-img-infor";
+			// === Update background of the header of the page (which contail book header, ssData.sddBooks) based on grp[0] value ===
+			(function updateBookHeaderBackground(){
+				//add the background based on its grp[0] value (which somewhat defines the type of the book)
+				const _grp0 = bData.grp[0];
 
-					//real Listening time icon
-					if (_type == 7) _inlineStyle = "width: 1.2em;";
-					/* if (_type == 6 || _type == 7) //make these two time icons a bit bigger
-						_class += " svg-img-infor-13"; */
-					return `<code style="display: inline-block" data-tooltip="${_iconTitle[_type]}" data-tooltip-location="bottom">${makeSvgFromSprite(_iconNames[_type], { class: _class, style: _inlineStyle })}</code>`; //
+				const _clsList = document.querySelector('div[name="divCtnTop"]').classList;
+				//remove old background class if there any
+				_clsList.forEach(_cls => { if (_cls.endsWith('Bgrnd')) _clsList.remove(_cls) });
+
+				// for book that is buddhist sutra or sermon or book, added the lotus background
+				if (_grp0.match(/\$10[A-F]$/)) _clsList.add("lotusBgrnd");
+				if (_grp0.match(/\$([1~3]|11|12)$/)) _clsList.add("detectiveBgrnd");
+				if (_grp0.match(/\$([6-9]|4)$/)) _clsList.add("fantasticNovelBgrnd");
+				if (_grp0.match(/\$(13[ACSR]|5A|5B)$/)) _clsList.add("classicNovelBgrnd");
+				if (_grp0.match(/\$5X$/)) _clsList.add("xianxianBgrnd");
+			})();
+			
+			// === Update Book tittle, Build book info ===
+			(function buildBookInfo() {
+				// === Update book title ===
+				document.getElementById("elmBookTitle").innerHTML =
+					bData.title + (bData.eTitle && bData.eTitle != bData.title ? " <wbr/>(" + bData.eTitle + ")" : ""); /* <wbr> and css style '#elmBookTitle{text-wrap: nowrap}' can auto-break the line after <wbr/> into new line if the whole title is more than 1 line. However, for now this seem not work in Safary */
+
+				// === Update book general infor, which will be shown at the area of the page footer ===
+				/** function to make general information of the books and put in bunch of li elements */
+				function makeLiGeneralInfor() {
+					/** function to generate svg icon along with tooltip and css style for each type of information
+					* @param _type: inforType, see the code for details
+					*/
+					let makeSvgStr = _type => {
+						let _iconTitle = ["Mã sách", "Số chương", "Tác giả", "Năm xuất bản", "Thể loại", "Người đọc", "Thời gian còn lại của sách", "Thời gian nghe còn lại thực tế của sách (theo tốc độ phát)", "Số nhóm chương"];
+						let _iconNames = ["icnSvgId", "icnSvgChapters", "icnSvgMaleAuthor", "icnSvgCalendar", "icnSvgBookType", "icnSvgMicrophone", "icnSvgRemainTime", "icnSvgListenTime", "icnSvgChapGroupIcon"];
+						let _inlineStyle = "", _class = "svg-img-infor";
+
+						//real Listening time icon
+						if (_type == 7) _inlineStyle = "width: 1.2em;";
+						
+						return `<code style="display: inline-block" data-tooltip="${_iconTitle[_type]}" data-tooltip-location="bottom">${makeSvgFromSprite(_iconNames[_type], { class: _class, style: _inlineStyle })}</code>`; //
+					}
+
+					/* return `<ul class='inlineListInfor' style='padding-inline-start: 0px;'>
+						<li>${makeSvgStr(0)}<span>${bData.bookId}</span>.</li>
+						${bData.tap ? "<li>" + makeSvgStr(8) + "<span>" + bData.tap.length + "</span></li>" : ""}
+						<li>${makeSvgStr(1)}<span>${bData.parts.length} chapters.</span></li>
+						<li>${makeSvgStr(6)}<span>${toHhMmSs(303)}</span>&ensp;${makeSvgStr(7)}<span attr-duration="${303}" role="listeningTime">${toHhMmSs(303 / xAudio.playbackRate)}</span></li>
+						<li>${makeSvgStr(2)}<span>${bData.author}</span></li>
+						${bData.year ? `<li>${makeSvgStr(3)}<span>${bData.year}</span></li>` : ""}
+						<li>${makeSvgStr(4)}<span>${bData.type}</span></li>
+						<li>${makeSvgStr(5)}<span>${bData.mc}</span></li>
+					</ul>`; */
+					return `<ul class='inlineListInfor' style='padding-inline-start: 0px;'>
+						<li>${makeSvgStr(0)}<span style="user-select: auto;-webkit-user-select: auto;" data-tooltip="${bData.dbPath.file}.${bData.dbPath.bookKit}[${bData.dbPath.idx+1}]&#10;[${bData.grp}]" data-tooltip-location="bottom">${bData.bookId}</span>.</li>
+						${bData.tap? "<li>" + makeSvgStr(8) + "<span>" + bData.tap.length + "</span></li>" : ""}
+						<li>${makeSvgStr(1)}<span>${bData.parts.length} chương.</span></li>
+						<li>${makeSvgStr(6)}<span>${toHhMmSs(303)}</span>&ensp;${makeSvgStr(7)}<span attr-duration="${303}" role="listeningTime">${toHhMmSs(303 / xAudio.playbackRate)}</span></li>
+						<li>${makeSvgStr(2)}<span>${bData.author}</span></li>`
+								+ (bData.year ? `<li>${makeSvgStr(3)}<span>${bData.year}</span></li>` : ``)
+								+ `<li>${makeSvgStr(4)}<span>${bData.type}</span></li>
+						<li>${makeSvgStr(5)}<span}>${bData.mc}</span></li>
+					</ul>`;
+					// the number 303 above is just some dummy number to show how the time format look like (before I use totalDuration, but not necessary). It will be updated later in changeChap() function when a chapter of the book is loaded and played
 				}
 
-				return `<ul class='inlineListInfor' style='padding-inline-start: 0px;'>
-					<li>${makeSvgStr(0)}<span style='user-select: auto;-webkit-user-select: auto;' data-tooltip="${bData.dbPath.file}.${bData.dbPath.bookKit}[${bData.dbPath.idx+1}]\n[${bData.grp}]" data-tooltip-location="bottom">${bData.bookId}</span>.</li>
-					${bData.tap? "<li>" + makeSvgStr(8) + "<span>" + bData.tap.length + "</span></li>" : ""}
-					<li>${makeSvgStr(1)}<span>${bData.parts.length} chương.</span></li>
-					<li>${makeSvgStr(6)}<span>${toHhMmSs(totalDuration)}</span>&ensp;${makeSvgStr(7)}<span attr-duration="${totalDuration}" role="listeningTime">${toHhMmSs(totalDuration / xAudio.playbackRate)}</span></li>
-					<li>${makeSvgStr(2)}<span>${bData.author}</span></li>`
-							+ (bData.year ? `<li>${makeSvgStr(3)}<span>${bData.year}</span></li>` : "")
-							+ `<li>${makeSvgStr(4)}<span>${bData.type}</span></li>
-					<li>${makeSvgStr(5)}<span}>${bData.mc}</span></li>
-				</ul>`;
-			}
+				// general link(s) of the book
+				let strOrgLink = "<div>Nguồn: <ul class='inlineList'>";
+				if (Array.isArray(bData.ssrc)) {
+					let i = 1;
+					bData.ssrc.forEach(s => { strOrgLink += "<li><a target='_blank' href='" + s + "'>" + (getHostName(s)) + "</a></li>" });
+				}
+				else
+					strOrgLink += `<li><a target='_blank' href='${bData.ssrc}'>${getHostName(bData.ssrc)}</a></li>`; //
+				strOrgLink += "</ul></div>";
 
-			document.getElementById("elmBookInfo").innerHTML = `${strOrgLink}
-			<div xrole="containing-tooltip">${makeLiGeneralInfor()}
-			<div id="elmBookGioithieu" class="bookChapIntro">${bData.intro}</div>
-			</div>`;
+				document.getElementById("elmBookInfo").innerHTML = `${strOrgLink}
+				<div xrole="containing-tooltip">${makeLiGeneralInfor()}
+				<div id="elmBookGioithieu" class="bookChapIntro">${bData.intro}</div>
+				</div>`;
 
+				//update the total duration of the Book
+				(function updateBookDuration(bData) {
+					let totalDuration = BookData.prototype.bookStatistics(bData).totalDur; //in seconds
+
+					const _elmBookTotalDuration = document.getElementById("elmBookTotalDuration");
+					elmBookTotalDuration.querySelector("span:first-of-type").innerHTML = toHhMmSs(totalDuration);
+					const _elmBookRealListening = elmBookTotalDuration.querySelector("span:last-of-type");
+					_elmBookRealListening.setAttribute("attr-duration", totalDuration);
+					_elmBookRealListening.innerHTML = toHhMmSs(totalDuration / xAudio.playbackRate);
+				})();
+			})();
+
+			// === Chapter Playlist container ===
+			const _elmPlaylist = document.getElementById("elmPlaylist");
+			
+			
 			/** function to format the subtitle, for now, it italic the number (which usually be the chapter number of text book) 
 				* @param subTit {string, undefined} the sub title
 				* @param _for {boolean}
@@ -10792,115 +10827,120 @@
 				* 		@value false: create html code for li element of ol#elmPlaylist
 				* @example convert '80: Thái Dương thủ; 81: Ám giới; 82: Tần trong Tần Mục' into '<i>80</i>: Thái Dương thủ; <i>81</i>: Ám giới'
 			*/
-			const formatSubTit = (subTit, _for) => {
-				if(!subTit) return "";
-				subTit = subTit.replace(/(\d+)[\:\–\.\-]/g, "<i>$1</i>:");
-				return "<div class='item-2nd-main-div subTitle'>" + subTit + "</div>";
-				/* return _for ? 
-					"<div class='item-2nd-main-div subTitle'>" + subTit + "</div>" :
-					"<br/><span class='subTitle'>" + subTit + "</span>"; */
+			function formatSubTit(subTit) {
+				if (!subTit) return "";
+				return "<div class='item-2nd-main-div subTitle'>" + subTit.replace(/(\d+)[\:\–\.\-]/g, "<i>$1</i>:") + "</div>";
 			}
 
-			/* Create the Playlist which includes books' chapters */
-			let _makeLiItem = (i) => {
-				let _track = document.createElement('li');
-				
-				//set attribute data-rAlignGroup for right-align
-				_track.innerHTML = `<code data-rAlignGroup='chapDuration'>${makeBrk(bData.parts[i - 1].dur)}</code> <span>${bData.parts[i - 1].tit}</span>${formatSubTit(bData.parts[i - 1].sTit, false)}`;
+			// === Load LI playlist in listview form ===
+			function loadPlaylistTextMode() {
+				_elmPlaylist.innerHTML = ""; //clear the Playlist
 
-				//set class for li element in order to set font-size for chapter ordenal so the li::before pseudo can fit the whole number
-				if( i >= 100) _track.classList.add(i > 999? "fourDigitOrdernalNo": "threeDigitOrdernalNo");
-				_track.setAttribute("attr-stt", i);
+				/* Create the Playlist which includes books' chapters */
+				let _makeLiItem = (i) => {
+					let _track = document.createElement('li');
+					
+					//set attribute data-rAlignGroup for right-align
+					_track.innerHTML = `<code data-rAlignGroup='chapDuration'>${makeBrk(bData.parts[i - 1].dur)}</code> <span>${bData.parts[i - 1].tit}</span>${formatSubTit(bData.parts[i - 1].sTit, false)}`;
 
-				return _track;
-			}
-			
-			const _elmPlaylist = document.getElementById("elmPlaylist"); //Chapter Playlist
-			_elmPlaylist.innerHTML = ""; //clear the Playlist
-			
-			let sddOptionData=[], sddOptGroup = null;
-			if (bData.tap) {	//Neu sach co nhieu tap
-				let _divChapterGroupControls = document.querySelector('[name="divChapterGroupControls"]');
-				_divChapterGroupControls.classList.remove("elm-hidden"); //show control buttons for chapter groups
-				//reposTooltips(_divChapterGroupControls); // need to re-pos tooltip for elems that just show up
+					//set class for li element in order to set font-size for chapter ordenal so the li::before pseudo can fit the whole number
+					if( i >= 100) _track.classList.add(i > 999? "fourDigitOrdernalNo": "threeDigitOrdernalNo");
+					_track.setAttribute("attr-stt", i);
 
-				let _bookxState = xState.history.books[bookValue];
-				if (!_bookxState.chapGrpCollapse) _bookxState.chapGrpCollapse = []; //initialize chapGrpCollapse array for this book if it is not existed
-
-				let j = 0, liGroup = null;
-				let _groupTotalDur = 0;
-
-				sddOptGroup = [];
-				for (let i = 1; i <= bData.parts.length; i++) {
-					if (bData.tap[j].f == i) {//start new group
-						let _chapGrpChkbox = document.createElement('input');
-						_groupTotalDur = 0;
-						_chapGrpChkbox.type = "checkbox";
-						_chapGrpChkbox.checked = !_bookxState.chapGrpCollapse.includes(j); //last time this group is collapsed or expanded
-						_chapGrpChkbox.id = "chapGrpChkbox_" + j;
-						_chapGrpChkbox.setAttribute("attr-grpNo", j);
-
-						//Make label for group of chapters
-						let _lbl = document.createElement('label');
-						_lbl.htmlFor = "chapGrpChkbox_" + j;
-						_lbl.style.fontWeight = "bold"; //make it bold to calculate maximum height of all labels
-						_lbl.innerHTML = `<span style="display:block"><code class="underlineAnim">${bData.tap[j].label}</code></span>`;
-						_lbl.classList.add("is-sticky");
-						_elmPlaylist.appendChild(_chapGrpChkbox);
-						_elmPlaylist.appendChild(_lbl);
-
-						liGroup = document.createElement('section');
-					}
-
-					//add options setting data  for sddChaps
-					sddOptionData.push({stt: i, gId: j,
-						value: i, 
-						label: bData.parts[i - 1].tit,
-						dur: makeBrk(bData.parts[i - 1].dur),
-						sTit: bData.parts[i - 1].sTit,
-						eTit: bData.parts[i - 1].eTit,
-						attr: {"attr-stt": i}
-					});
-
-					//Add li item to playlist
-					liGroup.appendChild(_makeLiItem(i));
-					_groupTotalDur += toSeconds(bData.parts[i - 1].dur);
-
-					if (bData.tap[j].t == i || i == bData.parts.length) {//end of current option group
-						if (j < bData.tap.length - 1 && bData.tap[j].t != bData.tap[j + 1].f - 1) {
-							//Create dummy group for items that not belong to any group
-							let _lbl = document.createElement('label');
-							_lbl.innerHTML = "Orphan chapters";
-							_elmPlaylist.appendChild(_lbl);
-						}
-
-						//adding label to display chapter group summary
-						let grpSummary = document.createElement('label');
-						grpSummary.classList.add("chapter-group-summary");
-						let _chapCount = bData.tap[j].t - bData.tap[j].f + 1;
-						grpSummary.innerHTML = `<span>Số chương: <code>${_chapCount}</code>.</span><span>Thời lượng: <code>${toHhMmSs(_groupTotalDur)}</code> / <code attr-duration="${_groupTotalDur}">${toHhMmSs(_groupTotalDur / xAudio.playbackRate )}</code></span>`;
-						liGroup.prepend(grpSummary); //add to top
-
-						_elmPlaylist.appendChild(liGroup);
-						//right align duration of all chapter in this section
-						SddDropdown.prototype.rightAlignElems(liGroup, "li");
-
-						// add information for optGroup to setting
-						sddOptGroup.push( {stt: j+1, gId: j, 
-							label: `${int2Roman(j+1)}. ${bData.tap[j].label}`, 
-							extraInfor: [_chapCount, toHhMmSs(_groupTotalDur)],
-							attr: {"attr-grpNo": j}
-						});
-
-						j++; //prepare for new option group
-					}
+					return _track;
 				}
 
+				if (bData.tap) {
+					// === Multi-volume book ===
+
+					let _divChapterGroupControls = document.querySelector('[name="divChapterGroupControls"]');
+					_divChapterGroupControls.classList.remove("elm-hidden"); //show control buttons for chapter groups
+					//reposTooltips(_divChapterGroupControls); // need to re-pos tooltip for elems that just show up
+
+					let _bookxState = xState.history.books[bookValue];
+					if (!_bookxState.chapGrpCollapse) _bookxState.chapGrpCollapse = []; //initialize chapGrpCollapse array for this book if it is not existed
+
+					let j = 0; //index for chapter group
+					let liGroup = null, _groupTotalDur = 0;
+
+					//loop through all chapters and put them into corresponding chapter group
+					for (let i = 1; i <= bData.parts.length; i++) {
+						if (bData.tap[j].f == i) {//start new group
+							//create checkbox to collapse/expand chapter group
+							let _chapGrpChkbox = document.createElement('input');
+							_groupTotalDur = 0;
+							_chapGrpChkbox.type = "checkbox";
+							_chapGrpChkbox.checked = !_bookxState.chapGrpCollapse.includes(j); //last time this group is collapsed or expanded
+							_chapGrpChkbox.id = "chapGrpChkbox_" + j;
+							_chapGrpChkbox.setAttribute("attr-grpNo", j);
+
+							//Make label for group of chapters
+							let _lbl = document.createElement('label');
+							_lbl.htmlFor = "chapGrpChkbox_" + j;
+							_lbl.style.fontWeight = "bold"; //make it bold to calculate maximum height of all labels
+							_lbl.innerHTML = `<span style="display:block"><code class="underlineAnim">${bData.tap[j].label}</code></span>`;
+							_lbl.classList.add("is-sticky");
+							_elmPlaylist.appendChild(_chapGrpChkbox);
+							_elmPlaylist.appendChild(_lbl);
+
+							//create new section to contain all li (chapter) of this chapter group
+							liGroup = document.createElement('section');
+						}
+
+						//Add li item to chapter group in playlist
+						liGroup.appendChild(_makeLiItem(i));
+
+						//sum up total duration of this chapter group
+						_groupTotalDur += toSeconds(bData.parts[i - 1].dur);
+
+						if (bData.tap[j].t == i || i == bData.parts.length) {//end of current option group
+							if (j < bData.tap.length - 1 && bData.tap[j].t != bData.tap[j + 1].f - 1) {
+								//Create dummy group for items that not belong to any group
+								let _lbl = document.createElement('label');
+								_lbl.innerHTML = "Orphan chapters";
+								_elmPlaylist.appendChild(_lbl);
+							}
+
+							//adding label to display chapter group summary
+							let grpSummary = document.createElement('label');
+							grpSummary.classList.add("chapter-group-summary");
+							let _chapCount = bData.tap[j].t - bData.tap[j].f + 1;
+							grpSummary.innerHTML = `<span>Số chương: <code>${_chapCount}</code>.</span><span>Thời lượng: <code>${toHhMmSs(_groupTotalDur)}</code> / <code attr-duration="${_groupTotalDur}">${toHhMmSs(_groupTotalDur / xAudio.playbackRate )}</code></span>`;
+							liGroup.prepend(grpSummary); //add to top
+
+							//append the whole chapter group to playlist
+							_elmPlaylist.appendChild(liGroup);
+
+							//right align duration of all chapter in this section
+							SddDropdown.prototype.rightAlignElems(liGroup, "li");
+
+							j++; //prepare for new chapters group
+						}
+					} // all chapters and chapter groups have been added to playlist
+
+					// can handle state of allChapGrpChkbox and the label of each chapters group in playlist, but i bring it out below
+					//chapGroupsHandle();
+				} else {
+					// === Single-volume book ===
+					
+					document.querySelector('[name="divChapterGroupControls"]').classList.add("elm-hidden"); //hide controls for chapter group
+					for (let i = 1; i <= bData.parts.length; i++) {
+						//add li to playlist
+						_elmPlaylist.appendChild(_makeLiItem(i));
+					}
+				}
+			};
+
+			/** function to handle state of allChapGrpChkbox and the size and pinning/unpinning state label of each chapters group in playlist  */
+			function chapGroupsHandle() {
+				// 1. === Handle event for ALL chapter-group checkbox (the one in the tool box below the audio control panel) ===
 				// update tooltip for label of allChapGrpChkbox checkbox
 				ssData.ttMutationObserver.observe(document.querySelector('label[for="allChapGrpChkbox"]'), { attributes: true, attributeFilter: ["data-tooltip"] });
-				//utilityHandles.updateAllChapGrpChkboxUI(); //update allChapGrpChkbox UI when all done
-				ssData.playlist.updateAllChapGrpChkboxUI(); //update allChapGrpChkbox UI when all done
+				
+				//update allChapGrpChkbox UI when all done
+				ssData.playlist.updateAllChapGrpChkboxUI(); 
 
+				// 2. === Handle event for each chapter-group label ===
 				/* make all group label same height so that when scroll up/down, the down sticky label would stay fit above the up group label*/
 				let _chapGroupLabels = _elmPlaylist.querySelectorAll("input[type='checkbox'] + label");
 				// wait for all labels to be rendered to find biggest height of all group labels
@@ -10918,94 +10958,145 @@
 
 				// stops watching all of old target elements, empty array of IntersectionObserverEntry (if any) for visibility changes.
 				ssData.playlist.pinnedObserver.disconnect();
-				// observe new chapter-group-labels
+
+				// observe new chapter-group-labels for pinning/unpinning
 				_chapGroupLabels.forEach(_lbl => { ssData.playlist.pinnedObserver.observe(_lbl) });
-			}
-			else {// cho sach chi co 1 tap
-				sddOptGroup = null;
-				document.querySelector('[name="divChapterGroupControls"]').classList.add("elm-hidden"); //hide controls for chapter group
-				for (let i = 1; i <= bData.parts.length; i++) {
-					//add li to playlist
-					_elmPlaylist.appendChild(_makeLiItem(i));
-
-					//add options setting data  for sddChaps
-					sddOptionData.push({stt: i, 
-						value: i, 
-						label: bData.parts[i - 1].tit,
-						dur: makeBrk(bData.parts[i - 1].dur),
-						sTit: bData.parts[i - 1].sTit,
-						eTit: bData.parts[i - 1].eTit,
-						attr: {"attr-stt": i}
-					});
-				}
-				//right align duration of all chapters
-				SddDropdown.prototype.rightAlignElems(_elmPlaylist, "li");
-			}//.replace(/(\d+):/g, "<i>$1</i>:")
-
-			//create setting for sddBooks
-			const chapterListSetting = {
-				name: "chapterTitles",				
-				displayOneLine: false,
-				//diacriticsFilterMode: xState?.chapterListDiacriticsSearch ?? true,
-				//decorate background for SDDDropdownContent and SDD-dropdown-border-bottom, we specify customized class for whole .sdd-wrapper container
-				customizedCssClass: "sdd-wrapper-chapterList",
-				//avatarIcon: "icnSvgChapters", //set avatar using svg sprite #icnSvgChapters
-				searchBoxPlaceholder: "Tìm trong {_items_length} chương sách ...",
-				//rightAlignInEachOptGroup: false, //force right-align for items in whole SDD (not by optGroup as sddBooks)
-				
-				render: {
-					//function to render the option
-					option: function (data, escape) {
-						return `<div class="item-main-div"><code class="item-slight-details" data-rAlignGroup="chapterDuration">${escape(data.dur)}</code>&emsp13;<span>${data.label}</span></div>
-						${formatSubTit(data.sTit, true)}` +
-						`${data.eTit? "<div class='item-2nd-main-div englishTitle'>" + data.eTit + "</div>" : ""}`;
-					},
-					//function to render the selected option to representative DIV
-					select_option: function (option, escape) {
-						return option.firstChild.innerHTML; // textContent;
-					},
-					//function to render the optGroup
-					optgroup_header: function (data, escape) {
-						return `<span>${escape(data.label)}</span>&emsp13;<span class="item-slight-details">[${escape(data.extraInfor[0])} chương / ${escape(data.extraInfor[1])}]</span>`;
-					},
-					'no_results': () => {
-						return 'Không tìm thấy chương sách nào';
-					}
-				},
-				callbacks: {
-					//callback function to be invoked when onChange event fire (a new item is selected)
-					onChange: function (selectedItem) {
-						//console.log(`onChange event: ${selectedItem.value}`);
-						changeChap(selectedItem.value);
-
-						/* //open section if it is currently collapsed and scroll into playing chapter
-						document.querySelector('[name="gotoPlayingChapter"]').click();  */
-					}
-				}
 			};
 
+			// === Load dropdown ===
+			function loadDropdown() {
+				let sddOptionData=[], sddOptGroup = null;
+				let _groupTotalDur = 0;
+
+				if (bData.tap) {	//Neu sach co nhieu tap
+
+					sddOptGroup = [];
+					let j = 0; //index for bData.tap
+					for (let i = 1; i <= bData.parts.length; i++) {
+
+						//add options setting data  for sddChaps
+						sddOptionData.push({stt: i, gId: j,
+							value: i, 
+							label: bData.parts[i - 1].tit,
+							dur: makeBrk(bData.parts[i - 1].dur),
+							sTit: bData.parts[i - 1].sTit,
+							eTit: bData.parts[i - 1].eTit,
+							attr: {"attr-stt": i}
+						});
+
+						if (bData.tap[j].f == i) {//start new group
+							_groupTotalDur = 0;
+						}
+						// aggregating to calculate sum of this chapter group duration
+						_groupTotalDur += toSeconds(bData.parts[i - 1].dur);
+
+						if (bData.tap[j].t == i || i == bData.parts.length) {//end of current option group
+							
+							let _chapCount = bData.tap[j].t - bData.tap[j].f + 1;
+
+							// add information for optGroup to setting
+							sddOptGroup.push( {stt: j+1, gId: j, 
+								label: `${int2Roman(j+1)}. ${bData.tap[j].label}`, 
+								extraInfor: [_chapCount, toHhMmSs(_groupTotalDur)],
+								attr: {"attr-grpNo": j}
+							});
+
+							j++; //prepare for new chapter group
+						}
+					}
+				}
+				else {// cho sach chi co 1 tap
+					sddOptGroup = null;
+					
+					for (let i = 1; i <= bData.parts.length; i++) {
+						//add options setting data  for sddChaps
+						sddOptionData.push({stt: i, 
+							value: i, 
+							label: bData.parts[i - 1].tit,
+							dur: makeBrk(bData.parts[i - 1].dur),
+							sTit: bData.parts[i - 1].sTit,
+							eTit: bData.parts[i - 1].eTit,
+							attr: {"attr-stt": i}
+						});
+					}
+					
+				}//.replace(/(\d+):/g, "<i>$1</i>:")
+
+				//create setting for sddBooks
+				const chapterListSetting = {
+					name: "chapterTitles",				
+					displayOneLine: false,
+					//diacriticsFilterMode: xState?.chapterListDiacriticsSearch ?? true,
+					//decorate background for SDDDropdownContent and SDD-dropdown-border-bottom, we specify customized class for whole .sdd-wrapper container
+					customizedCssClass: "sdd-wrapper-chapterList",
+					//avatarIcon: "icnSvgChapters", //set avatar using svg sprite #icnSvgChapters
+					searchBoxPlaceholder: "Tìm trong {_items_length} chương sách ...",
+					//rightAlignInEachOptGroup: false, //force right-align for items in whole SDD (not by optGroup as sddBooks)
+					
+					render: {
+						//function to render the option
+						option: function (data, escape) {
+							return `<div class="item-main-div"><code class="item-slight-details" data-rAlignGroup="chapterDuration">${escape(data.dur)}</code>&emsp13;<span>${data.label}</span></div>
+							${formatSubTit(data.sTit, true)}` +
+							`${data.eTit? "<div class='item-2nd-main-div englishTitle'>" + data.eTit + "</div>" : ""}`;
+						},
+						//function to render the selected option to representative DIV
+						select_option: function (option, escape) {
+							return option.firstChild.innerHTML; // textContent;
+						},
+						//function to render the optGroup
+						optgroup_header: function (data, escape) {
+							return `<span>${escape(data.label)}</span>&emsp13;<span class="item-slight-details">[${escape(data.extraInfor[0])} chương / ${escape(data.extraInfor[1])}]</span>`;
+						},
+						'no_results': () => {
+							return 'Không tìm thấy chương sách nào';
+						}
+					},
+					callbacks: {
+						//callback function to be invoked when onChange event fire (a new item is selected)
+						onChange: function (selectedItem) {
+							//console.log(`onChange event: ${selectedItem.value}`);
+							changeChap(selectedItem.value);
+
+							/* //open section if it is currently collapsed and scroll into playing chapter
+							document.querySelector('[name="gotoPlayingChapter"]').click();  */
+						}
+					}
+				};
+
+				// make sure sddChaps load Setting only one time in one page session 
+				if( !ssData.sddChaps.hasOwnProperty("settingLoaded") ){
+					ssData.sddChaps.loadDropdown(chapterListSetting, ssData.sddChaps.LOAD_MODE_ENUM.SettingLoadOnly);
+
+					ssData.sddChaps.settingLoaded = true;
+				}
+
+				// load/reload the sddChaps Data for the new book
+				ssData.sddChaps.loadDropdown(
+					{
+						options: sddOptionData,
+						optgroups: sddOptGroup
+					}, 
+					ssData.sddChaps.LOAD_MODE_ENUM.DataLoadOnly, 
+					''+ lastChap //callbacks.onChange() take value to set selected item, so we have to convert to string if lastChap is integer
+				);
+			};
+
+			/* === START LOADING THE DATA INTO PLAYLIST AND SDD DROPDOWN === */
 			// Find out last playing chapter of current book. If this book has not been playing before, just start from chapter 1
 			let lastChap = parseInt(xState.history.books[bookValue]["lc"] ?? 1);
 			//we need attr-PrevBook to save playing time before changing to other book
 			xAudio.setAttribute("attr-PrevBook", xAudio.getAttribute("attr-Book") ?? "");
 			xAudio.setAttribute("attr-Book", bookValue); //save book id to xAudio attribute
-			
-			// make sure sddChaps load Setting only one time in one page session 
-			if( !ssData.sddChaps.hasOwnProperty("settingLoaded") ){
-				ssData.sddChaps.loadDropdown(chapterListSetting, ssData.sddChaps.LOAD_MODE_ENUM.SettingLoadOnly);
 
-				ssData.sddChaps.settingLoaded = true;
+			loadPlaylistTextMode();
+
+			if (bData.tap){
+				chapGroupsHandle();
 			}
 
-			// load/reload the sddChaps Data for the new book
-			ssData.sddChaps.loadDropdown(
-				{
-					options: sddOptionData,
-					optgroups: sddOptGroup
-				}, 
-				ssData.sddChaps.LOAD_MODE_ENUM.DataLoadOnly, 
-				''+ lastChap //callbacks.onChange() take value to set selected item, so we have to convert to string if lastChap is integer
-			);
+			// this would also make the current playing chapter in the playlist
+			loadDropdown(); // this call changeChap(lastChap) inside it
 
 			//changeChap(lastChap);
 		}
@@ -15745,7 +15836,21 @@
 					onSpeedChange: function(spd){
 						//change audio playbackRate accordingly, save new speed to Storage
 						xState.audio.speed = xAudio.playbackRate = spd;
-						//toast.showToast(`Tốc độ phát ${spd}`);
+						
+						// Note: 'defaultPlaybackRate' (which is the playback rate to which the media resets) allows us to set the playback rate BEFORE playing the media, while 'playbackRate' allows us to change it DURING media playback.
+						//set the 'defaultPlaybackRate' so that when change audio source, the playbackRate not go back to the normal 1.0 (see spec https://html.spec.whatwg.org/multipage/media.html#dom-media-defaultplaybackrate-dev). This might overcome the issue of playbackRate always resetting to normal (1.0) each time load a new audio source (see spec https://html.spec.whatwg.org/multipage/media.html#loading-the-media-resource)
+						xAudio.defaultPlaybackRate = xState.audio.speed;
+
+						//update the actual current chapter listenning time and total book listenning time with the change of playback speed
+						document.querySelectorAll("[attr-duration]").forEach(elm => {
+							let _duraion = elm.getAttribute("attr-duration");
+							if (!_duraion) return;
+							//.querySelector("[role='listeningTime']")
+							elm.innerText = toHhMmSs(_duraion / xAudio.playbackRate);
+						});
+
+						//save to disk
+						//saveState2Disk();
 					}
 				});
 
