@@ -15275,7 +15275,7 @@
 					// Only set left if it not being clipped on left side, which hopefully prevents jarring jump when zooming out
 					// Also don't set left if it is already set (in case of zooming in) and is not NaN (which can happen if popup is display:none)
 					toast.showToast(left + "   ----   " + window.visualViewport.offsetLeft);
-					if( !(left < window.visualViewport.offsetLeft && isNaN(parseFloat(popup.style.left)) ) )
+					if( left > window.visualViewport.offsetLeft || isNaN(parseFloat(popup.style.left)) )
 					popup.style.left = Math.round(left) + 'px';
 
 					// ===== Arrow positioning =====
