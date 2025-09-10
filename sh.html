@@ -3418,18 +3418,17 @@
 					z-index: 1;
 				}
 
-				&::after{
-					top: 3px;
-					left: 4px;
-					right: unset;
+				&.beingPlay {
+					background: linear-gradient(to right, #9c27b052, #fff0) !important;
+					box-shadow: 0px 0px 8px 3px #2d212196;
 				}
 
 				/* Move the jumping-bars to top-left for currently playing item */
-				&.beingPlay::after{
+				/* &.beingPlay::after{
 					top: 3px;
 					left: 4px;
 					right: unset;
-				}
+				} */
 			}
 		}
 	</style>
@@ -10758,14 +10757,26 @@
 			};
 			preparation4NewBook();
 
-			// === Create real media links, cover image, original (outside) url,..., generate chaps groups from autoTap attribute for parts that have wildcart ===
-			BookData.prototype.generateWCLinks(bookValue);
-
 			//bData contains all information for current book
 			let bData = ssData.bookData.findBookFromId(bookValue);
 			
+			function prepareData(){
+				// === Create real media links, cover image, original (outside) url,..., generate chaps groups from autoTap attribute for parts that have wildcart ===
+				BookData.prototype.generateWCLinks(bookValue);
+
+				let _bookxState = xState.history.books[bookValue];
+				//initialize chapGrpCollapse array for this book if it is not existed
+				if (bData.tap){
+					//if more than 50 chapters, default to collapse all chapter-groups, otherwise expand all chapter-groups
+					if (!_bookxState.chapGrpCollapse) 
+						_bookxState.chapGrpCollapse = bData.parts.length > 50? [] : [...Array(bData.tap.length).keys()]; 
+					
+				}
+			};
+			prepareData();			
+			
 			// === Update background of the header of the page (which contail book header, ssData.sddBooks) based on grp[0] value ===
-			(function updateBookHeaderBackground(){
+			function updateBookHeaderBackground(){
 				//add the background based on its grp[0] value (which somewhat defines the type of the book)
 				const _grp0 = bData.grp[0];
 
@@ -10779,10 +10790,10 @@
 				if (_grp0.match(/\$([6-9]|4)$/)) _clsList.add("fantasticNovelBgrnd");
 				if (_grp0.match(/\$(13[ACSR]|5A|5B)$/)) _clsList.add("classicNovelBgrnd");
 				if (_grp0.match(/\$5X$/)) _clsList.add("xianxianBgrnd");
-			})();
+			};
 			
 			// === Update Book tittle, Build book info ===
-			(function buildBookInfo() {
+			function buildBookInfo() {
 				// === Update book title ===
 				document.getElementById("elmBookTitle").innerHTML =
 					bData.title + (bData.eTitle && bData.eTitle != bData.title ? " <wbr/>(" + bData.eTitle + ")" : ""); /* <wbr> and css style '#elmBookTitle{text-wrap: nowrap}' can auto-break the line after <wbr/> into new line if the whole title is more than 1 line. However, for now this seem not work in Safary */
@@ -10852,7 +10863,7 @@
 					_elmBookRealListening.setAttribute("attr-duration", totalDuration);
 					_elmBookRealListening.innerHTML = toHhMmSs(totalDuration / xAudio.playbackRate);
 				})();
-			})();
+			};
 
 			// == enable/disable toolbox buttons based on the database ==
 			let plstViewmode = "listView"; //default playlist view mode
@@ -10919,7 +10930,8 @@
 					//reposTooltips(_divChapterGroupControls); // need to re-pos tooltip for elems that just show up
 
 					let _bookxState = xState.history.books[bookValue];
-					if (!_bookxState.chapGrpCollapse) _bookxState.chapGrpCollapse = []; //initialize chapGrpCollapse array for this book if it is not existed
+					//initialize chapGrpCollapse array for this book if it is not existed
+					if (!_bookxState.chapGrpCollapse) _bookxState.chapGrpCollapse = []; 
 
 					let j = 0; //index for chapter group
 					let liGroup = null, _groupTotalDur = 0;
@@ -11196,7 +11208,10 @@
 			};
 
 			// === Load dropdown ===
-			function loadDropdown() {
+			/** function to load data into SDD ssData.sddChaps and load the chapter
+			 * @param {number} chap2Load: the chapter number to be loaded after the dropdown is loaded
+			  */
+			function loadDropdown(chap2Load) {
 				let sddOptionData=[], sddOptGroup = null;
 				let _groupTotalDur = 0;
 
@@ -11310,32 +11325,51 @@
 						optgroups: sddOptGroup
 					}, 
 					ssData.sddChaps.LOAD_MODE_ENUM.DataLoadOnly, 
-					''+ lastChap //callbacks.onChange() take value to set selected item, so we have to convert to string if lastChap is integer
+					''+ chap2Load //callbacks.onChange() take value to set selected item, so we have to convert to string if lastChap is integer
 				);
 			};
 
 			/* === START LOADING THE DATA INTO PLAYLIST AND SDD DROPDOWN === */
-			// Find out last playing chapter of current book. If this book has not been playing before, just start from chapter 1
-			let lastChap = parseInt(xState.history.books[bookValue]["lc"] ?? 1);
+			
 			//we need attr-PrevBook to save playing time before changing to other book
 			xAudio.setAttribute("attr-PrevBook", xAudio.getAttribute("attr-Book") ?? "");
 			xAudio.setAttribute("attr-Book", bookValue); //save book id to xAudio attribute
 
-			if(plstViewmode === "listView")
-				// loadPlaylistTextMode() if when the playlist view mode is listview
-				loadPlaylistTextMode();
-			else
-				// or loadPlaylistThumbMode() depending on the state of playlistThumbView button
-				loadPlaylistThumbMode();
-
-			if (bData.tap){
-				//handle state of allChapGrpChkbox and the label of each chapters group in playlist
-				chapGroupsHandle();
+			if(isNewLoad){
+				updateBookHeaderBackground(); //update book header background image
+				buildBookInfo(); //load book information to div#elmBookInfo
 			}
 
-			if(isNewLoad)
+			
+			// IIFE to load the playlist in the selected view mode and handle state of chapter groups if any
+			(() => {
+				//load the playlist in the selected view mode
+				if(plstViewmode === "listView")
+					// loadPlaylistTextMode() if when the playlist view mode is listview
+					loadPlaylistTextMode();
+				else
+					// or loadPlaylistThumbMode() depending on the state of playlistThumbView button
+					loadPlaylistThumbMode();
+
+				if (bData.tap){
+					//handle state of allChapGrpChkbox and the label of each chapters group in playlist
+					chapGroupsHandle();
+				}
+			})();
+			
+
+			if(isNewLoad){
+				// Find out last playing chapter of current book. If this book has not been playing before, just start from chapter 1
+				let lastChap = parseInt(xState.history.books[bookValue]["lc"] ?? 1);
 				// this would also make the current playing chapter in the playlist
-				loadDropdown(); // this call changeChap(lastChap) inside it
+				loadDropdown(lastChap); // this call changeChap(lastChap) inside it
+			}
+			else{
+				const newChap = xAudio.getAttribute("attr-chap");
+				//if play the chapter that is currently playing, do nothing
+				const _liNewChap = _elmPlaylist.querySelector(`li[attr-stt="${newChap}"]`);
+				_liNewChap && _liNewChap.classList.add("beingPlay");
+			}
 
 			//changeChap(lastChap); //this is now called inside loadDropdown() as callback of onChange event of ssData.sddChaps
 		}
@@ -12340,7 +12374,7 @@
 				if (bookId) changeBook(bookId, false);
 
 				// after changing view mode, move back to current playing chapter
-				//gotoPlayingChapter();
+				gotoPlayingChapter();
 			}
 			switchPlaylistViewModeBtn.onclick = switchPlaylistViewMode;
 
