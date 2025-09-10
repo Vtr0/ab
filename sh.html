@@ -2207,7 +2207,7 @@
 			cursor: pointer;
 			line-height: 1;
 
-			--data-translateX: -10%;
+			/* --data-translateX: -10%; */
 
 			&:active {
 				transform: translateY(1px);
@@ -3185,7 +3185,7 @@
 			border: none;
 			background: #007aff;
 			color: #fff;
-			font-size: 20px;
+			font-size: 24px;
 			cursor: pointer;
 			z-index: 10;
 			transition: background 0.3s, transform 0.2s;
@@ -3227,7 +3227,7 @@
 				border: 2px solid #007aff;
 				color: #007aff;
 				cursor: pointer;
-				/* opacity: 0; */
+				opacity: 0;
 				transform: scale(0);
 				justify-content: center;
 				align-items: center;
@@ -3251,7 +3251,7 @@
 
 			/* Visible and active state of tools */
 			&.active .plst_tool_item {
-				/* opacity: 1; */
+				opacity: 1;
 				transform: scale(1);
 				pointer-events: auto;
 			}
@@ -3283,40 +3283,25 @@
 			}
 		}
 
-		/* show/hide the togglePlaylistExtraTitles button depending on whether #elmPlaylist li items having extra title div.item-2nd-main-div or not*/
-		button[name="togglePlaylistExtraTitles"]{
-			/* default none */
-			/* display: none !important; */
-			/* opacity: 0 !important;
-			pointer-events: none; 
-			cursor: not-allowed; */
-		}
-		div[name="divContainer"]:has(ol#elmPlaylist li > div.item-2nd-main-div) button[name="togglePlaylistExtraTitles"]{
-			/* display only when elmPlaylist extra titles exist */
-			/* display: flex !important; */
-			/* opacity: 1;
-			pointer-events: auto ; 
-			cursor: allowed; */
-		}
-		/* set color of button to red when extra titles in playlist is hidden */
-		div[name="divContainer"]:has(ol#elmPlaylist.hideOptionExtraTitle) button[name="togglePlaylistExtraTitles"]{
-			color: red;
+		button[name="switchPlaylistViewMode"][data-view-mode="thumbView"]{
+			/* background: #34c759; */
+			/* default is list view */
+			/* background: #007aff; */
+			color: red !important;
 		}
 
-		/* disable the button when no extra titles in playlist, use the same css as .disabled class */
-		div[name="divContainer"]:not(:has(ol#elmPlaylist  li > div.item-2nd-main-div)) button[name="togglePlaylistExtraTitles"]{
-			background: #ccc;
-			color: #666 !important;
-			border: 1px solid #aaa;
-			cursor: not-allowed;
+		/* set color of button to red when extra titles in playlist is hidden */
+		div[name="divContainer"]:has(ol#elmPlaylist.hideOptionExtraTitle) button[name="togglePlaylistExtraTitles"]{
+			color: red !important;
 		}
+		
 	</style>
 
 	<style>
 		/* === Each session === */
 		/* 
 
-		.plst_session-title {
+		.plst_section-title {
 			font-size: 1.2rem;
 			margin: 0 0 0.5rem 0;
 			font-weight: bold;
@@ -3324,8 +3309,12 @@
 
 		/* === Grid for video items === */
 		ol#elmPlaylist.playlistThumbView  {
-			
-			.plst_session {
+			counter-reset: myThumbviewCounter;
+
+			/* overwrite padding-left for the case there is no section */
+			padding-left: 0;
+
+			.plst_section {
 				/* margin-bottom: 2rem; */
 				/* make padding-left to be 0 to overwrite the default 40px */
 				padding-left: 0px !important;
@@ -3333,7 +3322,7 @@
 
 			& .plst_video-grid {
 				display: grid;
-				gap: 12px;
+				gap: 8px;
 				list-style: none;
 				padding: 0;
 				margin: 0;
@@ -3344,9 +3333,15 @@
 			& .plst_video-item {
 				display: flex;
 				flex-direction: column;
-				aspect-ratio: 16 / 10.5;
+				/* aspect-ratio: 16 / 10.5; */
 				border-radius: 8px 8px 0 0;
 				overflow: hidden;
+				padding: unset;
+
+				/* to overwrite border-bottom of the default ol#elmPlaylist <li>  */
+				border: 1px solid #730a50c4;
+
+				counter-increment: myThumbviewCounter;
 			
 				/* Thumbnail container */			
 				& .plst_thumb-wrap {
@@ -3361,6 +3356,7 @@
 						width: 100%;
 						height: 100%;
 						object-fit: cover;
+						aspect-ratio: 16 / 9; /* maintain aspect ratio */
 						display: block;
 						opacity: 0;
 						transition: opacity 0.5s ease;
@@ -3369,28 +3365,70 @@
 							opacity: 1;
 						}
 					}
-				}
 
-				/* duration at bottom-right of thumbnail */
-				& .plst_duration {
-					position: absolute;
-					bottom: 6px;
-					right: 6px;
-					background: rgba(0,0,0,0.7);
-					color: #fff;
-					font-size: 0.8rem;
-					padding: 2px 6px;
-					border-radius: 4px;
+					/* duration at bottom-right of thumbnail */
+					& .plst_duration {
+						position: absolute;
+						bottom: 4px;
+						right: 3px;
+						background: rgba(0,0,0,0.7);
+						color: #fff;
+						font-size: 0.8rem;
+						padding: 2px 6px;
+						border-radius: 4px;
+					}
 				}
 
 				/* Caption below thumbnail */
 				& .plst_caption {
-					margin-top: 4px;
-					font-size: 0.9rem;
+					margin-top: -3px;
+					font-size: 0.8em;
 					line-height: 1.2rem;
+					padding: 0 2px;
+
 					overflow: hidden;
 					text-overflow: ellipsis;
-					white-space: nowrap;
+
+					/* following 4 line of css to set number of lines to show */
+					white-space: normal;
+					display: -webkit-box;
+					-webkit-line-clamp: 2; /* number of lines to show */
+					-webkit-box-orient: vertical;
+
+					/* Or use this instead of above 4 lines to make caption single-line */
+					&.plst_caption-singleline {
+						white-space: nowrap;
+					}
+
+					/* full caption without any truncate */
+					&.plst_caption-full {
+						/*this is to make full caption */
+						text-wrap: auto;
+						display: block;
+					}
+				}
+			
+				&::before{
+					content: counter(myThumbviewCounter);
+					top: 0;
+					left: unset;
+					right: 0;
+					transform: translate(0, 2px);
+					background-color: #fffc;
+					z-index: 1;
+				}
+
+				&::after{
+					top: 3px;
+					left: 4px;
+					right: unset;
+				}
+
+				/* Move the jumping-bars to top-left for currently playing item */
+				&.beingPlay::after{
+					top: 3px;
+					left: 4px;
+					right: unset;
 				}
 			}
 		}
@@ -7296,8 +7334,8 @@
 							</svg>
 						</button>
 
-						<button name="playlistThumbView" class="plst_tool_item" data-tooltip="Thumbnail view" style="--data-translateX: -15%">
-							<svg class="!text-[15px] button-svg-img">
+						<button name="switchPlaylistViewMode" class="plst_tool_item" data-tooltip="Chuyển chế độ Playlist" style="--data-translateX: -15%">
+							<svg class="!text-[15px] button-svg-img" style="font-size: 18px !important;">
 								<use href="#icnSvgThumbViewMode"/>
 							</svg>
 						</button>
@@ -10690,7 +10728,7 @@
 		*/
 		function changeBook(bookValue, isNewLoad=true) {
 			// === if still the same book, then do nothing. This happens sometimes, for example when close the User-Setting windows, Page will updates all the setting changes, and finally re-load book+chapter ===
-			if (xAudio.getAttribute("attr-Book") == bookValue) return;
+			if (xAudio.getAttribute("attr-Book") == bookValue && isNewLoad) return;
 
 			/* do some preparation before loading a new book */
 			function preparation4NewBook(){
@@ -10816,9 +10854,28 @@
 				})();
 			})();
 
+			// == enable/disable toolbox buttons based on the database ==
+			let plstViewmode = "listView"; //default playlist view mode
+			(function enableDisableToolboxButtons(){
+				//enable/disable the button to toggle Playlist extra titles
+				document.querySelector('[name="togglePlaylistExtraTitles"]').classList.toggle( 'disabled', !bData.parts.some(part => part.sTit && part.sTit.trim()) );
+
+				//enable/disable the button to goto currently playing chapter
+				//document.getElementById("btnGotoPlayingChapter").disabled = !bData.parts.length;
+
+				//enable/disable the button to toggle Playlist thumbnail view
+				const isAllChaptersHaveImgs = bData.parts.every(part => part.img && part.img.trim());
+				//disable the button to toggle Playlist thumbnail view if not all chapters have img
+				document.querySelector('[name="switchPlaylistViewMode"]').classList.toggle( 'disabled', !isAllChaptersHaveImgs );
+
+				if(!xState.playlistViewMode) xState.playlistViewMode = "listView"; //default to listview mode
+				document.querySelector('[name="switchPlaylistViewMode"]').dataset.viewMode = xState.playlistViewMode;
+
+				plstViewmode = isAllChaptersHaveImgs? xState.playlistViewMode : "listView"; //if not all chapters have img, then force to listView mode
+			})();
+
 			// === Chapter Playlist container ===
 			const _elmPlaylist = document.getElementById("elmPlaylist");
-			
 			
 			/** function to format the subtitle, for now, it italic the number (which usually be the chapter number of text book) 
 				* @param subTit {string, undefined} the sub title
@@ -10832,7 +10889,7 @@
 				return "<div class='item-2nd-main-div subTitle'>" + subTit.replace(/(\d+)[\:\–\.\-]/g, "<i>$1</i>:") + "</div>";
 			}
 
-			// === Load LI playlist in listview form ===
+			// === Load LI playlist in listView form ===
 			function loadPlaylistTextMode() {
 				_elmPlaylist.innerHTML = ""; //clear the Playlist
 
@@ -10929,6 +10986,178 @@
 						_elmPlaylist.appendChild(_makeLiItem(i));
 					}
 				}
+			};
+
+			// === Load LI playlist in thumbView form (as youtube playlist) ===
+			function loadPlaylistThumbMode() {
+				_elmPlaylist.classList.add("playlistThumbView");
+
+				_elmPlaylist.innerHTML = ""; //clear the Playlist
+
+				// === Lazy Load with IntersectionObserver ===
+				function initLazyLoad() {
+					const images = document.querySelectorAll('img[data-src]');
+
+					const low_resolution_ytImg = "hqdefault.jpg";  //can use mqdefault.jpg with lower resolution but it is 16:9 thumbnail. Both of this thumbnail is guranteed to be existed
+					function imgOnloadHandler(evt){
+						const img = evt.target;
+
+						// class "loaded" will make the image visible with fade-in effect
+						img.classList.add("loaded");
+
+						// when a youtube thumbnail not exist, youtube will return a fallback image whose size is 120x90 so onerror event on img will never be fired. This small trick is a way to know that an thumbnail not exist, so we replace another existed one.
+						if (img.naturalWidth === 120) {
+							if( img.src.includes(low_resolution_ytImg) ) {
+								//still fail even if already default resolution image, might mean the YT video already been removed, so we use default image
+								img.src = ""; //_DEFAULT_POSTER_IMG;
+								return;
+							}
+
+							img.src = img.src.replace(/([^\/])+$/, low_resolution_ytImg);
+
+							return;
+						}
+					}
+					
+
+					//create the observer if it is not yet created. This observer is to watch all images that have data-src attribute to be in the viewport, then load the real image (lazy-load technique)
+					if(!ssData?.playlist.plstThumbLazyloadObserver)
+					ssData.playlist.plstThumbLazyloadObserver = new IntersectionObserver((entries, obs) => {
+						entries.forEach(entry => {
+						if (entry.isIntersecting) {
+							const img = entry.target;
+							img.src = img.dataset.src;
+							img.onload = imgOnloadHandler; //() => img.classList.add("loaded");
+							img.removeAttribute("data-src");
+							obs.unobserve(img);
+						}
+						});
+					}, { rootMargin: "100px" }); // preload a bit earlier
+
+					ssData.playlist.plstThumbLazyloadObserver.disconnect(); //stop observing all current observed elements if any
+
+					//observe all images that have data-src attribute
+					images.forEach(img => ssData.playlist.plstThumbLazyloadObserver.observe(img));
+				}
+
+				/* Create the Playlist which includes books' chapters */
+				let _makeLiItem = (i) => {
+					let _track = document.createElement('li');
+
+					const v= bData.parts[i - 1];
+					
+					//set attribute data-rAlignGroup for right-align
+					_track.className = "plst_video-item";
+					_track.innerHTML = `
+						<div class="plst_thumb-wrap">
+						<img data-src="${v.img}" alt="" title="${v.tit}">
+						<span class="plst_duration">${v.dur}</span>
+						</div>
+						<div class="plst_caption" title="${v.tit}">${v.tit}</div>
+					`;
+
+					//set class for li element in order to set font-size for chapter ordenal so the li::before pseudo can fit the whole number
+					if( i >= 100) _track.classList.add(i > 999? "fourDigitOrdernalNo": "threeDigitOrdernalNo");
+					_track.setAttribute("attr-stt", i);
+
+					return _track;
+				}
+
+				if (bData.tap) {
+					// === Multi-volume book ===
+
+					let _divChapterGroupControls = document.querySelector('[name="divChapterGroupControls"]');
+					_divChapterGroupControls.classList.remove("elm-hidden"); //show control buttons for chapter groups
+					//reposTooltips(_divChapterGroupControls); // need to re-pos tooltip for elems that just show up
+
+					let _bookxState = xState.history.books[bookValue];
+					if (!_bookxState.chapGrpCollapse) _bookxState.chapGrpCollapse = []; //initialize chapGrpCollapse array for this book if it is not existed
+
+					let j = 0; //index for chapter group
+					let liGroup = null, sectionLIs, _groupTotalDur = 0;
+
+					//loop through all chapters and put them into corresponding chapter group
+					for (let i = 1; i <= bData.parts.length; i++) {
+						if (bData.tap[j].f == i) {//start new group
+							//create checkbox to collapse/expand chapter group
+							let _chapGrpChkbox = document.createElement('input');
+							_groupTotalDur = 0;
+							_chapGrpChkbox.type = "checkbox";
+							_chapGrpChkbox.checked = !_bookxState.chapGrpCollapse.includes(j); //last time this group is collapsed or expanded
+							_chapGrpChkbox.id = "chapGrpChkbox_" + j;
+							_chapGrpChkbox.setAttribute("attr-grpNo", j);
+
+							//Make label for group of chapters
+							let _lbl = document.createElement('label');
+							_lbl.htmlFor = "chapGrpChkbox_" + j;
+							_lbl.style.fontWeight = "bold"; //make it bold to calculate maximum height of all labels
+							_lbl.innerHTML = `<span style="display:block"><code class="underlineAnim">${bData.tap[j].label}</code></span>`;
+							_lbl.classList.add("is-sticky");
+							_elmPlaylist.appendChild(_chapGrpChkbox);
+							_elmPlaylist.appendChild(_lbl);
+
+							//create new section to contain all li (chapter) of this chapter group
+							liGroup = document.createElement('section');
+							liGroup.className = "plst_section";
+
+							sectionLIs = document.createElement("div");
+        					sectionLIs.className = "plst_video-grid";
+
+							liGroup.appendChild(sectionLIs);
+						}
+
+						//Add li item to chapter group in playlist
+						sectionLIs.appendChild(_makeLiItem(i));
+
+						//sum up total duration of this chapter group
+						_groupTotalDur += toSeconds(bData.parts[i - 1].dur);
+
+						if (bData.tap[j].t == i || i == bData.parts.length) {//end of current option group
+							if (j < bData.tap.length - 1 && bData.tap[j].t != bData.tap[j + 1].f - 1) {
+								//Create dummy group for items that not belong to any group
+								let _lbl = document.createElement('label');
+								_lbl.innerHTML = "Orphan chapters";
+								_elmPlaylist.appendChild(_lbl);
+							}
+
+							//adding label to display chapter group summary
+							let grpSummary = document.createElement('label');
+							grpSummary.classList.add("chapter-group-summary");
+							let _chapCount = bData.tap[j].t - bData.tap[j].f + 1;
+							grpSummary.innerHTML = `<span>Số chương: <code>${_chapCount}</code>.</span><span>Thời lượng: <code>${toHhMmSs(_groupTotalDur)}</code> / <code attr-duration="${_groupTotalDur}">${toHhMmSs(_groupTotalDur / xAudio.playbackRate )}</code></span>`;
+							liGroup.prepend(grpSummary); //add to top
+
+							//append the whole chapter group to playlist
+							_elmPlaylist.appendChild(liGroup);
+
+							//right align duration of all chapter in this section
+							//SddDropdown.prototype.rightAlignElems(liGroup, "li");
+
+							j++; //prepare for new chapters group
+						}
+					} // all chapters and chapter groups have been added to playlist
+
+					// can handle state of allChapGrpChkbox and the label of each chapters group in playlist, but i bring it out below
+					//chapGroupsHandle();
+				} 
+				else {
+					// === Single-volume book ===
+					
+					document.querySelector('[name="divChapterGroupControls"]').classList.add("elm-hidden"); //hide controls for chapter group
+
+					// has to create div.plst_video-grid to contain all li.video-item for grid layout, so that we can use CSS Grid to layout the thumbnail items
+					const sectionLIs = document.createElement("div");
+        			sectionLIs.className = "plst_video-grid";
+
+					_elmPlaylist.appendChild(sectionLIs);
+
+					for (let i = 1; i <= bData.parts.length; i++) {
+						//add li to playlist
+						sectionLIs.appendChild(_makeLiItem(i));
+					}
+				}
+
+				initLazyLoad();
 			};
 
 			/** function to handle state of allChapGrpChkbox and the size and pinning/unpinning state label of each chapters group in playlist  */
@@ -11089,16 +11318,23 @@
 			xAudio.setAttribute("attr-PrevBook", xAudio.getAttribute("attr-Book") ?? "");
 			xAudio.setAttribute("attr-Book", bookValue); //save book id to xAudio attribute
 
-			loadPlaylistTextMode();
+			if(plstViewmode === "listView")
+				// loadPlaylistTextMode() if when the playlist view mode is listview
+				loadPlaylistTextMode();
+			else
+				// or loadPlaylistThumbMode() depending on the state of playlistThumbView button
+				loadPlaylistThumbMode();
 
 			if (bData.tap){
+				//handle state of allChapGrpChkbox and the label of each chapters group in playlist
 				chapGroupsHandle();
 			}
 
-			// this would also make the current playing chapter in the playlist
-			loadDropdown(); // this call changeChap(lastChap) inside it
+			if(isNewLoad)
+				// this would also make the current playing chapter in the playlist
+				loadDropdown(); // this call changeChap(lastChap) inside it
 
-			//changeChap(lastChap);
+			//changeChap(lastChap); //this is now called inside loadDropdown() as callback of onChange event of ssData.sddChaps
 		}
 
 		/* Function to take care of playing other chapter including preparing information for new chapter, load new source for audio,...
@@ -11965,7 +12201,10 @@
 				let _liNewChap = _elmPlaylist.querySelector("li.beingPlay");
 				if (!_liNewChap) return; //this should never happen
 
-				let _liParent = _liNewChap.parentElement;
+				//the first part of code is for thumbView mode, the 2nd part is for listView mode
+				//in thumbView mode, _liNewChap inside of <div> which in turn inside a <section>, not as listview mode where _liNewChap is direct child of <section>
+				let _liParent = _liNewChap.closest("section.plst_section") || _liNewChap.parentElement;
+
 				// flag got value TRUE when section (which contains current playing chapter) is already expanded or there is no section at all
 				let _wasSectionExpanded = true;
 				let _chapGrpCheckbox = null; //checkbox that control the expand/collapse state of a section
@@ -12076,6 +12315,32 @@
 				if(!checkOS(1)) gotoPlayingChapter();
 			}
 			
+			/** handle for button to switch the view mode of Playlist (#elmPlaylist) from listView to thumbView (like youtube) and vice versa */
+			const switchPlaylistViewModeBtn = document.querySelector('[name="switchPlaylistViewMode"]');
+			function switchPlaylistViewMode(){
+				if(!xState.playlistViewMode) xState.playlistViewMode = 'listView'; //default value
+
+				if(xState.playlistViewMode == 'listView') {
+					xState.playlistViewMode = 'thumbView';
+					switchPlaylistViewModeBtn.dataset.tooltip = "Chuyển sang chế độ xem thu nhỏ";
+					switchPlaylistViewModeBtn.dataset.viewMode = "thumbView";
+				}
+				else {
+					xState.playlistViewMode = 'listView';
+					switchPlaylistViewModeBtn.dataset.tooltip = "Chuyển sang chế độ xem danh sách";
+					switchPlaylistViewModeBtn.dataset.viewMode = "listView";
+				}
+
+				const bookId = xAudio.getAttribute("attr-book");
+
+				// using changeBook() to re-create #elmPlaylist content in the new view mode
+				if (bookId) changeBook(bookId, false);
+
+				// after changing view mode, move back to current playing chapter
+				//gotoPlayingChapter();
+			}
+			switchPlaylistViewModeBtn.onclick = switchPlaylistViewMode;
+
 			document.querySelector('[name="gotoPlayingChapter"]').onclick = gotoPlayingChapter;
 			
 			document.querySelector('[name="togglePlaylistExtraTitles"]').onclick = togglePlaylistExtraTitles;
@@ -12095,7 +12360,9 @@
 				//if (_target.tagName === "INPUT" && _target.getAttribute("id").startsWith("chapGrpChkbox_")) {
 				if(_target.matches(`input[type="checkbox"][id^="chapGrpChkbox"]`)){
 					// expand or collapse a chapter group
-					chapGrpChkboxClick(_target)
+					chapGrpChkboxClick(_target);
+
+					evt.stopPropagation(); //stop bubbling up to not hide the playlist toolbox when programmatically click on the checkbox
 				}
 				else {
 					// in case user click on a child of chapter li item
@@ -12157,6 +12424,12 @@
 						btn.style.left = `${x}px`;
 						btn.style.top = `${y}px`;
 					});
+
+					// Reposition tooltips to avoid going off screen
+					setTimeout(_ => {
+						guiUtils.reposTooltips(toolboxPanel, {container: document.documentElement});
+					}, 300); //after animation ends
+					//guiUtils.reposTooltips(toolboxPanel);
 				}
 
 				// Close panel and reset tools back to toggle center
@@ -12164,21 +12437,22 @@
 					toolboxPanel.classList.remove("active");
 					toggleBtn.classList.remove("active");
 
-					/* //const toggleRect = toggle.getBoundingClientRect();
+					//move buttons back to toggle center, so next time openPanel() would make the animation from toggle center to arc
+					//const toggleRect = toggle.getBoundingClientRect();
 					const centerX = toggleBtn.offsetLeft + toggleBtn.offsetWidth / 2; //toggleRect.left + toggleRect.width / 2;
 					const centerY = toggleBtn.offsetTop + toggleBtn.offsetHeight / 2; //toggleRect.top + toggleRect.height / 2;
 
-					items.forEach(btn => {
+					fncButtons.forEach(btn => {
 						btn.style.left = `${centerX - btn.offsetWidth / 2}px`;
 						btn.style.top = `${centerY - btn.offsetHeight / 2}px`;
-					}); */
+					});
 				}
 
 				// Toggle click
 				toggleBtn.addEventListener("click", e => {
-					e.stopPropagation();
 					if (toolboxPanel.classList.contains("active")) {
 						closePanel();
+						e.stopPropagation();
 					} else {
 						openPanel();
 					}
@@ -15680,6 +15954,8 @@
 					const arrowCenter = (butRect.left + window.scrollX + butRect.width / 2) - left;
 					const arrowLeft = Math.max(10, Math.min(pw - 20, arrowCenter));
 					popup.style.setProperty('--arrow-left', `${arrowLeft}px`);
+
+					
 				}
 				
 				// change the popup position when user changes ACP (audio control panel) sticky mode, so the ACP might move up or down, we need to reposition the popup so it still sticks with the button (inside ACP)
@@ -15700,6 +15976,12 @@
 						placePopup(); 
 						handle.focus({preventScroll:true});
 						popup.classList.remove('no-top-transition'); //restore top transition after popup shown
+
+						// Reposition tooltips to avoid going off screen
+						setTimeout(() => {
+							guiUtils.reposTooltips(popup, {container: document.documentElement});
+						}, 300); //after animation ends
+						
 					});
 
 					document.addEventListener('mousedown', onDocDown);
