@@ -3241,9 +3241,11 @@
 					color: #fff;
 					transform: scale(1.2);
 				}
+
+				/* Disabled state for tool buttons */
 				&.disabled{
 					background: #ccc;
-					color: #666 !important;
+					color: #666;
 					border: 1px solid #aaa;
 					cursor: not-allowed;
 				}
@@ -3287,12 +3289,12 @@
 			/* background: #34c759; */
 			/* default is list view */
 			/* background: #007aff; */
-			color: red !important;
+			color: #8500ff;
 		}
 
 		/* set color of button to red when extra titles in playlist is hidden */
 		div[name="divContainer"]:has(ol#elmPlaylist.hideOptionExtraTitle) button[name="togglePlaylistExtraTitles"]{
-			color: red !important;
+			color: #8500ff !important;
 		}
 		
 	</style>
@@ -3422,6 +3424,9 @@
 				&.beingPlay {
 					background: linear-gradient(to right, #9c27b052, #fff0) !important;
 					box-shadow: 0px 0px 8px 3px #2d212196;
+
+					border-width: 2.5px;
+            		filter: brightness(0.9);
 				}
 
 				/* Move the jumping-bars to top-left for currently playing item */
@@ -11331,12 +11336,11 @@
 				// === Create real media links, cover image, original (outside) url,..., generate chaps groups from autoTap attribute for parts that have wildcart ===
 				BookData.prototype.generateWCLinks(bookValue);
 
-				enableDisableToolboxButtons(bData); //enable/disable some toolbox buttons based on the database
-
 				updateBookHeaderBackground(bData); //update book header background image
 				buildBookInfo(bData); //load book information to div#elmBookInfo
 			}
 
+			enableDisableToolboxButtons(bData); //enable/disable some toolbox buttons based on the database of the book
 			
 			// IIFE to load the playlist in the selected view mode and handle state of chapter groups if any
 			((bData) => {
@@ -12349,6 +12353,9 @@
 
 			/** function to toggle Extra Titles for #elmPlaylist. On Windows, the playlist content not be shifted (scrolled), but on iOS, when toggle content is scrolling, so we need to move back to current playing chapter */
 			function togglePlaylistExtraTitles(){
+				// do nothing if this button (which is div[name="togglePlaylistExtraTitles"]) is disabled. This button is disabled when there is no extra title for any chapter in the current book
+				if(this?.classList.contains("disabled")) return;
+
 				const _classAdded = _elmPlaylist.classList.toggle('hideOptionExtraTitle');
 				//if hide extra title, save that state into xState
 				if(_classAdded) xState.flags.hideExtraTitles = 1
@@ -12361,16 +12368,22 @@
 			/** handle for button to switch the view mode of Playlist (#elmPlaylist) from listView to thumbView (like youtube) and vice versa */
 			const switchPlaylistViewModeBtn = document.querySelector('[name="switchPlaylistViewMode"]');
 			function switchPlaylistViewMode(){
+				// do nothing if this button (which is div[name="switchPlaylistViewMode"]) is disabled. This button is disabled when there is too many chapters of the current book does not have thumbnail image (in .img attribute)
+				if(this?.classList.contains("disabled")) return;
+				
 				if(!xState.playlistViewMode) xState.playlistViewMode = 'listView'; //default value
+
+				//change icon of the button
+				switchPlaylistViewModeBtn.querySelector("use").setAttribute("href", xState.playlistViewMode == 'listView'? "#icnSvgThumbViewMode": "#icnSvgListViewMode")
 
 				if(xState.playlistViewMode == 'listView') {
 					xState.playlistViewMode = 'thumbView';
-					switchPlaylistViewModeBtn.dataset.tooltip = "Chuyển sang chế độ xem thu nhỏ";
+					switchPlaylistViewModeBtn.dataset.tooltip = "Chuyển sang chế độ xem danh sách";
 					switchPlaylistViewModeBtn.dataset.viewMode = "thumbView";
 				}
 				else {
 					xState.playlistViewMode = 'listView';
-					switchPlaylistViewModeBtn.dataset.tooltip = "Chuyển sang chế độ xem danh sách";
+					switchPlaylistViewModeBtn.dataset.tooltip = "Chuyển sang chế độ xem thu nhỏ";
 					switchPlaylistViewModeBtn.dataset.viewMode = "listView";
 				}
 
@@ -19532,9 +19545,13 @@ this.highlight = (elem) => {
 			  <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="0s" repeatCount="indefinite"/>
 			</rect>
 		</symbol>
-		<!-- https://www.svgrepo.com/svg/9203/thumbnails -->
-		<symbol id="icnSvgThumbViewMode" viewBox="0 0 206.518 206.518">
-			<path d="M93.517 0H3.897A3.896 3.896 0 0 0 0 3.897v89.621a3.896 3.896 0 0 0 3.897 3.897h89.621a3.896 3.896 0 0 0 3.897-3.897V3.897A3.9 3.9 0 0 0 93.517 0m-3.896 89.621H7.793V7.793h81.828zM202.621 0H113a3.896 3.896 0 0 0-3.897 3.897v89.621A3.896 3.896 0 0 0 113 97.415h89.621a3.896 3.896 0 0 0 3.897-3.897V3.897A3.897 3.897 0 0 0 202.621 0m-3.897 89.621h-81.828V7.793h81.828zM93.517 109.103H3.897A3.896 3.896 0 0 0 0 113v89.621a3.896 3.896 0 0 0 3.897 3.897h89.621a3.896 3.896 0 0 0 3.897-3.897V113a3.9 3.9 0 0 0-3.898-3.897m-3.896 89.621H7.793v-81.828h81.828zm113-89.621H113a3.896 3.896 0 0 0-3.897 3.897v89.621a3.896 3.896 0 0 0 3.897 3.897h89.621a3.896 3.896 0 0 0 3.897-3.897V113a3.897 3.897 0 0 0-3.897-3.897m-3.897 89.621h-81.828v-81.828h81.828z"/>
+		<!-- https://www.svgrepo.com/svg/154070/four-thumbnails-visualization-button -->
+		<symbol id="icnSvgThumbViewMode" viewBox="0 0 95.5 95.5">
+  			<path d="M39.101 0H2a2 2 0 0 0-2 2v37.102a2 2 0 0 0 2 2h37.101a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M93.5 0H56.398a2 2 0 0 0-2 2v37.102a2 2 0 0 0 2 2H93.5a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M39.101 54.398H2a2 2 0 0 0-2 2V93.5a2 2 0 0 0 2 2h37.101a2 2 0 0 0 2-2V56.398c0-1.103-.896-2-2-2m54.399 0H56.398a2 2 0 0 0-2 2V93.5a2 2 0 0 0 2 2H93.5a2 2 0 0 0 2-2V56.398a2 2 0 0 0-2-2"/>
+		</symbol>
+		<!-- https://www.svgrepo.com/svg/535686/text -->
+		<symbol id="icnSvgListViewMode" viewBox="0 0 16 16">
+  			<path fill-rule="evenodd" d="M15 1H1v14h14zM3 3v4h2V5h2v6H5v2h6v-2H9V5h2v2h2V3z"/>
 		</symbol>
 
 		<!-- SETTING icons -->
