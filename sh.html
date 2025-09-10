@@ -3382,9 +3382,10 @@
 				/* Caption below thumbnail */
 				& .plst_caption {
 					margin-top: -3px;
-					font-size: 0.8em;
+					font-size: 0.9em;
+					text-align: justify;
 					line-height: 1.2rem;
-					padding: 0 2px;
+					padding: 3px;
 
 					overflow: hidden;
 					text-overflow: ellipsis;
@@ -10729,6 +10730,12 @@
 			// === if still the same book, then do nothing. This happens sometimes, for example when close the User-Setting windows, Page will updates all the setting changes, and finally re-load book+chapter ===
 			if (xAudio.getAttribute("attr-Book") == bookValue && isNewLoad) return;
 
+			// the view mode for playlist for this book, can be "listView" or "thumbnailView" depending on value of xState.playlistViewMode and if this book's chapters have thumbnail or not'
+			let plstViewmode = "listView"; //default playlist view mode
+
+			//bData contains all information for current book
+			let bData = ssData.bookData.findBookFromId(bookValue);
+
 			/* do some preparation before loading a new book */
 			function preparation4NewBook(){
 				// === Book info element ===
@@ -10755,28 +10762,9 @@
 				if (typeof xState.history.books[bookValue] == "undefined")
 					xState.history.books[bookValue] = { "urlLine": 0 };//urlLine remember the url link index should be played for all chapter this book if each chapter has multiple mp3 links
 			};
-			preparation4NewBook();
 
-			//bData contains all information for current book
-			let bData = ssData.bookData.findBookFromId(bookValue);
-			
-			function prepareData(){
-				// === Create real media links, cover image, original (outside) url,..., generate chaps groups from autoTap attribute for parts that have wildcart ===
-				BookData.prototype.generateWCLinks(bookValue);
-
-				let _bookxState = xState.history.books[bookValue];
-				//initialize chapGrpCollapse array for this book if it is not existed
-				if (bData.tap){
-					//if more than 50 chapters, default to collapse all chapter-groups, otherwise expand all chapter-groups
-					if (!_bookxState.chapGrpCollapse) 
-						_bookxState.chapGrpCollapse = bData.parts.length > 50? [] : [...Array(bData.tap.length).keys()]; 
-					
-				}
-			};
-			prepareData();			
-			
 			// === Update background of the header of the page (which contail book header, ssData.sddBooks) based on grp[0] value ===
-			function updateBookHeaderBackground(){
+			function updateBookHeaderBackground(bData){
 				//add the background based on its grp[0] value (which somewhat defines the type of the book)
 				const _grp0 = bData.grp[0];
 
@@ -10793,7 +10781,7 @@
 			};
 			
 			// === Update Book tittle, Build book info ===
-			function buildBookInfo() {
+			function buildBookInfo(bData) {
 				// === Update book title ===
 				document.getElementById("elmBookTitle").innerHTML =
 					bData.title + (bData.eTitle && bData.eTitle != bData.title ? " <wbr/>(" + bData.eTitle + ")" : ""); /* <wbr> and css style '#elmBookTitle{text-wrap: nowrap}' can auto-break the line after <wbr/> into new line if the whole title is more than 1 line. However, for now this seem not work in Safary */
@@ -10866,16 +10854,15 @@
 			};
 
 			// == enable/disable toolbox buttons based on the database ==
-			let plstViewmode = "listView"; //default playlist view mode
-			(function enableDisableToolboxButtons(){
+			function enableDisableToolboxButtons(bData){
 				//enable/disable the button to toggle Playlist extra titles
 				document.querySelector('[name="togglePlaylistExtraTitles"]').classList.toggle( 'disabled', !bData.parts.some(part => part.sTit && part.sTit.trim()) );
 
-				//enable/disable the button to goto currently playing chapter
-				//document.getElementById("btnGotoPlayingChapter").disabled = !bData.parts.length;
-
 				//enable/disable the button to toggle Playlist thumbnail view
-				const isAllChaptersHaveImgs = bData.parts.every(part => part.img && part.img.trim());
+				let thumbCount = 0;
+				bData.parts.forEach(part => part.img && thumbCount++);
+
+				const isAllChaptersHaveImgs = thumbCount > bData.parts.length * 5/6; //bData.parts.every(part => part.img && part.img.trim());
 				//disable the button to toggle Playlist thumbnail view if not all chapters have img
 				document.querySelector('[name="switchPlaylistViewMode"]').classList.toggle( 'disabled', !isAllChaptersHaveImgs );
 
@@ -10883,7 +10870,7 @@
 				document.querySelector('[name="switchPlaylistViewMode"]').dataset.viewMode = xState.playlistViewMode;
 
 				plstViewmode = isAllChaptersHaveImgs? xState.playlistViewMode : "listView"; //if not all chapters have img, then force to listView mode
-			})();
+			}
 
 			// === Chapter Playlist container ===
 			const _elmPlaylist = document.getElementById("elmPlaylist");
@@ -10901,7 +10888,7 @@
 			}
 
 			// === Load LI playlist in listView form ===
-			function loadPlaylistTextMode() {
+			function loadPlaylistTextMode(bData) {
 				_elmPlaylist.innerHTML = ""; //clear the Playlist
 
 				if(ssData?.playlist.plstThumbLazyloadObserver)
@@ -11005,7 +10992,7 @@
 			};
 
 			// === Load LI playlist in thumbView form (as youtube playlist) ===
-			function loadPlaylistThumbMode() {
+			function loadPlaylistThumbMode(bData) {
 				_elmPlaylist.classList.add("playlistThumbView");
 
 				_elmPlaylist.innerHTML = ""; //clear the Playlist
@@ -11063,12 +11050,13 @@
 					
 					//set attribute data-rAlignGroup for right-align
 					_track.className = "plst_video-item";
+					const tit = v.tit;
 					_track.innerHTML = `
 						<div class="plst_thumb-wrap">
-						<img data-src="${v.img}" alt="" title="${v.tit}">
+						<img data-src="${v.img}" alt="${tit}" title="${tit}">
 						<span class="plst_duration">${v.dur}</span>
 						</div>
-						<div class="plst_caption" title="${v.tit}">${v.tit}</div>
+						<div class="plst_caption" title="${tit}">${tit}</div>
 					`;
 
 					//set class for li element in order to set font-size for chapter ordenal so the li::before pseudo can fit the whole number
@@ -11209,9 +11197,10 @@
 
 			// === Load dropdown ===
 			/** function to load data into SDD ssData.sddChaps and load the chapter
+			 * @param {object} bData: book Data of the current book
 			 * @param {number} chap2Load: the chapter number to be loaded after the dropdown is loaded
 			  */
-			function loadDropdown(chap2Load) {
+			function loadDropdown(bData, chap2Load) {
 				let sddOptionData=[], sddOptGroup = null;
 				let _groupTotalDur = 0;
 
@@ -11336,33 +11325,50 @@
 			xAudio.setAttribute("attr-Book", bookValue); //save book id to xAudio attribute
 
 			if(isNewLoad){
-				updateBookHeaderBackground(); //update book header background image
-				buildBookInfo(); //load book information to div#elmBookInfo
+				// do some vary preparations before loading new book. See inside function for details
+				preparation4NewBook();
+
+				// === Create real media links, cover image, original (outside) url,..., generate chaps groups from autoTap attribute for parts that have wildcart ===
+				BookData.prototype.generateWCLinks(bookValue);
+
+				enableDisableToolboxButtons(bData); //enable/disable some toolbox buttons based on the database
+
+				updateBookHeaderBackground(bData); //update book header background image
+				buildBookInfo(bData); //load book information to div#elmBookInfo
 			}
 
 			
 			// IIFE to load the playlist in the selected view mode and handle state of chapter groups if any
-			(() => {
+			((bData) => {
+				let _bookxState = xState.history.books[bookValue];
+				//initialize chapGrpCollapse array for this book if it is not existed
+				if (bData.tap){
+					//if more than 50 chapters, default to collapse all chapter-groups, otherwise expand all chapter-groups
+					if (!_bookxState.chapGrpCollapse) 
+						_bookxState.chapGrpCollapse = bData.parts.length < 50 && plstViewmode == "listView"? [] : [...Array(bData.tap.length).keys()]; 
+					
+				}
+
 				//load the playlist in the selected view mode
 				if(plstViewmode === "listView")
 					// loadPlaylistTextMode() if when the playlist view mode is listview
-					loadPlaylistTextMode();
+					loadPlaylistTextMode(bData);
 				else
 					// or loadPlaylistThumbMode() depending on the state of playlistThumbView button
-					loadPlaylistThumbMode();
+					loadPlaylistThumbMode(bData);
 
 				if (bData.tap){
 					//handle state of allChapGrpChkbox and the label of each chapters group in playlist
 					chapGroupsHandle();
 				}
-			})();
+			})(bData);
 			
 
 			if(isNewLoad){
 				// Find out last playing chapter of current book. If this book has not been playing before, just start from chapter 1
 				let lastChap = parseInt(xState.history.books[bookValue]["lc"] ?? 1);
 				// this would also make the current playing chapter in the playlist
-				loadDropdown(lastChap); // this call changeChap(lastChap) inside it
+				loadDropdown(bData, lastChap); // this call changeChap(lastChap) inside it
 			}
 			else{
 				const newChap = xAudio.getAttribute("attr-chap");
