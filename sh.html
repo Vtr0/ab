@@ -10893,6 +10893,10 @@
 			function loadPlaylistTextMode() {
 				_elmPlaylist.innerHTML = ""; //clear the Playlist
 
+				if(ssData?.playlist.plstThumbLazyloadObserver)
+					//stop observing all current observed elements if any, which might be img elements in thumbnail mode of playlist (for the lazy-load of those img elements)
+					ssData.playlist.plstThumbLazyloadObserver.disconnect(); 
+
 				/* Create the Playlist which includes books' chapters */
 				let _makeLiItem = (i) => {
 					let _track = document.createElement('li');
@@ -11019,7 +11023,6 @@
 						}
 					}
 					
-
 					//create the observer if it is not yet created. This observer is to watch all images that have data-src attribute to be in the viewport, then load the real image (lazy-load technique)
 					if(!ssData?.playlist.plstThumbLazyloadObserver)
 					ssData.playlist.plstThumbLazyloadObserver = new IntersectionObserver((entries, obs) => {
