@@ -271,23 +271,6 @@
        			object-fit: cover;
 
 				border-color: #333; /* change border a bit to know this is SD youtube poster */ 
-
-				/* Adding SD label to the #elmArtwork by put it into ::pseudo element of its div father */
-				div:has(> &){
-					position: relative;
-
-					&::before{
-						content: "SD";
-						position: absolute;
-						top: 5px;
-						right: 5px;
-						width: 35px;
-						height: 25px;
-						color: #fff;
-						background: #333c;
-						border-radius: 5px;
-					}
-				}
 			}
 		}
 
