@@ -264,6 +264,8 @@
 			border-radius: 30px 0px;
 			box-shadow: #0007 2px 2px 10px;
 
+			transition: width .2s ease;
+
 			/* make the top-left and bottom-right round border */
 			/* clip-path: xywh(0 0px 100% 100% round var(--workart-border-radius));
 			margin-bottom: -3.5px; */
@@ -274,28 +276,26 @@
 				aspect-ratio: 16 / 9;
        			object-fit: cover;
 
-				border-color: #333; /* change border a bit to know this is SD youtube poster */
-
-				/* Adding SD label to the #elmArtwork by put it into ::pseudo element of its div father */
-				div:has(> &){
-					position: relative;
-		
-					&::before{
-						content: "SD";
-						position: absolute;
-						top: 5px;
-						right: 5px;
-						width: 35px;
-						height: 25px;
-						color: #fff;
-						background: #333c;
-						border-radius: 5px;
-					}	
-				}
+				border-color: #333; /* change border a bit to know this is SD youtube poster */ 
 			}
 		}
 
-		
+		/* Adding SD label to the #elmArtwork when the poster is SD image by put it into ::pseudo element of its div father */
+		.flex-container div:has(> #elmArtwork[src*="i.ytimg.com"][src*="hqdefault.jpg"]){
+			position: relative;
+
+			&::before{
+				content: "SD";
+				position: absolute;
+				top: 5px;
+				right: 5px;
+				width: 35px;
+				height: 25px;
+				color: #fff;
+				background: #333c;
+				border-radius: 5px;
+			}	
+		}
 
 		.flex-container .noInternetImg {
 			width: min(100%, 400px);
@@ -2120,7 +2120,7 @@
 			border-radius:12px;
 			padding:12px; 
 			box-shadow: 5px 6px 7px 1px #0006;
-			z-index:20;
+			z-index: 8;
 
 			/* property for showing transition */
 			display:none;
@@ -2788,7 +2788,7 @@
 			}
 
 			/* format differently for label that its next sibling section contain li chapter that is playing */
-			&:has(+ section > li.beingPlay) {
+			&:has(+ section li.beingPlay) {
 				color: rgb(116 25 196);
 				background-image: linear-gradient(to top left, #abb1f3bd, #ffffff2e 80%);
 				font-weight: bold;
@@ -3178,8 +3178,9 @@
 			left: -20px;
 			/* top: 50%; */
 			transform: translateY(-50%);
-			width: 44px;
-			height: 44px;
+			width: 42px;
+			height: 42px;
+			padding-bottom: 5px; /* to make it vertical center */
 			border-radius: 50%;
 			border: none;
 			background: #007aff;
@@ -3187,7 +3188,7 @@
 			font-size: 24px;
 			font-weight: 700;
 			cursor: pointer;
-			z-index: 10;
+			z-index: 9;
 			transition: background 0.3s, transform 0.2s;
 			
 			&:not(.active){
@@ -3233,7 +3234,7 @@
 				align-items: center;
 				transition: all 0.3s ease;
 
-				z-index: 10;
+				z-index: 9;
 
 				/* Hover effect for tool buttons */
 				&:hover {
@@ -3269,8 +3270,8 @@
 				position: absolute;
 				top: 0;
 				left: 0;
-				width: 200px;
-				height: 200px;
+				width: var(--arc-radius);
+				height: var(--arc-radius);
 				border-radius: 50%;
 				opacity: 0;
 				pointer-events: none;
@@ -3288,8 +3289,8 @@
 					#3336 var(--end-angle),
 					transparent calc(var(--end-angle) + var(--border-angle))
 				);
-				
-				z-index: 10;
+
+				z-index: 9;
 				transition: opacity 0.3s ease;
 			}
 
@@ -3324,9 +3325,7 @@
 
 		/* === Grid for video items === */
 		ol#elmPlaylist.playlistThumbView  {
-			/* counter used to number the ordinal of each chapter <li> */
 			counter-reset: myThumbviewCounter;
-
 			/* the minimum width of each thumbnail '.plst_thumb-wrap img', this can control number of <li>s for each grid row  */
 			--min-thumb-width: 180px; /* 210px; */
 
@@ -3337,6 +3336,16 @@
 				/* margin-bottom: 2rem; */
 				/* make padding-left to be 0 to overwrite the default 40px */
 				padding-left: 0px !important;
+
+				& > label.chapter-group-summary-thumb_mode {
+					margin: 0 1px 4px;
+					/* border: 1px solid #222; */
+        			border-radius: 7px;
+					
+					/* background: radial-gradient(circle at center, #a1c4fd 0%, #c2e9fb 100%); */
+					background: radial-gradient(circle at center, #c8ccd1a6 0%, #c2cffb8f 100%);
+            		box-shadow: inset 0 0 6px 1px #3336;
+				}
 			}
 
 			& .plst_video-grid {
@@ -3345,7 +3354,7 @@
 				list-style: none;
 				padding: 0;
 				margin: 0;
-				grid-template-columns: repeat(auto-fit, minmax(var(--min-thumb-width), 1fr));
+				grid-template-columns: repeat(auto-fill, minmax(var(--min-thumb-width) , 1fr));
 			}
 
 			/* === Each video item === */
@@ -3360,7 +3369,6 @@
 				/* to overwrite border-bottom of the default ol#elmPlaylist <li>  */
 				border: 1px solid #730a50c4;
 
-				/* increase counter on each <li> */
 				counter-increment: myThumbviewCounter;
 			
 				/* Thumbnail container */			
@@ -3380,9 +3388,16 @@
 						display: block;
 						opacity: 0;
 						transition: opacity 0.5s ease;
+
 						/* Fade-in effect when image loads */
 						&.loaded {
 							opacity: 1;
+						}
+
+						&:hover{
+							/* transform: scaleX(-1); */
+							filter: grayscale(100%);
+							/* transition: filter .3s ease; */
 						}
 					}
 
@@ -3403,7 +3418,7 @@
 				& .plst_caption {
 					margin-top: -3px;
 					font-size: 0.9em;
-					text-align: justify;
+					text-align: left;
 					line-height: 1.2rem;
 					padding: 3px;
 
@@ -3413,6 +3428,7 @@
 					/* following 4 line of css to set number of lines to show */
 					white-space: normal;
 					display: -webkit-box;
+					line-clamp: 2;
 					-webkit-line-clamp: 2; /* number of lines to show */
 					-webkit-box-orient: vertical;
 
@@ -3443,8 +3459,13 @@
 					background: linear-gradient(to right, #9c27b052, #fff0) !important;
 					box-shadow: 0px 0px 8px 3px #2d212196;
 
-					border-width: 2.5px;
+					border: 2.5px #999;
             		filter: brightness(0.9);
+
+					/* & img:hover{
+						transform: scaleX(-1);
+						filter: grayscale(100%);
+					} */
 				}
 
 				/* Move the jumping-bars to top-left for currently playing item */
@@ -4609,7 +4630,7 @@
 			width: 100vw;
 			height: 100vh;
 			background: rgba(0, 0, 0, 0.7);
-			z-index: 9;
+			z-index: 29;
 			display: none;
 		}
 
@@ -4626,7 +4647,7 @@
 			background-color: #fff;
 			/* DFDBE5 */
 			width: min(90vw, 850px);
-			z-index: 10;
+			z-index: 30;
 			text-align: center;
 			padding: 10px;
 			box-sizing: border-box;
@@ -7357,7 +7378,7 @@
 							</svg>
 						</button>
 
-						<!-- Button to switch playlist view mode from listView to thumbView and back -->
+						<!-- button to switch playlist view mode from listView to thumbView and back -->
 						<button name="switchPlaylistViewMode" class="plst_tool_item" data-tooltip="Chuyển chế độ Playlist" style="--data-translateX: -15%">
 							<svg class="!text-[15px] button-svg-img" style="font-size: 18px !important;">
 								<use href="#icnSvgThumbViewMode"/>
@@ -10672,17 +10693,17 @@
 			const _elmArtwork = document.getElementById("elmArtwork");
 			const _DEFAULT_POSTER_IMG = "default.jpg"; //"https://th.bing.com/th/id/OIG1.umQWEGl8_HY7m9Mm76ww";
 			_elmArtwork.onload = async (_event) => {
-				let elmArtwork = _event.target;
+				//let _elmArtwork = _event.target;
 				// when a youtube thumbnail not exist, youtube will return a fallback image whose size is 120x90 so onerror event on elmArtwork will never be fired. This small trick is a way to know that an thumbnail not exist, so we replace another existed one.
 				const low_resolution_ytImg = "hqdefault.jpg";  //can use mqdefault.jpg with lower resolution but it is 16:9 thumbnail. Both of this thumbnail is guranteed to be existed
-				if (elmArtwork.naturalWidth === 120) {
-					if( elmArtwork.src.includes(low_resolution_ytImg) ) {
+				if (_elmArtwork.naturalWidth === 120) {
+					if( _elmArtwork.src.includes(low_resolution_ytImg) ) {
 						//still fail even if already default resolution image, might mean the YT video already been removed, so we use default image
-						elmArtwork.src = _DEFAULT_POSTER_IMG;
+						_elmArtwork.src = _DEFAULT_POSTER_IMG;
 						return;
 					}
 
-					elmArtwork.src = elmArtwork.src.replace(/([^\/])+$/, low_resolution_ytImg);
+					_elmArtwork.src = _elmArtwork.src.replace(/([^\/])+$/, low_resolution_ytImg);
 
 					//update new artwork to notification center
 					guiUtils.updateNCWorkart();
@@ -10691,9 +10712,10 @@
 				}
 
 				//fix the width (which then fix the size) of elmArrtwork depending on  the ratio of width and height of source image
-				const _nRatio = elmArtwork.naturalWidth / elmArtwork.naturalHeight;
-				const _elmWidth = _nRatio > 1.3? 450 : ( _nRatio > 1 ? 400 : (_nRatio > .8 ? 350 : 300) );
-				elmArtwork.style.width = _elmWidth + "px";
+				const preferWidths = _elmPlaylist.matches(".playlistThumbView")? [400,350,350,300] : [450, 400, 350, 300]; //prefered width of artwork
+				const _nRatio = _elmArtwork.naturalWidth / _elmArtwork.naturalHeight;
+				const _elmWidth = _nRatio > 1.3? preferWidths[0] : ( _nRatio > 1 ? preferWidths[1] : (_nRatio > .8 ? preferWidths[2] : preferWidths[3]) );
+				_elmArtwork.style.width = _elmWidth + "px";
 
 				//setting the width for workart and the max-height for playlist
 				if(_COLUMN_MODE){
@@ -10703,7 +10725,7 @@
 				
 				//align the height of elmPlaylist with the cover image on the left if it is too long
 				let _leftSideHeight = 0;
-				for (let _elm of elmArtwork.closest('[name="divCtnMiddle"]').firstElementChild.children) {
+				for (let _elm of _elmArtwork.closest('[name="divCtnMiddle"]').firstElementChild.children) {
 					if (_elm.tagName === 'svg')
 						//note that no-wifi svg does not have offsetHeight
 						_leftSideHeight += _elm.getBoundingClientRect().height
@@ -10913,7 +10935,7 @@
 
 			// === Load LI playlist in listView form ===
 			function loadPlaylistTextMode(bData) {
-				_elmPlaylist.classList.remove("playlistThumbView"); //remove thumbnail view class if any
+				_elmPlaylist.classList.remove("playlistThumbView"); //remove class that mark thumbnail view mode
 
 				_elmPlaylist.innerHTML = ""; //clear the Playlist
 
@@ -11019,7 +11041,7 @@
 
 			// === Load LI playlist in thumbView form (as youtube playlist) ===
 			function loadPlaylistThumbMode(bData) {
-				_elmPlaylist.classList.add("playlistThumbView"); //add class to make playlist in thumbnail mode
+				_elmPlaylist.classList.add("playlistThumbView"); //add class that mark thumbnail view mode
 
 				_elmPlaylist.innerHTML = ""; //clear the Playlist
 
@@ -11151,7 +11173,7 @@
 
 							//adding label to display chapter group summary
 							let grpSummary = document.createElement('label');
-							grpSummary.classList.add("chapter-group-summary");
+							grpSummary.classList.add("chapter-group-summary", "chapter-group-summary-thumb_mode");
 							let _chapCount = bData.tap[j].t - bData.tap[j].f + 1;
 							grpSummary.innerHTML = `<span>Số chương: <code>${_chapCount}</code>.</span><span>Thời lượng: <code>${toHhMmSs(_groupTotalDur)}</code> / <code attr-duration="${_groupTotalDur}">${toHhMmSs(_groupTotalDur / xAudio.playbackRate )}</code></span>`;
 							liGroup.prepend(grpSummary); //add to top
@@ -12409,9 +12431,11 @@
 				}
 
 				const bookId = xAudio.getAttribute("attr-book");
-
 				// using changeBook() to re-create #elmPlaylist content in the new view mode
 				if (bookId) changeBook(bookId, false);
+
+				// to update workart width (see _elmArtwork.onload function in init()) because in thumbView mode, the width of #elmPlaylist is narrower than in listView mode
+				document.getElementById("elmArtwork").onload(); 
 
 				// after changing view mode, move back to current playing chapter
 				gotoPlayingChapter();
@@ -12524,40 +12548,44 @@
 						btn.style.top = `${centerY - btn.offsetHeight / 2}px`;
 					});
 				}
-
-				/* 
-				// Toggle click
-				toggleBtn.addEventListener("click", e => {
-					if (toolboxPanel.classList.contains("active")) {
-						closePanel();
-						e.stopPropagation();
-					} else {
-						openPanel();
-					}
-				});
-
-				// Click outside closes panel
-				document.addEventListener("click", e => {
-					if (!toolboxPanel.contains(e.target) && e.target !== toggleBtn) {
-					closePanel();
-					}
-				});
-				 */
-				// Open on hover
-				toggleBtn.addEventListener("mouseenter", openPanel);
-
-				// Close when leaving both toggle and panel
-				const toolboxOnMouseLeave = (e) => {
-					setTimeout(() => {
-						if (!toolboxPanel.matches(":hover") && !toggleBtn.matches(":hover")) {
-							closePanel();
-						}
-					}, 200);
-				};
 				
-				toggleBtn.addEventListener("mouseleave", toolboxOnMouseLeave);
+				// If on a non-touch device, open panel on hover, close when leaving both toggle and panel				
+				if(checkOS(1)){
+					// Open on hover
+					toggleBtn.addEventListener("mouseenter", openPanel);
 
-				toolboxPanel.addEventListener("mouseleave", toolboxOnMouseLeave);
+					// Event handler function to close playlist toolbox when leaving both toggle and panel
+					const tbxOnMouseLeave = e => {
+						setTimeout(() => {
+							if (!toolboxPanel.matches(":hover") && !toggleBtn.matches(":hover")) {
+								closePanel();
+							}
+						}, 200)
+					};
+
+					// Close when leaving both toggle and panel
+					toggleBtn.addEventListener("mouseleave", tbxOnMouseLeave);
+					// also for panel
+					toolboxPanel.addEventListener("mouseleave", tbxOnMouseLeave);
+
+				} else { // on touch device, open/close on click
+					// Toggle click
+					toggleBtn.addEventListener("click", e => {
+						if (toolboxPanel.classList.contains("active")) {
+							closePanel();
+							e.stopPropagation();
+						} else {
+							openPanel();
+						}
+					});
+
+					// Click outside closes panel
+					document.addEventListener("click", e => {
+						if (!toolboxPanel.contains(e.target) && e.target !== toggleBtn) {
+						closePanel();
+						}
+					});
+				}
 
 				// Set initial position of tools at toggle center
 				closePanel();
