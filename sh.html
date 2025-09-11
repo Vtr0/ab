@@ -3325,7 +3325,11 @@
 
 		/* === Grid for video items === */
 		ol#elmPlaylist.playlistThumbView  {
+			/* counter used to number the ordinal of each chapter <li> */
 			counter-reset: myThumbviewCounter;
+
+			/* the minimum width of each thumbnail '.plst_thumb-wrap img', this can control number of <li>s for each grid row  */
+			--min-thumb-width: 180px; /* 210px; */
 
 			/* overwrite padding-left for the case there is no section */
 			padding-left: 0;
@@ -3342,7 +3346,7 @@
 				list-style: none;
 				padding: 0;
 				margin: 0;
-				grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+				grid-template-columns: repeat(auto-fit, minmax(var(--min-thumb-width), 1fr));
 			}
 
 			/* === Each video item === */
@@ -3357,6 +3361,7 @@
 				/* to overwrite border-bottom of the default ol#elmPlaylist <li>  */
 				border: 1px solid #730a50c4;
 
+				/* increase counter on each <li> */
 				counter-increment: myThumbviewCounter;
 			
 				/* Thumbnail container */			
