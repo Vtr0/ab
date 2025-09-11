@@ -272,14 +272,11 @@
 			
 			/* selector for youtube SD poster, which for now identified by the file name 'hqdefault.jpg' */
 			&[src*="i.ytimg.com"][src*="hqdefault.jpg"]{
-				/* crop the top and bottom black stripes */
-				clip-path: xywh(0 12.5% 100% 75% round var(--workart-border-radius));
-				/* remove border on normal workart. Becaused of the 'clip-path', the border will be made by the background color of mother div */
-				border: none;
-				/* change the border-box of the image using margin */
-				margin-top: -9.2%;
-				margin-bottom: calc(-3px - 9.5%);
-				transition: margin .5s;
+				/* Simple version: these following two would do the effect to crop the top+bottom black bands and zoom the part having image to fit the <img> element */
+				aspect-ratio: 16 / 9;
+       			object-fit: cover;
+
+				border-color: #333;
 			}
 		}
 
