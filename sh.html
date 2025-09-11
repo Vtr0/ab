@@ -78,7 +78,7 @@
 
 			&>* {
 				width: 100%;
-				max-width: 100%;
+				max-width: 100%;e
 			}
 
 			&>div[name="divCtnTop"] {
@@ -250,19 +250,7 @@
 			max-width: 100%;
 			/* In column mode, size of artwrok can reach to 100% */
 
-			position: relative;
-
-					&::before{
-						content: "SD";
-						position: absolute;
-						top: 5px;
-						right: 5px;
-						width: 35px;
-						height: 25px;
-						color: #fff;
-						background: #333c;
-						border-radius: 5px;
-					}
+			
 		}
 
 		/* This left side of playlist has multiple children, so set this to make nicer visibility */
@@ -310,6 +298,20 @@
 			
 			/* center the div */
 			margin: 0 auto;			
+
+			position: relative;
+
+					&::before{
+						content: "SD";
+						position: absolute;
+						top: 5px;
+						right: 5px;
+						width: 35px;
+						height: 25px;
+						color: #fff;
+						background: #333c;
+						border-radius: 5px;
+					}
 		}
 
 		.flex-container .noInternetImg {
