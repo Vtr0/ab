@@ -3186,6 +3186,7 @@
 			background: #007aff;
 			color: #fff;
 			font-size: 24px;
+			font-weight: 700;
 			cursor: pointer;
 			z-index: 10;
 			transition: background 0.3s, transform 0.2s;
@@ -3260,6 +3261,11 @@
 
 			/* === Arc background (only visible when active) === */
 			&::before {
+				--start-angle: 40deg;
+				--end-angle: 140deg;
+				--border-angle: 10deg;
+				--arc-radius: 190px; /* radius of the arc */
+
 				content: "";
 				position: absolute;
 				top: 0;
@@ -3270,12 +3276,20 @@
 				opacity: 0;
 				pointer-events: none;
 				transform: translate(-50%, -50%);
-				background: conic-gradient(
+				/* background: conic-gradient(
 					transparent 30deg,
 					#3336 40deg,
 					#3336 140deg,
 					transparent 150deg
+				); */
+
+				background: conic-gradient(
+					transparent calc(var(--start-angle) - var(--border-angle)),
+					#3336 var(--start-angle),
+					#3336 var(--end-angle),
+					transparent calc(var(--end-angle) + var(--border-angle))
 				);
+				
 				z-index: 10;
 				transition: opacity 0.3s ease;
 			}
@@ -7323,14 +7337,6 @@
 					<button class="plst_tool_toggle-btn">☰</button>
 					<!-- Tool panel -->
 					<div class="plst_tool_panel">
-						<!-- button to show/hide extra titles in #elmPlaylist -->
-						<button name="togglePlaylistExtraTitles"
-							class="plst_tool_item" data-tooltip="Ẩn/hiện tiêu đề phụ cho danh mục chương sách.">
-							<svg class="!text-[20px] button-svg-img">
-								<use href="#icnSvgToggleExtraTitlesBtn" />
-							</svg>
-						</button>
-
 						<!-- button to scroll to current playing chapter in #elmPlaylist -->
 						<button name="gotoPlayingChapter"
 							class="plst_tool_item" data-tooltip="Đến chương đang phát">
@@ -7339,6 +7345,15 @@
 							</svg>
 						</button>
 
+						<!-- button to show/hide extra titles in #elmPlaylist -->
+						<button name="togglePlaylistExtraTitles"
+							class="plst_tool_item" data-tooltip="Ẩn/hiện tiêu đề phụ cho danh mục chương sách.">
+							<svg class="!text-[20px] button-svg-img">
+								<use href="#icnSvgToggleExtraTitlesBtn" />
+							</svg>
+						</button>
+
+						<!-- Button to switch playlist view mode from listView to thumbView and back -->
 						<button name="switchPlaylistViewMode" class="plst_tool_item" data-tooltip="Chuyển chế độ Playlist" style="--data-translateX: -15%">
 							<svg class="!text-[15px] button-svg-img" style="font-size: 18px !important;">
 								<use href="#icnSvgThumbViewMode"/>
