@@ -78,7 +78,7 @@
 
 			&>* {
 				width: 100%;
-				max-width: 100%;e
+				max-width: 100%;
 			}
 
 			&>div[name="divCtnTop"] {
@@ -249,8 +249,6 @@
 			/*so that in the column flex, the artwork will be after Playlist */
 			max-width: 100%;
 			/* In column mode, size of artwrok can reach to 100% */
-
-			
 		}
 
 		/* This left side of playlist has multiple children, so set this to make nicer visibility */
@@ -276,39 +274,25 @@
 				aspect-ratio: 16 / 9;
        			object-fit: cover;
 
-				border-color: #333;
+				border-color: #333; /* change border a bit to know this is SD youtube poster */
 			}
 		}
 
-		/* adding effect for #elmArtwork by styling the div that contains #elmArtwork */
+		/* Adding SD label to the #elmArtwork by put it into ::pseudo element of its div father */
 		.flex-container div:has(> #elmArtwork[src*="i.ytimg.com"][src*="hqdefault.jpg"]){
-			--workart-border-radius: 30px 0; /* border radius is the same with clip-path in #elmArtwork */
-			border-radius: var(--workart-border-radius); 
-			width: fit-content;
-
-			/* padding and background-color to make the border for the inside #elmArtwork */
-			padding: 1px;
-			background-color: #f1b874; /* #0040f9; */
-			/* background: radial-gradient(closest-corner, #0000 69%, bisque 69%); */
-			/* add shadow for the inside #elmArtwork */
-			filter: drop-shadow(2px 2px 10px #0007);
-			
-			/* center the div */
-			margin: 0 auto;			
-
 			position: relative;
 
-					&::before{
-						content: "SD";
-						position: absolute;
-						top: 5px;
-						right: 5px;
-						width: 35px;
-						height: 25px;
-						color: #fff;
-						background: #333c;
-						border-radius: 5px;
-					}
+			&::before{
+				content: "SD";
+				position: absolute;
+				top: 5px;
+				right: 5px;
+				width: 35px;
+				height: 25px;
+				color: #fff;
+				background: #333c;
+				border-radius: 5px;
+			}	
 		}
 
 		.flex-container .noInternetImg {
