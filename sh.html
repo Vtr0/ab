@@ -68,7 +68,7 @@
 			color: #ccc;
 
 			/* Brutally forcing almost all elements of the page having color #eee. This effect heavily on page performance (open an SDD and scroll to see how lag it is), but this is shortest (but not the best) way for dark theme mode */
-			& *:not(svg):not(svg *):not(a):not(a *):not(select *):not(input[type="text"]):not(button:has([href="#icnSvgPlayPauseProgress"])):not(button:hover):not(:before):not(:after):not([attr-data-jsfile-name] > div:first-child *):not(.optgroup-header):not(.optgroup-header *){
+			& *:not(svg):not(svg *):not(a):not(a *):not(select *):not(input[type="text"]):not(button:has([href="#icnSvgPlayPauseProgress"])):not(button:hover):not(::before):not(::after):not([attr-data-jsfile-name] > div:first-child *):not(.optgroup-header):not(.optgroup-header *){
 				color: #eee !important;
 			}
 			/* not set for:
