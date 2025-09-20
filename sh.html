@@ -83,7 +83,8 @@
 			 */
 			
 			 & .sdd-wrapper .sdd-dropdown-item{
-				& :is(span, .item-2nd-main-div){
+				/* .item-slight-details display year of the book Or duration of a chapter */
+				& :is(span, .item-2nd-main-div):not(.item-slight-details){
 					color: var(--dt-main-txt-color);
 						/* the number in subtTitle, which should always at .item-2nd-main-div */
 						/* &.subTitle i{color: #00f1db} */
@@ -97,7 +98,7 @@
 			& .subTitle i{color: #00f1db}
 
 			/* set css var that is used to decor quite some elements based on the type of books catego */
-			--select-book-group-color: #95c3ff; /* #519cfe; */
+			--select-book-group-color: #4f95ef; /* #95c3ff; */ /* #519cfe; */
 			/* filter to change color from Black to darkblue */
 			--select-book-group-filter: invert(58%) sepia(19%) saturate(6852%) hue-rotate(194deg) brightness(104%) contrast(99%);
 
@@ -165,13 +166,13 @@
 				--c1: #666;
 			}
 
-			& :is(#elmPlaylist, .lstBookTitlesSetting){
+			& ol:is(#elmPlaylist, .lstBookTitlesSetting){
 				--li-txt-color: #ccc;
 				--even-li-txt-color: #ffdcb1; /* #d59e23; */
-				--even-li-txt-bgrnd: linear-gradient(to left, #999c, #333d);
+				--even-li-txt-bgrnd: linear-gradient(to left, #999c, #444d);
 				--li-hover: linear-gradient(to right, #66e9f53b, #999); /* linear-gradient(to right, #2630737a, #256c8736); */
 				/* sticky-pinned state of group-chap-label */
-				--grp-chap-label-pinned-bgrnd: linear-gradient(to right, #9284add1 0%, #565656 51%, #9284add1 100%) !important;
+				--grp-chap-label-pinned-bgrnd: linear-gradient(to right, #9284add1 0%, #686868 51%, #9284add1 100%) !important;
 
 				
 				/* color of jumping bars */
@@ -179,15 +180,15 @@
 					--c1: #b1f9ff;
             		--c2: #0f7cf9;
 				}
-
-				
-				/* detail booklist of each bookKit, in DB Files tab of Setting */
-				& .dbFileBookList{
-					&::before, &::after {color: darksalmon}
-					& code::before {color: darkseagreen}
-					& code:nth-of-type(even){ color: #a0d3ff}
-					& code:nth-of-type(odd){ color: #ffdcb1}
+			}
+			& ol#elmPlaylist{
+				& > input[type="checkbox"] + label.is-sticky{
+					color: #fff; /* #8b007f; */
+					&:hover{
+						color: #a0d3ff;
+					}
 				}
+				
 				
 			}
 
@@ -247,14 +248,25 @@
 					/* border of li > label */
 					& > label{ border-color: #ccc;}
 					/* hover on book li */
-					& > input[type="checkbox"] + label &:hover, &:hover+ul li > label { background-color: #666;}
+					&.parent_li > input[type="checkbox"] + label{
+						&:hover, &:hover+ul li > label { background-color: #666; color: unset;}
+					}
 					/* hover on chapter li */
-					&:hover > label {background-color: #555;}
+					&.chapter_li:hover > label {background-color: #555; color: unset;}
 					/* chapter li */
 					&.last-playing-chapter > label{background: linear-gradient(to left, #565656, #0000);}
 				}
 
+				/* Toast setting radio button */
 				& .fancyRadioContainer .fancyRadioLabel:not(:checked){color: var(--dt-main-txt-color)}
+
+				/* detail booklist of each bookKit, in DB Files tab of Setting */
+				& [name="jsFileDataSettingWrapper"] #lstJsFileDataSetting .dbFileBookList{
+					&::before, &::after {color: darksalmon}
+					& code::before {color: darkseagreen}
+					& code:nth-of-type(even){ color: #a0d3ff}
+					& code:nth-of-type(odd){ color: #ffdcb1}
+				}
 				
 			}
 
@@ -272,6 +284,7 @@
 				--tick-large:#aaa;
 				--text:#eee;
 				--muted:#ddd;
+				--button-hover-bground-color: #777;
 				/* & button.spd_small_btn{
 					background-color: #666;
 				} */
@@ -3081,7 +3094,7 @@
 			}
 
 			&:hover {
-				color: darkcyan !important;
+				color: darkcyan;
 
 				/* text-transform: capitalize; uppercase */
 				/* font-weight: bold; */
