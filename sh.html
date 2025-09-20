@@ -167,7 +167,7 @@
 
 			& :is(#elmPlaylist, .lstBookTitlesSetting){
 				--li-txt-color: #ccc;
-				--even-li-txt-color: #d59e23;
+				--even-li-txt-color: #ffdcb1; /* #d59e23; */
 				--even-li-txt-bgrnd: linear-gradient(to left, #999c, #333d);
 				--li-hover: linear-gradient(to right, #66e9f53b, #999); /* linear-gradient(to right, #2630737a, #256c8736); */
 				/* sticky-pinned state of group-chap-label */
@@ -241,6 +241,20 @@
 					}
 				}
 
+				& #ListeningHistoryWrapper.treeview li{
+					&:nth-of-type(even) > label > :is(span.histTitle, svg.svg-img-infor){ color: #a0d3ff}
+					&:nth-of-type(odd) > label > :is(span.histTitle, svg.svg-img-infor){ color: #ffdcb1}
+					/* border of li > label */
+					& > label{ border-color: #ccc;}
+					/* hover on book li */
+					& > input[type="checkbox"] + label &:hover, &:hover+ul li > label { background-color: #666;}
+					/* hover on chapter li */
+					&:hover > label {background-color: #555;}
+					/* chapter li */
+					&.last-playing-chapter > label{background: linear-gradient(to left, #565656, #0000);}
+				}
+
+				& .fancyRadioContainer .fancyRadioLabel:not(:checked){color: var(--dt-main-txt-color)}
 				
 			}
 
