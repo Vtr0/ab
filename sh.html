@@ -115,10 +115,10 @@
 
 			/* SDD */
 			& .sdd-wrapper{
-				--color-white: #4d4d4d;
+				--color-white: #404040;
 				--color-black: #ccc;
 				--color-greys: #555;
-				--color-light: #333;
+				--color-light: #444;
 
 				--shadow-large: 7px 8px 15px -3px #fff6, 2px 7px 6px -2px #fff3;
 
@@ -169,6 +169,11 @@
 				/* sticky-pinned state of group-chap-label */
 				--grp-chap-label-pinned-bgrnd: linear-gradient(to right, #9284add1 0%, #686868 51%, #9284add1 100%) !important;
 
+				/* group-chap-label background when its section is expanded, which also the default state */
+				--grp-chap-label-expand-bgrnd: linear-gradient(to right, #8b45134d 0%, #00000080 51%, #8b45134d 100%);
+				/* group-chap-label background when its section is collapsed */
+				--grp-chap-label-collapse-bgrnd: linear-gradient(to bottom right, rgb(0 0 0 / 0%), #393939);
+
 				
 				/* color of jumping bars */
 				& li.beingPlay::after {
@@ -193,7 +198,7 @@
 				}
 
 				/* <code> contains number of chapter, total duration of section of the label.chapter-group-summary (which right below chapter-group label) */
-				& section label.chapter-group-summary code{color: var(--dt-main-txt-color) !important}
+				& section label.chapter-group-summary * /* code */{color: var(--dt-main-txt-color) !important}
 			}
 
 			/* make workart and thumbnail in Playlist (if in thumbView mode) darker */
@@ -204,6 +209,7 @@
 			/* playing time when audio is running */
 			& #elmPlayingTime:not(.paused) {
 				& > .plt-time{ color: var(--select-book-group-color) /* #46a1ff */ }
+				& > .plt-slash{color: #999;}
 				& > .plt-duration{ color: #2c699c }
 			}
 
@@ -238,7 +244,7 @@
 
 			/* total book duration (right below the workart) */
 			#elmBookTotalDuration, #elmBookTotalDuration svg{
-				color: #2c699c; /* #46a1ff; */
+				color: #46a1ff; /* #2c699c; */
 			}
 
 			/* separator between <li> in chapter and book infor */
@@ -344,6 +350,7 @@
 				} */
 
 				& .spd_tick-label[data-active="true"]{
+					color: var(--text);
 					background: #999;
 				}
 
@@ -2871,6 +2878,11 @@
 			/* the background of group-chapter-label of li.stickyPinned*/
 			--grp-chap-label-pinned-bgrnd: linear-gradient(to right, #b7d1e6e9 0%, #eef2f3dd 51%, #b7d1e6cc 100%);
 
+			/* group-chap-label background when its section is expanded, which also the default state */
+			--grp-chap-label-expand-bgrnd: linear-gradient(to right, #e9d8c788 0%, #FFFFFF99 51%, #e9d8c788 100%);
+			/* group-chap-label background when its section is collapsed */
+			--grp-chap-label-collapse-bgrnd: linear-gradient(to bottom right, #fdfcfb00, #e2d1c3b3);
+
 			max-height: 450px;
 			list-style: none;
 			overflow-y: auto;
@@ -3102,7 +3114,7 @@
 				z-index: 2;
 				top: 0;
 				/* the hack for label being partly (0.1px) hidden, so IntersectionObserver triggers action (adding .stickyPinned class) when label being pinned (stickied) at the top */
-				background-image: linear-gradient(to right, #e9d8c788 0%, #FFFFFF99 51%, #e9d8c788 100%);
+				background-image: var(--grp-chap-label-expand-bgrnd);
 				border: 1.5px solid rgb(144 42 136);
 				border-radius: 5px;
 
@@ -3200,7 +3212,7 @@
 
 		/* Customize for section collapsed  */
 		ol#elmPlaylist>input[type=checkbox]:not(:checked)+label {
-			background-image: linear-gradient(to bottom right, #fdfcfb00, #e2d1c3b3);
+			background-image: var(--grp-chap-label-collapse-bgrnd);
 			border: 1px solid rgb(139, 0, 127);
 			border-left: 5px solid rgb(139, 0, 127);
 			border-radius: 5px;
@@ -3680,16 +3692,19 @@
 			}
 		}
 
+		/* set color for switchPlaylistViewMode when in thumbView mode */
 		button[name="switchPlaylistViewMode"][data-view-mode="thumbView"]{
-			/* background: #34c759; */
-			/* default is list view */
-			/* background: #007aff; */
-			color: #8500ff;
+			color: #8500ff !important;
 		}
 
 		/* set color of button to red when extra titles in playlist is hidden */
 		div[name="divContainer"]:has(ol#elmPlaylist.hideOptionExtraTitle) button[name="togglePlaylistExtraTitles"]{
 			color: #8500ff !important;
+		}
+
+		/* set color for switchPlaylistViewMode when in thumbView mode */
+		button[name="switchPageTheme"][page-theme="dark"]{
+			color: #333 !important;
 		}
 		
 	</style>
@@ -12958,12 +12973,20 @@
 
 			/** handle for button to switch the whole page theme from light to dark and vice versa */
 			void function() {
+				const switchPageThemeBtn = document.querySelector('[name="switchPageTheme"]');
 				/** set dark/light theme for the whole page
 				 * @param switchMode {0 or 1}:0 set initial theme mode based on xState.pageTheme
 				 * 1: switch theme mode
 				 */
 				function switchPageTheme(switchMode = 1){
 					if(switchMode) xState.pageTheme = (xState.pageTheme == "light") ? "dark" : "light";
+					
+					switchPageThemeBtn.dataset.tooltip = "Chuyển trang sang chế độ " + (xState.pageTheme == "light"? "tối.": "sáng.");
+
+					//change attribute so that change color of its icon
+					switchPageThemeBtn.setAttribute("page-theme", xState.pageTheme);
+
+					//actually change page theme
 					document.body.classList.toggle("dark-theme", xState.pageTheme == "dark");			
 				}
 				//create xState property if it is not there yet
@@ -12971,7 +12994,7 @@
 				//set the initial the theme
 				switchPageTheme(0);
 
-				document.querySelector('[name="switchPageTheme"]').onclick = switchPageTheme;
+				switchPageThemeBtn.onclick = switchPageTheme;
 			}();
 			
 			/* ----- HANDLER FOR CHILDREN OF #elmPlaylist DELEGATION ----- */
