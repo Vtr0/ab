@@ -82,18 +82,6 @@
 				-.optgroup-header):not(.optgroup-header * : to exclude SDD group label
 			 */
 			
-			 & .sdd-wrapper .sdd-dropdown-item{
-				/* .item-slight-details display year of the book Or duration of a chapter */
-				& :is(span, .item-2nd-main-div):not(.item-slight-details){
-					color: var(--dt-main-txt-color);
-						/* the number in subtTitle, which should always at .item-2nd-main-div */
-						/* &.subTitle i{color: #00f1db} */
-					}
-				& .item-order{
-					color: #ffd365;
-				}
-			}
-
 			/* the number in subtTitle, which should always at .item-2nd-main-div */
 			& .subTitle i{color: #00f1db}
 
@@ -116,15 +104,13 @@
 				--select-book-group-filter: invert(61%) sepia(42%) saturate(650%) hue-rotate(71deg) brightness(95%) contrast(90%);
 			}
 
-			#elmChapterTitle, #elmChapterTitle *:not(.chapterSubtitles){
-				color: var(--dt-main-txt-color);
-			}
-			#elmChapterTitle > span:first-child{
-				color: #cfcf66 !important;
-			}
 			/* ACP */
 			& .ap-container{
-				background-color: #666;
+				background-color: #555;
+				& .ap-progress-bar--loading {
+					--c1: #fff700; /* one stripe color in moving stripes */
+					--c2: #380675; /* main background color of the whole bar */
+				}
 			}
 
 			/* SDD */
@@ -135,6 +121,24 @@
 				--color-light: #333;
 
 				--shadow-large: 7px 8px 15px -3px #fff6, 2px 7px 6px -2px #fff3;
+
+				/* the extra infor (such as number of bookset, number of book) next to the name of group label (can be bookkit name of chap-group name) in each group label  */
+				& .optgroup-header .item-slight-details {
+					mix-blend-mode: difference; /* to make it not being hidden with background */
+					/* color: inherit !important; */ /* has to use !important because original css has higher specificity */
+				}
+
+				& .sdd-dropdown-item{
+					/* .item-slight-details display year of the book Or duration of a chapter */
+					& :is(span, .item-2nd-main-div):not(.item-slight-details){
+						color: var(--dt-main-txt-color);
+							/* the number in subtTitle, which should always at .item-2nd-main-div */
+							/* &.subTitle i{color: #00f1db} */
+						}
+					& .item-order{
+						color: #ffd365;
+					}
+				}
 				/* & .sdd-dropdown-content .sdd-dropdown-item > .item-2nd-main-div {
 					color: #aaa;
 				} */
@@ -156,16 +160,7 @@
 				} */
 			}
 
-			/* total book duration (right below the workart) */
-			#elmBookTotalDuration, #elmBookTotalDuration svg{
-				color: #46a1ff;
-			}
-
-			/* #elmPlaylist background */
-			& .radial-background{
-				--c1: #666;
-			}
-
+			/* Playlist and ol playlist-like */
 			& ol:is(#elmPlaylist, .lstBookTitlesSetting){
 				--li-txt-color: #ccc;
 				--even-li-txt-color: #ffdcb1; /* #d59e23; */
@@ -180,21 +175,59 @@
 					--c1: #b1f9ff;
             		--c2: #0f7cf9;
 				}
+
+				& li > [data-raligngroup]{color: #eee};
 			}
+
+			/* Playlist only */
 			& ol#elmPlaylist{
+				/* #elmPlaylist background */
+				&.radial-background{
+					--c1: #666;
+				}
 				& > input[type="checkbox"] + label.is-sticky{
 					color: #fff; /* #8b007f; */
 					&:hover{
 						color: #a0d3ff;
 					}
 				}
-				
-				
+
+				/* <code> contains number of chapter, total duration of section of the label.chapter-group-summary (which right below chapter-group label) */
+				& section label.chapter-group-summary code{color: var(--dt-main-txt-color) !important}
 			}
 
-			/* next time to check for new DB in Setting modal */
-			& dfn[name="lastCheckDBUpdateStatus"] > mark {background-color: #868600;}
+			/* make workart and thumbnail in Playlist (if in thumbView mode) darker */
+			#elmArtwork, .plst_thumb-wrap > img{
+				filter: brightness(0.7);
+			}
 
+			/* playing time when audio is running */
+			& #elmPlayingTime:not(.paused) {
+				& > .plt-time{ color: var(--select-book-group-color) /* #46a1ff */ }
+				& > .plt-duration{ color: #2c699c }
+			}
+
+			/* big Chapter title */
+			#elmChapterTitle{
+				color: var(--dt-main-txt-color);
+
+				& *:not(.chapterSubtitles){
+					color: var(--dt-main-txt-color);
+				}
+
+				/* the extra sub-title */
+				& .chapterSubtitles{
+					color: #999; /* #b99569; */
+					& .tit-so-don {color: #666}
+				}
+
+				/* the ordinal of the chapter, e.g 31/120 */
+				& > span:first-child{
+					color: #cfcf66 !important;
+				}
+			}
+			
+			/* big Book title */
 			& #elmBookTitle{
 				color: #eee !important; /* color when no background */
 				@media screen and (min-width: 800px){
@@ -203,16 +236,19 @@
 				}
 			}
 
+			/* total book duration (right below the workart) */
+			#elmBookTotalDuration, #elmBookTotalDuration svg{
+				color: #2c699c; /* #46a1ff; */
+			}
+
 			/* separator between <li> in chapter and book infor */
 			& ul.inlineListInfor>li::before,
 			& ul.inlineList>li::after {
 				color: #0fa8a8; /* #afdaff; */
 			}
 
-			/* make workart and thumbnail in Playlist (if in thumbView mode) darker */
-			#elmArtwork, .plst_thumb-wrap > img{
-				filter: brightness(0.7);
-			}
+			/* next time to check for new DB in Setting modal */
+			/* & dfn[name="lastCheckDBUpdateStatus"] > mark {background-color: #868600;} */
 
 			/* Setting modal popup */
 			& .modalPopupContentWrapper{
@@ -220,9 +256,15 @@
 				--select-book-group-filter: invert(92%) sepia(0%) saturate(49%) hue-rotate(192deg) brightness(89%) contrast(95%); /* filter to #ccc */
 
 				background-color: #444;
+
 				& .tab-content{
 					/* the border around content of each tab */
 					border-color: #eee;
+				}
+
+				/* the background of .bounding-box which being container quite some part */
+				& .modalPopupContent .bounding-box {
+    				background-color: #7d7d7d44;
 				}
 
 				/* checkbox in bookKit/bookSet tab */
@@ -243,6 +285,13 @@
 				}
 
 				& #ListeningHistoryWrapper.treeview li{
+					/* tree lines color */
+					--li-line-color: #ccc;
+
+					/* color of the top <li>'s label */
+					/* & #outer_listening_history + label */ 
+					& #outer_listening_history + label {color: var(--dt-main-txt-color);}
+
 					&:nth-of-type(even) > label > :is(span.histTitle, svg.svg-img-infor){ color: #a0d3ff}
 					&:nth-of-type(odd) > label > :is(span.histTitle, svg.svg-img-infor){ color: #ffdcb1}
 					/* border of li > label */
@@ -257,8 +306,13 @@
 					&.last-playing-chapter > label{background: linear-gradient(to left, #565656, #0000);}
 				}
 
-				/* Toast setting radio button */
-				& .fancyRadioContainer .fancyRadioLabel:not(:checked){color: var(--dt-main-txt-color)}
+				/* Toast setting */
+				& .fancyRadioContainer{
+					/* the caption for each type of toast setting */
+					& > :first-child {color: #fff !important /* #ffdcb1 */} /* has to use !important because those div got inline-css for color */
+					/* Toast setting radio button */
+					& .fancyRadioLabel:not(:checked){color: var(--dt-main-txt-color)}
+				}
 
 				/* detail booklist of each bookKit, in DB Files tab of Setting */
 				& [name="jsFileDataSettingWrapper"] #lstJsFileDataSetting .dbFileBookList{
@@ -303,9 +357,11 @@
 				filter: invert(1);
 			}
 
-			/* .elm-disabled{
+			/* for disabled button, has to use !important because original css had used that */
+			.elm-disabled{
+				color: #ccc !important;
 				background-color: #888 !important;
-			} */
+			}
 			/* Playlist toolbox */
 			/* & .plst_tool_panel .plst_tool_item > svg {
 				fill: #007aff !important;
@@ -320,7 +376,7 @@
 			}
 
 			& a{
-				color: #cbb273 !important;
+				color: #cbb273;
 				&:hover{
 					background-color: #707171;
 				}
@@ -2145,10 +2201,12 @@
 		} */
 
 		.ap-progress-bar--loading {
-			--c: repeating-linear-gradient(135deg, var(--select-book-group-color, #6100ee) 0 12px, #bbb 0 20px) no-repeat;
+			--c1: #bbb; /* one stripe color in moving stripes */
+			--c2: #d7b8fc; /* main background color of the whole bar */
+			--c: repeating-linear-gradient(135deg, var(--select-book-group-color, #6100ee) 0 12px, var(--c1) 0 20px) no-repeat;
 			--w: 18%; /* width of moving shuttle */
 			--b: .5px; /* border width */
-			background: var(--c), #d7b8fc; /* #e1cbfc */
+			background: var(--c), var(--c2); /* #e1cbfc */
 			background-size: var(--w) calc(100% - 2 * var(--b));
 			/* background-position: 0px var(--b); */
 			border: var(--b) solid #000;
@@ -6132,6 +6190,8 @@
 			--li-padd-left: 5px;
 			/* the padding top of the li */
 			--li-padd-top: 5px;
+			/* the color of tree lines */
+			--li-line-color: #999;
 						
 			min-height:20px;
 			padding:3px;
@@ -6150,7 +6210,7 @@
 				margin: 0px;
 
 				/* set color for the label of outer-most li */
-				&>li>label {color: #000 !important}
+				&>li>label {color: #000}
 				/*remove the tree lines (both vertical and horizontal) of outer-most li*/
 				&>li::before, &>li::after {
 					border:0
@@ -6180,7 +6240,7 @@
 			}
 			/* vertical tree line */
 			&::before {
-				border-left:1px solid #999;
+				border-left:1px solid var(--li-line-color);
 				height:100%;
 				top:0;
 				width:1px
@@ -6192,7 +6252,7 @@
 
 			/* horizontal tree line which connect vertical tree line to the label content */
 			&::after {
-				border-top:1px solid #999;
+				border-top:1px solid var(--li-line-color);
 				height:var(--vertical-lines-indent);
 				top: var(--horizon-lines-top);
 				width: calc(var(--li-padd-left) + var(--vertical-lines-indent))
