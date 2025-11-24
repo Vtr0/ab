@@ -1,0 +1,91 @@
+LOG
+
+		HTML: 14.8KB	20K
+		CSS: 77.8KB		152.7K
+		JS: 144KB		502K
+		SVG: 49KB		52K
+		DATA: 1,739KB	2,680K
+
+2025-03-05
+	- adding css var '--tooltip-timeout' to control the tooltip timeout differently for desktop and toch device, also make setting tab header a bit longer timeout
+	- removed `focusable="false" aria-hidden="true"` out of all svg
+	experimentalize css class 'elm-content-hidden' on sdd-dropdown-content and only removed that class when SDD dropdown open for the first time. But it seem this does not improve the performance at all, so I removed it
+	- applying small hack to SDD toggleExtraTitles to avoid the issue on iOS that SDD show blank sdd dropdown content when toggle extra titles
+	- using element.matches() (https://developer.mozilla.org/en-US/docs/Web/API/Element/matches) to check for _target for all event-delegations in the app
+2025-03-06+07
+	- add setting.avatarIcon to sdd so user can customize the avatar which is small svg icon on the right side of SDD when it is closed (collapsed)
+	- assign other svg avatar icon for ssData.sddChaptersList
+	- add functinal button to toggle extra titles for elmPlaylist, for platform other than Windows, do scrolling to current playing chapter after toggling
+	- hide small rewind+fastforward buttons (.ap-controls.ap-rewind-btn and .ap-controls.ap-fastforward-btn) on audio panel for wide screen because there already bigger same buttons (below the workart) and make the audio panel simpler and more controllable
+	- regroup page functional buttons 
+	- break elmPlayingTime into 3 parts for better UI control and might make updateTime a bit lighter
+2025-03-11
+	- merge all play/pause with/without circle progress for play/pause button into one svg sprite #icnSvgPlayPauseProgress for better control
+	- change parent of #elmPlayingTime into grid layout to better control the .noInternetSignal svg icon
+2025-03-13
+	- Adapt from https://css-tricks.com/almanac/rules/s/starting-style/ to make animation for chapTitleInfor and BookTitleInfor and SDD sections
+	- save state of diacriticsMode and hideExtraTitle for each SDD instance (and have to change lots of code, especially in SDD.loadDropdown, SDD.setDiacriticsFilterMode, SDD.toggleExtraTitles, SDD.toggleDropdown) and have to add/remove some SDD.setting attribute such as name, hideExtraTitleMode. remove setting.callbacks.diacriticsFilterModeOnChanged
+2025-03-31
+	- Change jumping bars from svg to css for more controls and less code
+	- Change content-visiblity for #elmPlaylist for touch device only to avoid weid avatar color for .sdd-wrapper-chapterList sdd element
+	- Add time offset tooltip for ap--track to show the audio playback time at mouse position
+	- Add played bar right above buffered bar
+	- Add Time Range information for audio played, buffered, seekable and put an svg icon next to #elmPlayingTime to show these TimeRanges as a tooltip
+	- Group speed,volume,muted properties in xState into 'xState.audio'. Group flags like disableCircleProgressButton, hideBufferBar, hideExtraTitles, expandBookInfo properties in xState into 'xState.flags'. 
+2025-04-01
+	- add lazy highlight for SDD, add heavy-search-mode, add highlightAll to SearchHighlite to hightlight only first match (false) or all match (true)
+	- recode filterItems
+2025-04-03
+	fix youtube-image workart re-loads infinite number of times when youtube video is deleted out of youtube
+	inside SearchHilite() 
+		- in highlightOneKey()
+			+ remove highlightChildren()
+			+ add _pvtHighlightAllOnce
+		- add _pvtHighlightRegex to generate regex for WORD_MODE.FirstLetter and _WORD_MODE.Phrase right when user change search string (which might change the search mode) in Object.defineProperty for "queryString" property
+	filterItems(): move sHighlite.removeHighlight(item) inside highlightItems() that clear highlights for all SDD options to callback of IntersectionObserver
+		- IntersectionObserver callback: add remove highlight old matches before highlight the new matches, after hightlight unobserve it.
+		- put all removHighlight, highlight for all intersecting SDD options into one timeout
+	commented out the code for waiting sometime for group of keys to be typed in search-input-box then highlight since this make user fill a bit of lag and it seem not help the performance too much
+2025-04-24
+	convert links to 'https://' in data file for http://www.phapthihoi.org/, http://media.dieuphapam.net/
+2025-05-06
+	added code to #selBookGroup.onchange() to collect all book ids that belong to hidden book sets into variable ssData.bIdsHidden and remove any book in that list from history. See below comment for more
+	//this block added 6/5/2025 to avoid the case a book (which is NOT current book) is in history list, but user set the book set (where it belong to) to be hidden. So when user choose that book in book history setting tab, ssData.sddBooks does not have that book so it cannot load that book. So we create a ssData.bIdsHidden which keep all hidden books, then purge the history list if there is any book in history list that is currently set to be hidden
+2025-05-19
+	sticky audio control panel - ACP (.ap-container) to top, make a checkbox in Setting to set if pinned ACP when page scroll or not
+	the end of the day version switch to sticky to bottom, using 'position: fixed' solution with lots of attributes have to be set manually by js
+2025-05-20
+	add a button-like element (a select box actually) to audio control panel - ACP (.ap-container) for user to choose ACP sticky mode: no sticky mode (0), sticky at top mode (1), sticky at bottom mode (2). Where sticky to bottom, using 'position: fixed' solution
+	the end of the day version, using 'position: sticky' solution for sticky to bottom, which much cleaner and better in compared with 'position: fixed' solution
+2025-05-21
+	personalize position for ACP in pinned to bottom mode for Apple device which has a thick line at the bottom of screen for fast switching application
+2025-05-22
+	Do some fix on page initially rendering and resizing to correctly position the tooltip when rendering done, in function webAPIinit()
+2025-05-26
+	Add stay-bottom mode (3) for ACP which nailed ACP at the bottom of screen. However, it only simple version which utilize 'position:sticky' for ACP and move ACP down to bottom of its Parent DOM. The problem is this simple version is thath when height of parent div[name="divContainer"] is smaller than viewport height, ACP just stick to bottom of that parent, not bottom of viewport.
+2025-05-27
+	Modify to have complex version of stay-bottom mode (3), now change to nail-bottom for ACP which nailed ACP at the bottom of viewport all the time. This solution has to add ACP's parent div[name="divContainer"] css rules 'min-height: calc(100v - 16px);position:relative' and using an ResizeObserver mainDivHeightObserver to watch when parent height changes. There are two cases:
+		- case 1: height of parent div[name="divContainer"] is LESS than viewport height, ACP css position is set to 'position:absolute' (that's why parent must have 'position:relative') so ACP stays at bottom of viewport
+		- case 2: height of parent div[name="divContainer"] is MORE than viewport height, ACP css position is set to 'position:sticky' so ACP also stays at bottom of viewport
+2025-05-28
+	Because above nail-bottom is too complex and expensive, I add one more simple version which exactly stay-bottom mode to be mode 3, and nail-bottom to be mode 4
+2025-05-29
+	Modify nail-bottom (mode 4) NOT to use 'position:absolute' attribute of ACP since change position of ACP is very expensive because it has to re-calculate the whole page and re-render whole page. Use 'position:sticky' unitely for mode 4, for the case 2 (see log of day 2025-05-27), set ACP 'bottom:2px', for case 1 set 'top:100dvh;bottom:unset'
+2025-09-03
+	Change audio speed from select element to a speed slider that put in a popup to be shown when press an button (the button has exactly the same UI as old select element)
+2025-09-09
+	Add Playlist tool box to contain all buttons that support the playlist such as Jump to current playing chapter, show/hide sub titles, switch Playlist mode view (but not functioned yet)
+2025-09-10
+	Refactor changeBook() so that it is more readable and maintainable
+	Add Playlist thumbView mode along with old listView mode, and function the 'switch Playlist mode view' button to switch the mode for Books that ALL chapters having img property
+2025-09-16
+	Refactor changeChap() so that it is more readable and maintainable
+2025-09-17, 18
+	Experiment on dark theme. It is not very good, especially when Brutally forcing almost all elements of the page having color #eee. This effect heavily on page performance (open an SDD and scroll to see how lag it is), but this is shortest (but not the best) way for dark theme mode.
+	If you needs to remove dark-theme out of the source code, you have to delete following block out of CSS; remove button[name="switchPageTheme"] out of HTML code; remove switchPageTheme() out of JS and delete icnSvgDarkTheme svg icon out of SVG icons sprite
+
+-------------------------------------
+Bản ngày 11/3 kg bị lỗi
+Css: 12/3 slash+elmPlayingTime (nhớ @media, noInternetSign), title trên audio panel (nhớ sửa flex của app-track),. Bỏ content-visibility ở elmPlaylist.
+13/3: animation cho sdd section, chapterInfor/BookInfor; play/pause button, chapter title: extra title bị font 1em (quên !important)
+Js: local state cho SDD (toggleextratitle, setDiacriticFilterMode, toggleDropdown, loadDropdown) và sửa 3 chỗ load SDD
