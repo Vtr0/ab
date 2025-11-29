@@ -1,0 +1,31 @@
+Line 334
+
+/* Adjusted highlight colors for #111 background */
+				& .tit-hoi     { color: #f0c540; }   /* brighter gold */
+				& .tit-chuong  { color: #4f8aff; }   /* vivid blue */
+				& .tit-phan    { color: #32e05a; }   /* bright green */
+				& .tit-tap     { color: #d066ff; }   /* vivid purple */
+				& .tit-quyen   { color: #ffa640; }   /* bright orange */
+				& .tit-pham    { color: #2ad9d9; }   /* bright teal */
+				& .tit-bai     { color: #e57a4c; }   /* lighter warm brown */
+				& .tit-cau     { color: #22c0c0; }   /* bright cyan */
+				& .tit-so-don  { color: #4fa0ff; }
+
+				/* A soft color that is not too vivid for the background #111 */
+				/* & .tit-hoi     { color: #cfcf66; } 
+				& .tit-chuong  { color: #9caecf; } 
+				& .tit-phan    { color: #9ecf9e; } 
+				& .tit-tap     { color: #c9a6cf; } 
+				& .tit-quyen   { color: #cfb486; } 
+				& .tit-pham    { color: #9ecfcf; } 
+				& .tit-bai     { color: #cfae9c; } 
+				& .tit-cau     { color: #96c7c7; } 
+				& .tit-so-don  { color: #a6b9cf; }  */
+
+
+Line 12286
+// Dạng x phân cách y (vd: Hồi 1.2, Phẩm IX-1)
+						tit = tit.replace(
+							new RegExp(`${key}\\s+(\\d+(\\s*${separators}\\s*\\d+)+|${roman}${separators}\\d+)`, "gi"),
+							`<span class="${cls}">${key} $1</span>`
+						);
