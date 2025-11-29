@@ -29,3 +29,12 @@ Line 12286
 							new RegExp(`${key}\\s+(\\d+(\\s*${separators}\\s*\\d+)+|${roman}${separators}\\d+)`, "gi"),
 							`<span class="${cls}">${key} $1</span>`
 						);
+
+
+data3.js - XTTT
+[
+  {"tit": "Tập 930 – Thiên Thu Quan", "dur": "46:52", "img": "jKGj67tyaGw"},
+  {"dur": "46:34", "img": "4Pj7mUQH5HI"},
+  {"dur": "38:08", "img": "VafJwCAXeiA"},
+  {"dur": "47:00", "img": "TMs74K50ppE"}
+]
