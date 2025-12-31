@@ -304,17 +304,18 @@
 				filter: brightness(0.7);
 			}
 			
-			& #divAudioSpectrum{
+			/* & #divAudioSpectrum{
 				margin-top: -10px;
 				background: #0000;
-			}
+			} */
+			
 			/* add shadow and reflection to workart */
 			& #elmArtwork {
 				/* workart shadow */
 				box-shadow: #fff8 2px 2px 10px;
 				/* make a reflection of the poster img */
 				-webkit-box-reflect: below 5px linear-gradient(#0000 60%, #0005);
-				margin-top: 16px;
+				/* margin-top: 16px; */
 			}
 
 			/* make reflection for big playing time at top */
@@ -819,9 +820,9 @@
 		}
 
 		/* This left side of playlist has multiple children, so set this to make nicer visibility */
-		/* .flex-container>div:has(>div > #elmArtwork)>* {
+		.flex-container>div:has(>div > #elmArtwork)>* {
 			margin-bottom: 5px;
-		} */
+		}
 
 		.flex-container #elmArtwork {
 			/* In column mode, size of artwrok can reach to 100% */
@@ -7917,7 +7918,7 @@
 		<!-- Top part of the page, containing book select element and chapter title, audio element -->
 		<div name="divCtnTop">
 			
-			<audio id="elmMyAudio" autoplay controls crossorigin="anonymous" src=""></audio>
+			<audio id="elmMyAudio" autoplay controls src=""></audio>
 
 			<div>
 				<!-- Searched Dropdown list of Book titles (Book kits, Book sets, Books)  -->
@@ -13498,7 +13499,8 @@
 					switchPageThemeBtn.setAttribute("page-theme", xState.pageTheme);
 
 					//actually change page theme
-					document.body.classList.toggle("dark-theme", xState.pageTheme == "dark");			
+					document.body.classList.toggle("dark-theme", xState.pageTheme == "dark");	
+					
 				}
 				//create xState property if it is not there yet
 				if(!xState.pageTheme) xState.pageTheme = "light";
@@ -16813,14 +16815,23 @@
 			}
 
 			function playStop() {
+				const pvtaudioMotionAnalyzerObj = ssData.audioMotionAnalyzerObj; //shortcut variable
 				//readyState = 4: video is playing
 				if (xAudio.paused) {
 					xAudio.play();
-					ssData.audioMotionAnalyzerObj && ssData.audioMotionAnalyzerObj.start(); //start analyzing audio motion
+					if(pvtaudioMotionAnalyzerObj) {
+						pvtaudioMotionAnalyzerObj.start(); //start analyzing audio motion
+
+						pvtaudioMotionAnalyzerObj.connectOutput(); //re-connect to audio output device
+					}
 				}
 				else {
 					xAudio.pause();
-					ssData.audioMotionAnalyzerObj && ssData.audioMotionAnalyzerObj.stop(); //stop analyzing audio motion
+					if(pvtaudioMotionAnalyzerObj){
+						pvtaudioMotionAnalyzerObj.stop(); //stop analyzing audio motion
+
+						pvtaudioMotionAnalyzerObj.disconnectOutput(); //disconnect from audio output device to avoid echoing in iOS devices
+					}
 				}
 			}
 
