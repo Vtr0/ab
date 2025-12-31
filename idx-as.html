@@ -7593,13 +7593,17 @@
 			width: 320px;
 			background: #111;
 			border: 1px solid #333;
-			padding: 16px;
+			padding: 4px 16px 16px;
 			margin: 70px auto;
+
+			& *{
+				/* font-size: .95em; */
+				color: #eee;
+			}
 
 			& label {
 				display: block;
 				margin-top: 12px;
-				font-size: 14px;
 			}
 
 			& select,
@@ -7607,7 +7611,7 @@
 				margin-top: 4px;
 			}
 
-			& [name="checkboxesContainer"] {
+			& [name="aspGroupContainer"] {
 				display: grid;
 				grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
 				gap: 8px;
@@ -7616,15 +7620,11 @@
 			& select {
 				width: 100%;
 				background: #222;
-				color: #eee;
-				font-size: .95em;
 				border: 1px solid #444;
 				padding: 4px;
 
 				& option {
 					background: #222;
-					color: #eee;
-					font-size: .95em;
 				}
 			}
 
@@ -7634,13 +7634,7 @@
 				padding: 8px;
 				background: #2a2a2a;
 				border: 1px solid #555;
-				color: #eee;
-				font-size: .95em;
 				cursor: pointer;
-			}
-
-			& label {
-				color: #ddd;
 			}
 		}
 	</style>
@@ -7881,16 +7875,16 @@
           </select>
         </label>
 
-	   <label>
-          mirror
+		<label>
+          Mirror
           <select name="mirror">
             <option value="-1">Mirror left</option>
             <option value="0">No mirror</option>
             <option value="1">Mirror right</option>
           </select>
         </label>
-
-	   <div name="checkboxesContainer">
+		
+	   <div name="aspGroupContainer">
 		<label> <input type="checkbox" name="ledBars" /> LED Bars </label>
 
 		<label> <input type="checkbox" name="showFPS" /> Show FPS </label>
@@ -7904,7 +7898,7 @@
 		<label> <input type="checkbox" name="peakLine" /> Peak Line </label>
 	   </div>
 
-	   <div name="checkboxesContainer">
+	   <div name="aspGroupContainer">
 		<button name="fullScreen">Full screen</button>
 
 		<button name="closeDialog">Close</button>
@@ -20889,18 +20883,18 @@ this.highlight = (elem) => {
 					parse: (v) => +v, //convert string to number
 				},
 				channelLayout: { type: "select", },
-				colorMode: { // -1, 0, 1
+				colorMode: { type: "select", },
+				frequencyScale: { type: "select", },
+				gradient: { type: "select", },
+				mirror: { // -1, 0, 1
 					type: "select", 
 					parse: (v) => +v, //convert string to number
 				},
-				frequencyScale: { type: "select", },
-				gradient: { type: "select", },
-				mirror: { type: "select", },
 				ledBars: { type: "checkbox", },
 				showFPS: { type: "checkbox", },
-				reflexRatio: { 
+				reflexRatio: { //Percentage of canvas height used for reflection
 					type: "checkbox", 
-					parse: (v) => v?0.5:0, //fix the ratio to 0.5 when checked, 0 when unchecked. It can be any value from 0 to 1
+					parse: (v) => v?0.4:0, //fix the ratio to 0.5 when checked, 0 when unchecked. It can be any value from 0 to 1
 				}, 
 				showPeaks: { type: "checkbox", },
 				fadePeaks: { type: "checkbox", },
