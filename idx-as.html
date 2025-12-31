@@ -7575,9 +7575,9 @@
 	</style>
 
 	<style>
-		#divAudioSpectrum{
+		/* #divAudioSpectrum{
 			background: #111;
-		}
+		} */
 
 		/* aspectrumDialogOverlay overlay */
 		#aspectrumDialogOverlay {
@@ -7636,6 +7636,10 @@
 				color: #eee;
 				font-size: .95em;
 				cursor: pointer;
+			}
+
+			& label {
+				color: #ddd;
 			}
 		}
 	</style>
@@ -7756,6 +7760,16 @@
 								</button>
 								<label for="elmHistoryWipeAll"></label>
 							</span>
+
+							<span class="control-button-flex">
+								<button id="toggleAudioSpectrumBtn"
+								data-tooltip="Hiện/Không hiện audio spectrum. Lưu ý:&#xa– Một số nguồn audio chặn truy cập từ bên ngoài (như nguồn PPƯD), nếu chế độ có spectrum, trang Web cũng không thể phát audio từ các nguồn đó.&#xa;– Spectrum chỉ hoạt động khi audio đang phát.&#xa;– Phải nạp lại trang Web để đổi chế độ." data-tooltip-location="top">
+									<svg class="!text-[25px] button-svg-img">
+										<use href="#icnSvgDuration" />
+									</svg>
+								</button>
+								<label for="toggleAudioSpectrumBtn">Ẩn/Hiện spectrum</label>
+							</span>
 						</div>
 					</div>
 
@@ -7835,6 +7849,15 @@
           </select>
         </label>
 
+	   <label>
+          Color Mode
+          <select name="colorMode">
+            <option value="gradient">Gradient</option>
+            <option value="bar-index">Bar Index</option>
+            <option value="bar-level">Bar Level</option>
+          </select>
+        </label>
+
         <label>
           Frequency Scale
           <select name="frequencyScale">
@@ -7857,17 +7880,34 @@
           </select>
         </label>
 
+	   <label>
+          mirror
+          <select name="mirror">
+            <option value="-1">Mirror left</option>
+            <option value="0">No mirror</option>
+            <option value="1">Mirror right</option>
+          </select>
+        </label>
+
 	   <div name="checkboxesContainer">
 		<label> <input type="checkbox" name="ledBars" /> LED Bars </label>
 
 		<label> <input type="checkbox" name="showFPS" /> Show FPS </label>
 
+		<label> <input type="checkbox" name="reflexRatio" /> Reflex </label>
+
 		<label> <input type="checkbox" name="showPeaks" /> Show Peaks </label>
 
 		<label> <input type="checkbox" name="fadePeaks" /> Fade Peaks </label>
+
+		<label> <input type="checkbox" name="peakLine" /> Peak Line </label>
 	   </div>
 
-        <button name="closeDialog">Close</button>
+	   <div name="checkboxesContainer">
+		<button name="fullScreen">Full screen</button>
+
+		<button name="closeDialog">Close</button>
+	   </div>
       </div>
     </div>
     <!-- aspectrumDialog Options Dialog -->
@@ -8201,6 +8241,7 @@
 
 				</div>
 
+				<svg id="svgWavesForm" style="width:100%;height:75px"><use href="#svgIconAudioWavesform"></use></svg>
 			</div>
 
 			<div name="elmPlaylistCtn">
@@ -8882,7 +8923,7 @@
 					xState = Object.assign({},_DEFAULT_CFG.xState, xState);
 
 					//load audio spectrum options
-					loadAudioSpectrumOptions();
+					//loadAudioSpectrumOptions();
 	
 					// initialize history object if somehow it is not yet existed
 					if(!xState.hasOwnProperty("history")) xState.history = structuredClone(_DEFAULT_CFG.xState.history);
@@ -11514,7 +11555,9 @@
 
 			})(); //self-invoked function to load the last-book
 		
-			ssData.setting = Setting(); //instance of Setting class that handle the Setting modal diaglog			
+			ssData.setting = Setting(); //instance of Setting class that handle the Setting modal diaglog		
+			
+			loadAudioSpectrum(); //load audio spectrum analyzer if it is enabled in settings
 		
 			/* REMOVE SPLASH SCREEN */
 			const _loadingPageWrapper = document.querySelector("#loadingPageWrapper");
@@ -11626,7 +11669,10 @@
 								//console.log(_elm, _elm.offsetHeight);
 							}
 						}
-						
+
+						//add height of svg#svgWavesForm if it is being shown
+						if(!xState.audio.showSpectrum)
+						_leftSideHeight += 75; //add height of svg#svgWavesForm 
 
 						const chapterListHeight = ssData.sddChaps.displayElement.getBoundingClientRect().height;
 						_elmPlaylist.style["max-height"] = Math.max(_leftSideHeight + 10 - chapterListHeight, 450) + "px";
@@ -15061,6 +15107,38 @@
 						_animDirChoiceDivWrap.innerHTML = makeToastRadios("animDir", "Chiều animations", _checkedIdx, true);
 					}
 				}
+
+				const toggleAudioSpectrumBtn = document.getElementById("toggleAudioSpectrumBtn");
+				if(!toggleAudioSpectrumBtn.onclick){
+					const btText = ssData.audioMotionAnalyzerObj ? "Tắt" : "Bật";
+				
+					//set label for button based on the state of audio spectrum being shown or not
+					const btnLabel = toggleAudioSpectrumBtn.nextElementSibling;
+					btnLabel.innerText = btText + " phổ âm thanh";
+					if(ssData.audioMotionAnalyzerObj) toggleAudioSpectrumBtn.querySelector("svg").style.color = "goldenrod"; // set color for svg icon
+
+					//switch audio spectrum show/hide when clicking on the button
+					toggleAudioSpectrumBtn.onclick = function(){
+						if (!confirm("Bạn muốn " + btText + " phổ âm thanh?\n\n Sẽ cần phải nạp lại trang Web.")) return;
+
+						if(!ssData.audioMotionAnalyzerObj) {
+							xState.audio.showSpectrum = 1; // set to show spectrum
+							btnLabel.innerText = "Tắt phổ âm thanh";
+						}
+						else{
+							//xState.audio.showSpectrum = 0; // set to hide spectrum
+							delete xState.audio.showSpectrum; //remove the attribute
+							btnLabel.innerText = "Bật phổ âm thanh";
+						}
+
+						saveState2Disk().then( _ => {
+							//notify user to reload the page
+							//alert("Đã lưu thay đổi. Trang Web sẽ được nạp lại để áp dụng thay đổi.");
+							//Force a hard reload to clear the cache if supported by the browser
+							window.location.reload(true);
+						});
+					};
+				}
 			}
 			
 			/* Mark the label of choice that not set by the user, but randomly choose by the page */
@@ -16150,7 +16228,7 @@
 			let _xDuration = 0; //hold the duration of the current playing audio
 
 			xAudio.autoplay = true; //this actually not doing anything
-			
+
 			/* Check if internet connection is alive or dead
 			If dead, swich some element showing that internet is dead
 			*/
@@ -16738,9 +16816,11 @@
 				//readyState = 4: video is playing
 				if (xAudio.paused) {
 					xAudio.play();
+					ssData.audioMotionAnalyzerObj && ssData.audioMotionAnalyzerObj.start(); //start analyzing audio motion
 				}
 				else {
 					xAudio.pause();
+					ssData.audioMotionAnalyzerObj && ssData.audioMotionAnalyzerObj.stop(); //stop analyzing audio motion
 				}
 			}
 
@@ -16800,6 +16880,10 @@
 					// put right svg icon sprite into button
 					_elm.setAttribute("href", _playIconType === -1 ? "#icnSvgSpinWaiting" : "#icnSvgPlayPauseProgress");
 				});
+
+				// in the no spectrum mode: show/hide svgWavesForm according to audio is playing or not
+				if(!xState.audio.showSpectrum)
+					document.getElementById("svgWavesForm").classList.toggle("elm-hidden", _playIconType !== 0); //show svgWavesForm only when audio is playing
 
 				// if button svg icon is #icnSvgPlayPauseProgress, then we set its appearance based on audio is playing or not
 				if(_playIconType !== -1) icnSvgPlayPauseProgress.classList.toggle("isPPP-play", _playIconType===0);				
@@ -20661,160 +20745,197 @@ this.highlight = (elem) => {
 	</script>
 
 	<!-- AUDIO SPECTRUM -->
-	 <script>
-		function loadAudioSpectrumOptions(){
-			
-			if(!xState.hasOwnProperty("audioSpectrum") || typeof xState.audioSpectrum !== 'object'){
-				//window.audioSpectrumOptions = 
-				xState.audioSpectrum = {
-					mode: 3, 
-					channelLayout: "dual-combined",
-					frequencyScale: "log",
-					gradient: 'rainbow',
-					ledBars: true,
-					showFPS : true,
-					showPeaks: true,
-					fadePeaks: false,
-				};
-			}
-
-			//audioMotionAnalyzerObj
-			for (const [id, value] of Object.entries(xState.audioSpectrum)) {
-				audioMotionAnalyzerObj.setOptions({ [id]: value, });
-			}
-
-			updateAudioSpectrumOptions();
-		}
-	 </script>
 	<!-- Using AudioMotionAnalyzer library from https://github.com/hvianna/audioMotion-analyzer -->
-	<script type="module">
+	<script>
 		// Load module from Skypack CDN
-    		import AudioMotionAnalyzer from "https://cdn.skypack.dev/audiomotion-analyzer?min";
+    		//import AudioMotionAnalyzer from "https://cdn.skypack.dev/audiomotion-analyzer?min";
 
-		// the div that contain audio spectrum canvas
-		const audioSpectrumDiv = document.getElementById("divAudioSpectrum");
-    
-		window.audioMotionAnalyzerObj = new AudioMotionAnalyzer(
-			audioSpectrumDiv,
-			{
-				source: xAudio,
-				height: 100,
-				ansiBands: false,
-				showScaleX: false,
-				bgAlpha: 0,
-				overlay: true,
-				smoothing: 0.7,
-				mode: 3,
-				channelLayout: "dual-combined", //single, dual-combined, dual-horizontal, dual-vertical
-				frequencyScale: "log", //bark, "linear", "log", mel
-				reflexRatio: 0, //0.4,
-				showPeaks: true,
-				mirror: 0,
-				maxFreq: 12000,
-				lineWidth: 2,
-				fillAlpha: 0.2,
-				ledBars: true, //to activate the LED bars effect for frequency bands modes
-				gradient: 'rainbow', //'classic', orangered, prism, rainbow, steelblue
-				showBgColor: false,
-				showFPS : true,
-				/* ansiBands: false,
-				showScaleX: false,
-				bgAlpha: 0,
-				overlay: true,
-				mode: 1,
-				frequencyScale: "log",
-				showPeaks: true,
-				smoothing: 0.7,
-				ledBars: true, */
-			}
-		);
+		//ssData.audioMotionAnalyzerObj = null;	
+		async function loadAudioSpectrum(){
+			//const params = new URLSearchParams(window.location.search);
 
-		// Utility function to select elements by name inside the panel
-		const aspectrumPanel = document.querySelector("[name='aspectrumPanel']");
-		function el(name) {
-			return aspectrumPanel.querySelector(`[name="${name}"]`);
-		}
-
-		const aspectrumOptionsDialog = document.getElementById( "aspectrumDialogOverlay" );
-		// Show / hide the settings panel
-		audioSpectrumDiv.addEventListener("click", () => {
-			aspectrumOptionsDialog.style.display = "block";
-		});
-		audioSpectrumDiv.addEventListener("dblclick", (e) => {
-			e.stopPropagation();
-			//reset to default settings
-			audioMotionAnalyzerObj.toggleFullscreen();
-		});
-
-		// Close dialog button
-		el("closeDialog").onclick = () => (aspectrumOptionsDialog.style.display = "none");
-
-		const optionsBindings = {
-			mode: {
-				type: "select",
-				parse: (v) => +v,
-			},
-			channelLayout: { type: "select", },
-			frequencyScale: { type: "select", },
-			gradient: { type: "select", },
-			ledBars: { type: "checkbox", },
-			showFPS: { type: "checkbox", },
-			showPeaks: { type: "checkbox", },
-			fadePeaks: { type: "checkbox", },
-		};
-
-		for (const [id, config] of Object.entries(optionsBindings)) {
-			const element = el(id);
-
-			switch (config.type) {
-				case "checkbox":
-					element.checked = audioMotionAnalyzerObj.getOptions()[id];
-					break;
-
-				case "select":
-				default:
-					element.value = audioMotionAnalyzerObj.getOptions()[id];
+			if (!xState.audio.showSpectrum) { //audio spectrum
+				xAudio.crossOrigin = null; //reset CORS setting, so that some source that apply CORS "strict-origin-when-cross-origin" would been loaded normally into xAudio
+				return; //disable audio spectrum for now
 			}
 
-			element.onchange = (e) => {
-				let value;
+			//show svgWavesForm only when audio is playing based on audio spectrum show/hide state
+			document.getElementById("svgWavesForm").classList.toggle("elm-hidden", xState.audio.showSpectrum); 
 
-				switch (config.type) {
-					case "checkbox":
-						value = e.target.checked;
-						break;
+			xAudio.crossOrigin = "anonymous"; //to avoid CORS issue. Spectrum analyzer need to access audio data, so that it need to bypass CORS policy if audio source from external domain
+			
+			// Load module from Skypack CDN
+			const { AudioMotionAnalyzer } = await import("https://cdn.skypack.dev/audiomotion-analyzer?min");
 
-					case "select":
-					default:
-						value = e.target.value;
+			// the div that contain audio spectrum canvas
+			const audioSpectrumDiv = document.getElementById("divAudioSpectrum");
+	
+			ssData.audioMotionAnalyzerObj = new AudioMotionAnalyzer(
+				audioSpectrumDiv,
+				{
+					source: xAudio,
+					height: 100,
+					ansiBands: false,
+					showScaleX: false,
+					bgAlpha: 1, // these 3 settings make the canvas background opape. Set this 0 to make background transparent
+					overlay: true,
+					showBgColor: true, 
+					smoothing: 0.7,
+					mode: 3,
+					channelLayout: "dual-combined", //single, dual-combined, dual-horizontal, dual-vertical
+					frequencyScale: "log", //bark, "linear", "log", mel
+					reflexRatio: 0, //0.4,
+					showPeaks: true,
+					mirror: 0,
+					maxFreq: 12000,
+					lineWidth: 2,
+					fillAlpha: 0.2,
+					ledBars: true, //to activate the LED bars effect for frequency bands modes
+					gradient: 'rainbow', //'classic', orangered, prism, rainbow, steelblue
+					showFPS : true,
+					//start: false, 
+				}
+			);
+
+			function loadAudioSpectrumOptions(){
+				
+				if(!xState.hasOwnProperty("audioSpectrum") || typeof xState.audioSpectrum !== 'object'){
+					//window.audioSpectrumOptions = 
+					xState.audioSpectrum = {
+						mode: 1, 
+						channelLayout: "dual-combined",
+						frequencyScale: "log",
+						gradient: 'rainbow',
+						ledBars: true,
+						showFPS : true,
+						showPeaks: true,
+						fadePeaks: false,
+					};
 				}
 
-				// if a parse function is provided
-				if (config.parse) {
-				value = config.parse(value);
+				//audioMotionAnalyzerObj
+				for (const [id, value] of Object.entries(xState.audioSpectrum)) {
+					ssData.audioMotionAnalyzerObj.setOptions({ [id]: value, });
 				}
 
-				// update the option
-				audioMotionAnalyzerObj.setOptions({ [id]: value, });
+				//updateAudioSpectrumOptions();
+			}
+			
+			//ssData.audioMotionAnalyzerObj.connectInput(xAudio); //connect audio source 
+			loadAudioSpectrumOptions();
 
-				// save to xState
-				xState.audioSpectrum[id] = value;
+			// The overlay dialog for audio spectrum options (including the panel inside)
+			const aspectrumOptionsOverlay = document.getElementById( "aspectrumDialogOverlay" );
+			// The panel that contain audio spectrum options
+			const aspectrumOptionsPanel = aspectrumOptionsOverlay.querySelector("[name='aspectrumPanel']");
+			// Utility function to select elements by name inside the panel
+			function el(name) {
+				return aspectrumOptionsPanel.querySelector(`[name="${name}"]`);
+			}
+
+			// Setup event handlers for the audio spectrum options panel
+			(() => {
+				/* // Keyboard handling for the options panel
+				aspectrumOptionsPanel.onKeyDown = (evt) => {
+					// Close dialog on ESC key
+					if (evt.key === "Escape") {
+						aspectrumOptionsOverlay.style.display = "none";
+						evt.stopPropagation();
+					}
+				}; */
+				
+				// Show / hide the settings panel
+				audioSpectrumDiv.addEventListener("click", () => {
+					aspectrumOptionsOverlay.style.display = "block";
+				});
+				// Full-screen toggle on double-click
+				audioSpectrumDiv.addEventListener("dblclick", (e) => {
+					e.stopPropagation();
+					//reset to default settings
+					ssData.audioMotionAnalyzerObj.toggleFullscreen();
+				});
+
+				// Close dialog button
+				el("closeDialog").onclick = () => (aspectrumOptionsOverlay.style.display = "none", saveState2Disk());
+
+				// Full-Screen dialog button
+				el("fullScreen").onclick = () => (ssData.audioMotionAnalyzerObj.toggleFullscreen());
+
+				// Close the dialog when clicking outside of it
+				aspectrumOptionsOverlay.onclick = (e) => {
+					if (e.target === aspectrumOptionsOverlay) {
+						aspectrumOptionsOverlay.style.display = "none";
+						e.stopPropagation();
+					}
+				};
+
+			})();
+
+			// Bind the options controls to AudioMotionAnalyzer options. The optionsBindings object defines the type of each control and any necessary parsing, in which, keys are the AudioMotionAnalyzer's option names and also the name of the element.
+			const optionsBindings = {
+				mode: { // 1 to 10 (except 9)
+					type: "select",
+					parse: (v) => +v, //convert string to number
+				},
+				channelLayout: { type: "select", },
+				colorMode: { // -1, 0, 1
+					type: "select", 
+					parse: (v) => +v, //convert string to number
+				},
+				frequencyScale: { type: "select", },
+				gradient: { type: "select", },
+				mirror: { type: "select", },
+				ledBars: { type: "checkbox", },
+				showFPS: { type: "checkbox", },
+				reflexRatio: { 
+					type: "checkbox", 
+					parse: (v) => v?0.5:0, //fix the ratio to 0.5 when checked, 0 when unchecked. It can be any value from 0 to 1
+				}, 
+				showPeaks: { type: "checkbox", },
+				fadePeaks: { type: "checkbox", },
+				peakLine: { type: "checkbox", }, // only work for  mode 10 - Graph
 			};
-		}
 
-		window.updateAudioSpectrumOptions = function(){
+			// go through each option control element and bind it to AudioMotionAnalyzer option
 			for (const [id, config] of Object.entries(optionsBindings)) {
-				const element = el(id);
+				const element = el(id); //get the option control element by its name attribute
 
+				// initialize each option control element (which can be checkbox, select, etc) with current value from audioMotionAnalyzerObj.
 				switch (config.type) {
 					case "checkbox":
-						element.checked = audioMotionAnalyzerObj.getOptions()[id];
+						element.checked = ssData.audioMotionAnalyzerObj.getOptions()[id];
 						break;
 
 					case "select":
 					default:
-						element.value = audioMotionAnalyzerObj.getOptions()[id];
+						element.value = ssData.audioMotionAnalyzerObj.getOptions()[id];
 				}
+
+				// bind onchange event for each option control element
+				element.onchange = (e) => {
+					let value;
+
+					switch (config.type) {
+						case "checkbox":
+							value = e.target.checked;
+							break;
+
+						case "select":
+						default:
+							value = e.target.value;
+					}
+
+					// if a parse function is provided
+					if (config.parse) {
+						value = config.parse(value);
+					}
+
+					// update the option
+					ssData.audioMotionAnalyzerObj.setOptions({ [id]: value, });
+
+					// save to xState
+					xState.audioSpectrum[id] = value;
+				};
 			}
 		}
 	</script>
@@ -21101,6 +21222,38 @@ this.highlight = (elem) => {
 			<path
 				d="M61.44 0A61.31 61.31 0 1 1 38 4.66 61.3 61.3 0 0 1 61.44 0m40.24 32.93-68.75 68.75A49.44 49.44 0 0 0 80.31 107 49.53 49.53 0 0 0 107 80.3a49 49 0 0 0 3.73-18.86 48.93 48.93 0 0 0-9.08-28.51ZM24 93.5 93.5 24A49.32 49.32 0 0 0 24 93.5"
 				style="fill:#d92d27" />
+		</symbol>
+
+		<symbol id="svgIconAudioWavesform" viewBox="0 200 600 100" xmlns="http://www.w3.org/2000/svg">
+			<!--Axis (light theme default)-->
+			<line x1="0" y1="250" x2="600" y2="250" stroke="#a48a6a" stroke-width="1" stroke-opacity="0.75"/>
+			<!--Low frequency-->
+			<path fill="none" stroke="#d08a3c" stroke-width="4" stroke-linecap="round">
+			<animate attributeName="d" dur="3s" repeatCount="indefinite" values="
+				M0,250 Q100,150 200,250 T400,250 T600,250;
+				M0,250 Q100,350 200,250 T400,250 T600,250;
+				M0,250 Q100,150 200,250 T400,250 T600,250
+				"/>
+			</path>
+			<!--Mid frequency-->
+			<path fill="none" stroke="#e29a73" stroke-width="3" stroke-linecap="round" opacity="0.85">
+			<animate attributeName="d" dur="1.6s" repeatCount="indefinite" values="
+				M0,250 Q60,190 120,250 T240,250 T360,250 T480,250 T600,250;
+				M0,250 Q60,310 120,250 T240,250 T360,250 T480,250 T600,250;
+				M0,250 Q60,190 120,250 T240,250 T360,250 T480,250 T600,250
+				"/>
+			</path>
+			<!--High frequency-->
+			<path fill="none" stroke="#e8b59a" stroke-width="2" stroke-linecap="round" opacity="0.75">
+			<animate attributeName="d" dur="0.9s" repeatCount="indefinite" values="
+				M0,250 Q30,220 60,250 T120,250 T180,250 T240,250 T300,250
+				T360,250 T420,250 T480,250 T540,250 T600,250;
+				M0,250 Q30,280 60,250 T120,250 T180,250 T240,250 T300,250
+				T360,250 T420,250 T480,250 T540,250 T600,250;
+				M0,250 Q30,220 60,250 T120,250 T180,250 T240,250 T300,250
+				T360,250 T420,250 T480,250 T540,250 T600,250
+				"/>
+			</path>
 		</symbol>
 	</svg>
 </body>
