@@ -16814,17 +16814,21 @@
 				if (xAudio.paused) {
 					xAudio.play();
 					if(pvtaudioMotionAnalyzerObj) {
-						pvtaudioMotionAnalyzerObj.start(); //start analyzing audio motion
+						ssData.audioCtx.resume(); //make sure audio context is running before stopping audio motion analyzer
 
-						pvtaudioMotionAnalyzerObj.connectOutput(); //re-connect to audio output device
+						//pvtaudioMotionAnalyzerObj.start(); //start analyzing audio motion
+
+						//pvtaudioMotionAnalyzerObj.connectOutput(); //re-connect to audio output device
 					}
 				}
 				else {
 					xAudio.pause();
 					if(pvtaudioMotionAnalyzerObj){
-						pvtaudioMotionAnalyzerObj.stop(); //stop analyzing audio motion
+						ssData.audioCtx.suspend(); //suspend audio context to save resource
 
-						pvtaudioMotionAnalyzerObj.disconnectOutput(); //disconnect from audio output device to avoid echoing in iOS devices
+						//pvtaudioMotionAnalyzerObj.stop(); //stop analyzing audio motion
+
+						//pvtaudioMotionAnalyzerObj.disconnectOutput(); //disconnect from audio output device to avoid echoing in iOS devices
 					}
 				}
 			}
@@ -20768,6 +20772,11 @@ this.highlight = (elem) => {
 			document.getElementById("svgWavesForm").classList.toggle("elm-hidden", xState.audio.showSpectrum); 
 
 			xAudio.crossOrigin = "anonymous"; //to avoid CORS issue. Spectrum analyzer need to access audio data, so that it need to bypass CORS policy if audio source from external domain
+
+			xAudio.playsInline = true; // good for iOS Safari
+
+			ssData.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+			const src = ssData.audioCtx.createMediaElementSource(xAudio);
 			
 			// Load module from Skypack CDN
 			const { AudioMotionAnalyzer } = await import("https://cdn.skypack.dev/audiomotion-analyzer?min");
@@ -20778,7 +20787,9 @@ this.highlight = (elem) => {
 			ssData.audioMotionAnalyzerObj = new AudioMotionAnalyzer(
 				audioSpectrumDiv,
 				{
-					source: xAudio,
+					//source: xAudio,
+					audioCtx: ssData.audioCtx,
+					source: src,
 					height: 100,
 					ansiBands: false,
 					showScaleX: false,
@@ -20801,6 +20812,12 @@ this.highlight = (elem) => {
 					//start: false, 
 				}
 			);
+
+			// ✅ Analyzer gets the signal
+			//src.connect(ssData.audioMotionAnalyzerObj);
+
+			// ✅ Speaker output is handled by <audio> automatically
+			// ❌ Do NOT connect to audioCtx.destination
 
 			function loadAudioSpectrumOptions(){
 				
