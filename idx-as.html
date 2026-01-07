@@ -7590,7 +7590,7 @@
 		}
 
 		[name="aspectrumPanel"] {
-			width: 360px;
+			width: min( calc(100vw - 60px), 700px); /* 360px; */
 			background: #111;
 			border: 1px solid #333;
 			padding: 4px 16px 16px;
@@ -7604,6 +7604,9 @@
 			& label {
 				display: block;
 				margin-top: 12px;
+				&:has(input[type="checkbox"]) {
+					white-space: nowrap;
+				}
 			}
 
 			& select,
@@ -7611,11 +7614,14 @@
 				margin-top: 4px;
 			}
 
-			& [name="aspGroupContainer"] {
+			& .aspGroupContainer {
 				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+				grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
 				gap: 8px;
 				margin-top: 8px;
+				&:has(select){
+					grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+				}
 			}
 			& select {
 				width: 100%;
@@ -7818,6 +7824,7 @@
 	<!-- aspectrumDialog Options Dialog -->
     <div id="aspectrumDialogOverlay">
       <div name="aspectrumPanel">
+		<div class="aspGroupContainer">	
         <label>
           Mode
           <select name="mode">
@@ -7875,7 +7882,7 @@
           </select>
         </label>
 
-		<label>
+	   <label>
           Mirror
           <select name="mirror">
             <option value="-1">Mirror left</option>
@@ -7883,9 +7890,9 @@
             <option value="1">Mirror right</option>
           </select>
         </label>
-		
-	   <div name="aspGroupContainer">
-		<label> <input type="checkbox" name="ledBars" /> LED Bars </label>
+	 </div>
+	   <div class="aspGroupContainer" name="aspCheckboxContainer">
+		<!-- <label> <input type="checkbox" name="ledBars" /> LED Bars </label>
 
 		<label> <input type="checkbox" name="showFPS" /> Show FPS </label>
 
@@ -7895,10 +7902,10 @@
 
 		<label> <input type="checkbox" name="fadePeaks" /> Fade Peaks </label>
 
-		<label> <input type="checkbox" name="peakLine" /> Peak Line </label>
+		<label> <input type="checkbox" name="peakLine" /> Peak Line </label> -->
 	   </div>
 
-	   <div name="aspGroupContainer">
+	   <div class="aspGroupContainer">
 		<button name="fullScreen">Full screen</button>
 
 		<button name="closeDialog">Close</button>
@@ -16809,27 +16816,27 @@
 			}
 
 			function playStop() {
-				const pvtaudioMotionAnalyzerObj = ssData.audioMotionAnalyzerObj; //shortcut variable
+				//const pvtaudioMotionAnalyzerObj = ssData.audioMotionAnalyzerObj; //shortcut variable
 				//readyState = 4: video is playing
 				if (xAudio.paused) {
 					xAudio.play();
-					if(pvtaudioMotionAnalyzerObj) {
+					/* if(pvtaudioMotionAnalyzerObj) {
 						ssData.audioCtx.resume(); //make sure audio context is running before stopping audio motion analyzer
 
 						//pvtaudioMotionAnalyzerObj.start(); //start analyzing audio motion
 
 						//pvtaudioMotionAnalyzerObj.connectOutput(); //re-connect to audio output device
-					}
+					} */
 				}
 				else {
 					xAudio.pause();
-					if(pvtaudioMotionAnalyzerObj){
+					/* if(pvtaudioMotionAnalyzerObj){
 						ssData.audioCtx.suspend(); //suspend audio context to save resource
 
 						//pvtaudioMotionAnalyzerObj.stop(); //stop analyzing audio motion
 
 						//pvtaudioMotionAnalyzerObj.disconnectOutput(); //disconnect from audio output device to avoid echoing in iOS devices
-					}
+					} */
 				}
 			}
 
@@ -20775,8 +20782,8 @@ this.highlight = (elem) => {
 
 			xAudio.playsInline = true; // good for iOS Safari
 
-			ssData.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-			const src = ssData.audioCtx.createMediaElementSource(xAudio);
+			audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+			const src = audioCtx.createMediaElementSource(xAudio);
 			
 			// Load module from Skypack CDN
 			const { AudioMotionAnalyzer } = await import("https://cdn.skypack.dev/audiomotion-analyzer?min");
@@ -20788,7 +20795,7 @@ this.highlight = (elem) => {
 				audioSpectrumDiv,
 				{
 					//source: xAudio,
-					audioCtx: ssData.audioCtx,
+					audioCtx: audioCtx,
 					source: src,
 					height: 100,
 					ansiBands: false,
@@ -20801,6 +20808,7 @@ this.highlight = (elem) => {
 					channelLayout: "dual-combined", //single, dual-combined, dual-horizontal, dual-vertical
 					frequencyScale: "log", //bark, "linear", "log", mel
 					reflexRatio: 0, //0.4,
+					reflexAlpha: .3,
 					showPeaks: true,
 					mirror: 0,
 					maxFreq: 12000,
@@ -20821,20 +20829,25 @@ this.highlight = (elem) => {
 
 			// Required on user gesture
 			xAudio.addEventListener('play', () => {
-				if (ssData.audioCtx.state === 'suspended') {
-					ssData.audioCtx.resume();
+				if (audioCtx.state === 'suspended') {
+					audioCtx.resume(); //resume audio context when audio play
 				}
 			});
 
 			xAudio.addEventListener('pause', () => {
-				ssData.audioCtx.suspend(); //suspend audio context to save resource
+				audioCtx.suspend(); //suspend audio context to save resource
 			});
 
 			document.addEventListener('visibilitychange', () => {
-				toast.showToast(ssData.audioCtx.state + "    " + xAudio.paused, toast.ToastType.Info, {duration: 5000});
-				if (document.hidden && !xAudio.paused){ //ssData.audioCtx.state === 'suspended') {
+				// resume audio context when document become visible again
+				if (!document.hidden && audioCtx.state === 'suspended') {
+					audioCtx.resume();
+				}
+
+				// keep audio playing when document hidden
+				if (document.hidden && !xAudio.paused){
 					//xAudio.play(); //this would trigger xAudio 'play' event listener above to resume audioCtx
-					ssData.audioCtx.resume();
+					audioCtx.resume();
 				}
 			});
 
@@ -20901,7 +20914,11 @@ this.highlight = (elem) => {
 				el("closeDialog").onclick = () => (aspectrumOptionsOverlay.style.display = "none", saveState2Disk());
 
 				// Full-Screen dialog button
-				el("fullScreen").onclick = () => (ssData.audioMotionAnalyzerObj.toggleFullscreen());
+				if(!document.webkitExitFullscreen && !document.exitFullscreen)
+					//hide fullScreen button if browser not support fullscreen API
+					el("fullScreen").style.display = "none";
+				else
+					el("fullScreen").onclick = () => (ssData.audioMotionAnalyzerObj.toggleFullscreen());
 
 				// Close the dialog when clicking outside of it
 				aspectrumOptionsOverlay.onclick = (e) => {
@@ -20910,6 +20927,17 @@ this.highlight = (elem) => {
 						e.stopPropagation();
 					}
 				};
+
+				/* show or hide spectrum's background according to page theme */
+				const switchSpectrumBgrnd = _ => {
+					// show or hide background color according to page theme
+					ssData.audioMotionAnalyzerObj.setOptions( {showBgColor: !document.body.classList.contains("dark-theme")});
+				};
+				//run once to set initial background according to current page theme
+				switchSpectrumBgrnd(); 
+
+				//bind event to switch background when page theme switch button is clicked
+				document.querySelector('[name="switchPageTheme"]').addEventListener("click", switchSpectrumBgrnd);
 
 			})();
 
@@ -20927,19 +20955,36 @@ this.highlight = (elem) => {
 					type: "select", 
 					parse: (v) => +v, //convert string to number
 				},
-				ledBars: { type: "checkbox", },
-				showFPS: { type: "checkbox", },
+				ledBars: { type: "checkbox", label: "LED Bars", },
+				lumiBars: { type: "checkbox", label: "Luminous Bars", },
+				showFPS: { type: "checkbox", label: "Show FPS", },
+				loRes: { type: "checkbox", label: "Low Resolution", },
 				reflexRatio: { //Percentage of canvas height used for reflection
 					type: "checkbox", 
+					label: "Reflection",
 					parse: (v) => v?0.4:0, //fix the ratio to 0.5 when checked, 0 when unchecked. It can be any value from 0 to 1
 				}, 
-				showPeaks: { type: "checkbox", },
-				fadePeaks: { type: "checkbox", },
-				peakLine: { type: "checkbox", }, // only work for  mode 10 - Graph
+				showPeaks: { type: "checkbox", label: "Show Peaks", },
+				fadePeaks: { type: "checkbox", label: "Fade Peaks", },
+				peakLine: { type: "checkbox", label: "Peak Line" }, // only work for  mode 10 - Graph
 			};
 
 			// go through each option control element and bind it to AudioMotionAnalyzer option
+			const chkboxesContainer = aspectrumOptionsPanel.querySelector('[name="aspCheckboxContainer"]');
 			for (const [id, config] of Object.entries(optionsBindings)) {
+				if(config.type === "checkbox"){
+					const label = document.createElement("label");
+
+					const checkbox = document.createElement("input");
+					checkbox.type = "checkbox";
+					checkbox.name = id;
+
+					label.appendChild(checkbox);
+					label.append(` ${config.label ?? id} `); //if no label provided, use id as label
+
+					chkboxesContainer.appendChild(label);
+				}
+
 				const element = el(id); //get the option control element by its name attribute
 
 				// initialize each option control element (which can be checkbox, select, etc) with current value from audioMotionAnalyzerObj.
