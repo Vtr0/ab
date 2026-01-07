@@ -20831,6 +20831,7 @@ this.highlight = (elem) => {
 			});
 
 			document.addEventListener('visibilitychange', () => {
+				toast.showToast(`Document is now ${document.hidden ? 'hidden' : 'visible'}`, toast.ToastType.Info, {duration: 5000});
 				if (document.hidden && ssData.audioCtx.state === 'suspended') {
 					//xAudio.play(); //this would trigger xAudio 'play' event listener above to resume audioCtx
 					ssData.audioCtx.resume();
