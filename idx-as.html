@@ -20813,12 +20813,30 @@ this.highlight = (elem) => {
 				}
 			);
 
-			// ✅ Analyzer gets the signal
-			//src.connect(ssData.audioMotionAnalyzerObj);
+			// ✅ Analyzer gets the signal: connect source to AudioMotion for visualization
+			//src.connect(ssData.audioMotionAnalyzerObj.input);
 
 			// ✅ Speaker output is handled by <audio> automatically
-			// ❌ Do NOT connect to audioCtx.destination
+			// ❌ Do NOT connect to audioCtx.destination like src.connect(ssData.audioMotionAnalyzerObj.destination);
 
+			// Required on user gesture
+			xAudio.addEventListener('play', () => {
+				if (ssData.audioCtx.state === 'suspended') {
+					ssData.audioCtx.resume();
+				}
+			});
+
+			xAudio.addEventListener('pause', () => {
+				ssData.audioCtx.suspend(); //suspend audio context to save resource
+			});
+
+			document.addEventListener('visibilitychange', () => {
+				if (!document.hidden && ssData.audioCtx.state === 'suspended') {
+					ssData.audioCtx.resume();
+				}
+			});
+
+			// load audio spectrum options from xState
 			function loadAudioSpectrumOptions(){
 				
 				if(!xState.hasOwnProperty("audioSpectrum") || typeof xState.audioSpectrum !== 'object'){
