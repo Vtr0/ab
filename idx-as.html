@@ -7612,15 +7612,20 @@
 		}
 
 		[name="aspectrumPanel"] {
-			width: min( calc(100vw - 60px), 700px); /* 360px; */
+			width: min( calc(100vw - 60px), 710px); /* 360px; */
 			background: #111;
-			border: 1px solid #333;
+			border: 2px solid #999;
+			border-radius: 20px;
+			box-shadow: 0 0 3px 4px #fff5;
 			padding: 4px 16px 16px;
 			margin: 70px auto;
 
 			& *{
 				/* font-size: .95em; */
 				color: #eee;
+				&:hover {
+					color: #999;
+				}
 			}
 
 			& label {
@@ -7628,6 +7633,8 @@
 				margin-top: 12px;
 				&:has(input[type="checkbox"]) {
 					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
 				}
 			}
 
@@ -7663,6 +7670,7 @@
 				background: #2a2a2a;
 				border: 1px solid #555;
 				cursor: pointer;
+				
 			}
 		}
 	</style>
@@ -20924,70 +20932,7 @@ this.highlight = (elem) => {
 				return aspectrumOptionsPanel.querySelector(`[name="${name}"]`);
 			}
 
-			// Setup event handlers for the audio spectrum
-			(() => {
-				/* // Keyboard handling for the options panel
-				aspectrumOptionsPanel.onKeyDown = (evt) => {
-					// Close dialog on ESC key
-					if (evt.key === "Escape") {
-						aspectrumOptionsOverlay.style.display = "none";
-						evt.stopPropagation();
-					}
-				}; */
-				
-				// Show / hide the settings panel
-				audioSpectrumDiv.addEventListener("click", () => {
-					if(ssData.audioMotionAnalyzerObj.canvas === document.fullscreenElement) return; //do nothing if spectrum already in fullscreen mode
-
-					aspectrumOptionsOverlay.style.display = "block";
-				});
-				// Full-screen toggle on double-click
-				audioSpectrumDiv.addEventListener("dblclick", (e) => {
-					e.stopPropagation();
-					//reset to default settings
-					ssData.audioMotionAnalyzerObj.toggleFullscreen();
-				});
-
-				// Close dialog button
-				el("closeDialog").onclick = () => (aspectrumOptionsOverlay.style.display = "none", saveState2Disk());
-
-				// Full-Screen dialog button
-				if(!document.webkitExitFullscreen && !document.exitFullscreen){
-				// if (!document.fullscreenElement){ 
-					//hide fullScreen button if browser not support fullscreen API
-					el("fullScreen").style.display = "none";
-					document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
-				}
-				else{
-					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = (evt) => {
-						ssData.audioMotionAnalyzerObj.toggleFullscreen();
-						evt.stopPropagation();
-					}
-				}
-
-				// Close the dialog when clicking outside of it
-				aspectrumOptionsOverlay.onclick = (e) => {
-					if (e.target === aspectrumOptionsOverlay) {
-						aspectrumOptionsOverlay.style.display = "none";
-						e.stopPropagation();
-					}
-				};
-
-				/* show or hide spectrum's background according to page theme */
-				const switchSpectrumBgrnd = _ => {
-					// show or hide background color according to page theme
-					//ssData.audioMotionAnalyzerObj.setOptions( {showBgColor: !document.body.classList.contains("dark-theme")});
-					ssData.audioMotionAnalyzerObj.showBgColor = !document.body.classList.contains("dark-theme");
-				};
-				//run once to set initial background according to current page theme
-				switchSpectrumBgrnd(); 
-
-				//bind event to switch background when page theme switch button is clicked
-				document.querySelector('[name="switchPageTheme"]').addEventListener("click", switchSpectrumBgrnd);
-
-			})();
-
-			/* Function to handle options panel */
+			/* Function to populate checkboxes in options panel and handle event for selects, checkboxes of options panel */
 			void function(){
 				// Bind the options controls to AudioMotionAnalyzer options. The optionsBindings object defines the type of each control and any necessary parsing, in which, keys are the AudioMotionAnalyzer's option names and also the name of the element.
 				const optionsBindings = {
@@ -21078,6 +21023,78 @@ this.highlight = (elem) => {
 					};
 				}
 			}();
+			
+			// Setup event handlers for the audio spectrum (something related to spectrum div) and buttons in options panel.
+			(() => {
+				/* // Keyboard handling for the options panel
+				aspectrumOptionsPanel.onKeyDown = (evt) => {
+					// Close dialog on ESC key
+					if (evt.key === "Escape") {
+						aspectrumOptionsOverlay.style.display = "none";
+						evt.stopPropagation();
+					}
+				}; */
+				
+				// Full-screen toggle on double-click
+				/* audioSpectrumDiv.addEventListener("dblclick", (e) => {
+					e.stopPropagation();
+					//reset to default settings
+					ssData.audioMotionAnalyzerObj.toggleFullscreen();
+				}); */
+
+				// Show / hide the settings panel
+				audioSpectrumDiv.addEventListener("click", () => {
+					if(ssData.audioMotionAnalyzerObj.canvas === document.fullscreenElement) return; //do nothing if spectrum already in fullscreen mode
+
+					aspectrumOptionsOverlay.style.display = "block";
+				});
+				
+
+				/*  Full-Screen dialog button */
+				if(!document.webkitExitFullscreen && !document.exitFullscreen){
+				// if (!document.fullscreenElement){ 
+					//hide fullScreen button if browser not support fullscreen API
+					el("fullScreen").style.display = "none";
+					document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
+				}
+				else{
+					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = (evt) => {
+						ssData.audioMotionAnalyzerObj.toggleFullscreen();
+						evt.stopPropagation();
+					}
+				}
+
+				/* Handle to close the options panel */
+				const closeOptionsPanel = (e) => {
+					saveState2Disk();
+					aspectrumOptionsOverlay.style.display = "none";
+
+					e.stopPropagation();
+				};
+				// Close dialog button
+				el("closeDialog").onclick = closeOptionsPanel;
+				
+				// Close the dialog when clicking outside of it
+				aspectrumOptionsOverlay.onclick = (e) => {
+					if (e.target === aspectrumOptionsOverlay) {
+						closeOptionsPanel(e);
+					}
+				};
+
+				/* show or hide spectrum's background according to page theme */
+				const switchSpectrumBgrnd = _ => {
+					// show or hide background color according to page theme
+					//ssData.audioMotionAnalyzerObj.setOptions( {showBgColor: !document.body.classList.contains("dark-theme")});
+					ssData.audioMotionAnalyzerObj.showBgColor = !document.body.classList.contains("dark-theme");
+				};
+				//run once to set initial background according to current page theme
+				switchSpectrumBgrnd(); 
+
+				//bind event to switch background when page theme switch button is clicked
+				document.querySelector('[name="switchPageTheme"]').addEventListener("click", switchSpectrumBgrnd);
+
+			})();
+			
 		}
 	</script>
 
