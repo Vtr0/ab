@@ -7572,13 +7572,35 @@
  	</style>
 
 	<style>
-		
-	</style>
-
-	<style>
 		/* #divAudioSpectrum{
 			background: #111;
 		} */
+		
+		#divAudioSpectrum{
+			position: relative;
+			/* the spectrum canvas that created by the audio motion analyzer */
+			& > canvas{
+				/* force the spectrum canvas to fill its container */
+				width: 100%;
+			}
+
+			/* Fulll screen button */
+			& > [name="specFullscreenBtn"]{
+				font-size: 24px;        /* make icon bigger */
+				color: #eee;
+				position: absolute;
+				top: -5px;
+				left: -2px;
+				padding: 0;
+				cursor: pointer;
+				background: #0000;
+				border: none;
+
+				&:hover{
+					color: #999;
+				}
+			}
+		}
 
 		/* aspectrumDialogOverlay overlay */
 		#aspectrumDialogOverlay {
@@ -8197,7 +8219,9 @@
 
 		<div name="divCtnMiddle" class="flex-container">
 			<div>
-				<div class="flex-container" id="divAudioSpectrum"></div>
+				<div class="flex-container" id="divAudioSpectrum">
+					<button name="specFullscreenBtn" title="Fullscreen">⛶</button>
+				</div>
 
 				<!-- chapter/book workart -->
 				<div><img id="elmArtwork" /></div>
@@ -20763,13 +20787,18 @@ this.highlight = (elem) => {
 	<!-- AUDIO SPECTRUM -->
 	<!-- Using AudioMotionAnalyzer library from https://github.com/hvianna/audioMotion-analyzer -->
 	<script>
+		"use strict";
 		// Load module from Skypack CDN
     		//import AudioMotionAnalyzer from "https://cdn.skypack.dev/audiomotion-analyzer?min";
 
 		//ssData.audioMotionAnalyzerObj = null;	
+		/** Set-up eveything for Audio Motion Analyzer 
+		This function would be called from init() function after xState and xAudio has been loaded
+		@return: void
+		*/
 		async function loadAudioSpectrum(){
-			//const params = new URLSearchParams(window.location.search);
 
+			// Check if enable audio spectrum or not
 			if (!xState.audio.showSpectrum) { //audio spectrum
 				xAudio.crossOrigin = null; //reset CORS setting, so that some source that apply CORS "strict-origin-when-cross-origin" would been loaded normally into xAudio
 				return; //disable audio spectrum for now
@@ -20782,8 +20811,10 @@ this.highlight = (elem) => {
 
 			xAudio.playsInline = true; // good for iOS Safari
 
-			audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-			const src = audioCtx.createMediaElementSource(xAudio);
+			// Create Audio Context
+			const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+			// Create Media Element Source Node from the audio element
+			const mesSrc = audioCtx.createMediaElementSource(xAudio);
 			
 			// Load module from Skypack CDN
 			const { AudioMotionAnalyzer } = await import("https://cdn.skypack.dev/audiomotion-analyzer?min");
@@ -20791,13 +20822,15 @@ this.highlight = (elem) => {
 			// the div that contain audio spectrum canvas
 			const audioSpectrumDiv = document.getElementById("divAudioSpectrum");
 	
+			// ✅ Create AudioMotionAnalyzer object
 			ssData.audioMotionAnalyzerObj = new AudioMotionAnalyzer(
 				audioSpectrumDiv,
 				{
-					//source: xAudio,
+					//source: xAudio, // this can replace src and audioCtx variable below
 					audioCtx: audioCtx,
-					source: src,
+					source: mesSrc,
 					height: 100,
+					responsive: true, //canvas resize according to container size
 					ansiBands: false,
 					showScaleX: false,
 					bgAlpha: 1, // these 3 settings make the canvas background opape. Set this 0 to make background transparent
@@ -20827,29 +20860,32 @@ this.highlight = (elem) => {
 			// ✅ Speaker output is handled by <audio> automatically
 			// ❌ Do NOT connect to audioCtx.destination like src.connect(ssData.audioMotionAnalyzerObj.destination);
 
-			// Required on user gesture
-			xAudio.addEventListener('play', () => {
-				if (audioCtx.state === 'suspended') {
-					audioCtx.resume(); //resume audio context when audio play
-				}
-			});
+			/* IIFE function to handle audio spectrum when xAudio is played or paused AND when document visibility changes */
+			void function(){
+				// Required on user gesture
+				xAudio.addEventListener('play', () => {
+					if (audioCtx.state === 'suspended') {
+						audioCtx.resume(); //resume audio context when audio play
+					}
+				});
 
-			xAudio.addEventListener('pause', () => {
-				audioCtx.suspend(); //suspend audio context to save resource
-			});
+				xAudio.addEventListener('pause', () => {
+					audioCtx.suspend(); //suspend audio context to save resource
+				});
 
-			document.addEventListener('visibilitychange', () => {
-				// resume audio context when document become visible again --> This would make audio lagging when it was paused and the page got focused again
-				/* if (!document.hidden && audioCtx.state === 'suspended') {
-					audioCtx.resume();
-				} */
+				document.addEventListener('visibilitychange', () => {
+					// resume audio context when document become visible again --> This would make audio lagging when it was paused and the page got focused again
+					/* if (!document.hidden && audioCtx.state === 'suspended') {
+						audioCtx.resume();
+					} */
 
-				// keep audio playing when document hidden
-				if (document.hidden && !xAudio.paused){
-					//xAudio.play(); //this would trigger xAudio 'play' event listener above to resume audioCtx
-					audioCtx.resume();
-				}
-			});
+					// keep audio playing when document hidden
+					if (document.hidden && !xAudio.paused){
+						//xAudio.play(); //this would trigger xAudio 'play' event listener above to resume audioCtx
+						audioCtx.resume();
+					}
+				});
+			}();
 
 			// load audio spectrum options from xState
 			function loadxStateAudioSpectrumOptions(){
@@ -20901,6 +20937,8 @@ this.highlight = (elem) => {
 				
 				// Show / hide the settings panel
 				audioSpectrumDiv.addEventListener("click", () => {
+					if(ssData.audioMotionAnalyzerObj.canvas === document.fullscreenElement) return; //do nothing if spectrum already in fullscreen mode
+
 					aspectrumOptionsOverlay.style.display = "block";
 				});
 				// Full-screen toggle on double-click
@@ -20914,11 +20952,18 @@ this.highlight = (elem) => {
 				el("closeDialog").onclick = () => (aspectrumOptionsOverlay.style.display = "none", saveState2Disk());
 
 				// Full-Screen dialog button
-				if(!document.webkitExitFullscreen && !document.exitFullscreen)
+				if(!document.webkitExitFullscreen && !document.exitFullscreen){
+				// if (!document.fullscreenElement){ 
 					//hide fullScreen button if browser not support fullscreen API
 					el("fullScreen").style.display = "none";
-				else
-					el("fullScreen").onclick = () => (ssData.audioMotionAnalyzerObj.toggleFullscreen());
+					document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
+				}
+				else{
+					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = (evt) => {
+						ssData.audioMotionAnalyzerObj.toggleFullscreen();
+						evt.stopPropagation();
+					}
+				}
 
 				// Close the dialog when clicking outside of it
 				aspectrumOptionsOverlay.onclick = (e) => {
@@ -20931,7 +20976,8 @@ this.highlight = (elem) => {
 				/* show or hide spectrum's background according to page theme */
 				const switchSpectrumBgrnd = _ => {
 					// show or hide background color according to page theme
-					ssData.audioMotionAnalyzerObj.setOptions( {showBgColor: !document.body.classList.contains("dark-theme")});
+					//ssData.audioMotionAnalyzerObj.setOptions( {showBgColor: !document.body.classList.contains("dark-theme")});
+					ssData.audioMotionAnalyzerObj.showBgColor = !document.body.classList.contains("dark-theme");
 				};
 				//run once to set initial background according to current page theme
 				switchSpectrumBgrnd(); 
@@ -20941,93 +20987,96 @@ this.highlight = (elem) => {
 
 			})();
 
-			// Bind the options controls to AudioMotionAnalyzer options. The optionsBindings object defines the type of each control and any necessary parsing, in which, keys are the AudioMotionAnalyzer's option names and also the name of the element.
-			const optionsBindings = {
-				mode: { // 1 to 10 (except 9)
-					type: "select",
-					parse: (v) => +v, //convert string to number
-				},
-				channelLayout: { type: "select", },
-				colorMode: { type: "select", },
-				frequencyScale: { type: "select", },
-				gradient: { type: "select", },
-				mirror: { // -1, 0, 1
-					type: "select", 
-					parse: (v) => +v, //convert string to number
-				},
-				ledBars: { type: "checkbox", label: "LED Bars", },
-				lumiBars: { type: "checkbox", label: "Luminous Bars", },
-				trueLeds: { type: "checkbox", label: "True LEDs", },
-				roundBars: { type: "checkbox", label: "Round Bars", },
-				showFPS: { type: "checkbox", label: "Show FPS", },
-				showScaleX: { type: "checkbox", label: "Show Scale X", },
-				loRes: { type: "checkbox", label: "Low Resolution", },
-				reflexRatio: { //Percentage of canvas height used for reflection
-					type: "checkbox", 
-					label: "Reflection",
-					parse: (v) => v?0.4:0, //fix the ratio to 0.5 when checked, 0 when unchecked. It can be any value from 0 to 1
-				}, 
-				showPeaks: { type: "checkbox", label: "Show Peaks", },
-				fadePeaks: { type: "checkbox", label: "Fade Peaks", },
-				peakLine: { type: "checkbox", label: "Peak Line" }, // only work for  mode 10 - Graph
-			};
+			/* Function to handle options panel */
+			void function(){
+				// Bind the options controls to AudioMotionAnalyzer options. The optionsBindings object defines the type of each control and any necessary parsing, in which, keys are the AudioMotionAnalyzer's option names and also the name of the element.
+				const optionsBindings = {
+					mode: { // 1 to 10 (except 9)
+						type: "select",
+						parse: (v) => +v, //convert string to number
+					},
+					channelLayout: { type: "select", },
+					colorMode: { type: "select", },
+					frequencyScale: { type: "select", },
+					gradient: { type: "select", },
+					mirror: { // -1, 0, 1
+						type: "select", 
+						parse: (v) => +v, //convert string to number
+					},
+					ledBars: { type: "checkbox", label: "LED Bars", },
+					lumiBars: { type: "checkbox", label: "Luminous Bars", },
+					trueLeds: { type: "checkbox", label: "True LEDs", },
+					roundBars: { type: "checkbox", label: "Round Bars", },
+					showFPS: { type: "checkbox", label: "Show FPS", },
+					showScaleX: { type: "checkbox", label: "Show Scale X", },
+					loRes: { type: "checkbox", label: "Low Resolution", },
+					reflexRatio: { //Percentage of canvas height used for reflection
+						type: "checkbox", 
+						label: "Reflection",
+						parse: (v) => v?0.4:0, //fix the ratio to 0.5 when checked, 0 when unchecked. It can be any value from 0 to 1
+					}, 
+					showPeaks: { type: "checkbox", label: "Show Peaks", },
+					fadePeaks: { type: "checkbox", label: "Fade Peaks", },
+					peakLine: { type: "checkbox", label: "Peak Line" }, // only work for  mode 10 - Graph
+				};
 
-			// go through each option control element and bind it to AudioMotionAnalyzer option
-			const chkboxesContainer = aspectrumOptionsPanel.querySelector('[name="aspCheckboxContainer"]');
-			for (const [id, config] of Object.entries(optionsBindings)) {
-				if(config.type === "checkbox"){
-					const label = document.createElement("label");
+				// go through each option control element and bind it to AudioMotionAnalyzer option
+				const chkboxesContainer = aspectrumOptionsPanel.querySelector('[name="aspCheckboxContainer"]');
+				for (const [id, config] of Object.entries(optionsBindings)) {
+					if(config.type === "checkbox"){
+						const label = document.createElement("label");
 
-					const checkbox = document.createElement("input");
-					checkbox.type = "checkbox";
-					checkbox.name = id;
+						const checkbox = document.createElement("input");
+						checkbox.type = "checkbox";
+						checkbox.name = id;
 
-					//add checkbox to label
-					label.appendChild(checkbox);
-					label.append(` ${config.label ?? id}`); //if no label provided, use id as label
+						//add checkbox to label
+						label.appendChild(checkbox);
+						label.append(` ${config.label ?? id}`); //if no label provided, use id as label
 
-					chkboxesContainer.appendChild(label);
-				}
+						chkboxesContainer.appendChild(label);
+					}
 
-				const element = el(id); //get the option control element by its name attribute
+					const element = el(id); //get the option control element by its name attribute
 
-				// initialize each option control element (which can be checkbox, select, etc) with current value from audioMotionAnalyzerObj.
-				switch (config.type) {
-					case "checkbox":
-						element.checked = ssData.audioMotionAnalyzerObj.getOptions()[id];
-						break;
-
-					case "select":
-					default:
-						element.value = ssData.audioMotionAnalyzerObj.getOptions()[id];
-				}
-
-				// bind onchange event for each option control element
-				element.onchange = (e) => {
-					let value;
-
+					// initialize each option control element (which can be checkbox, select, etc) with current value from audioMotionAnalyzerObj.
 					switch (config.type) {
 						case "checkbox":
-							value = e.target.checked;
+							element.checked = ssData.audioMotionAnalyzerObj.getOptions()[id];
 							break;
 
 						case "select":
 						default:
-							value = e.target.value;
+							element.value = ssData.audioMotionAnalyzerObj.getOptions()[id];
 					}
 
-					// if a parse function is provided
-					if (config.parse) {
-						value = config.parse(value);
-					}
+					// bind onchange event for each option control element
+					element.onchange = (e) => {
+						let value;
 
-					// update the option
-					ssData.audioMotionAnalyzerObj.setOptions({ [id]: value, });
+						switch (config.type) {
+							case "checkbox":
+								value = e.target.checked;
+								break;
 
-					// save to xState
-					xState.audioSpectrum[id] = value;
-				};
-			}
+							case "select":
+							default:
+								value = e.target.value;
+						}
+
+						// if a parse function is provided
+						if (config.parse) {
+							value = config.parse(value);
+						}
+
+						// update the option
+						ssData.audioMotionAnalyzerObj.setOptions({ [id]: value, });
+
+						// save to xState
+						xState.audioSpectrum[id] = value;
+					};
+				}
+			}();
 		}
 	</script>
 
