@@ -7617,7 +7617,7 @@
 			& .aspGroupContainer {
 				display: grid;
 				grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-				gap: 8px;
+				gap: 1px 8px;
 				margin-top: 8px;
 				&:has(select){
 					grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -20839,10 +20839,10 @@ this.highlight = (elem) => {
 			});
 
 			document.addEventListener('visibilitychange', () => {
-				// resume audio context when document become visible again
-				if (!document.hidden && audioCtx.state === 'suspended') {
+				// resume audio context when document become visible again --> This would make audio lagging when it was paused and the page got focused again
+				/* if (!document.hidden && audioCtx.state === 'suspended') {
 					audioCtx.resume();
-				}
+				} */
 
 				// keep audio playing when document hidden
 				if (document.hidden && !xAudio.paused){
@@ -20852,7 +20852,7 @@ this.highlight = (elem) => {
 			});
 
 			// load audio spectrum options from xState
-			function loadAudioSpectrumOptions(){
+			function loadxStateAudioSpectrumOptions(){
 				
 				if(!xState.hasOwnProperty("audioSpectrum") || typeof xState.audioSpectrum !== 'object'){
 					//window.audioSpectrumOptions = 
@@ -20877,7 +20877,7 @@ this.highlight = (elem) => {
 			}
 			
 			//ssData.audioMotionAnalyzerObj.connectInput(xAudio); //connect audio source 
-			loadAudioSpectrumOptions();
+			loadxStateAudioSpectrumOptions();
 
 			// The overlay dialog for audio spectrum options (including the panel inside)
 			const aspectrumOptionsOverlay = document.getElementById( "aspectrumDialogOverlay" );
