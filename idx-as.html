@@ -20957,7 +20957,10 @@ this.highlight = (elem) => {
 				},
 				ledBars: { type: "checkbox", label: "LED Bars", },
 				lumiBars: { type: "checkbox", label: "Luminous Bars", },
+				trueLeds: { type: "checkbox", label: "True LEDs", },
+				roundBars: { type: "checkbox", label: "Round Bars", },
 				showFPS: { type: "checkbox", label: "Show FPS", },
+				showScaleX: { type: "checkbox", label: "Show Scale X", },
 				loRes: { type: "checkbox", label: "Low Resolution", },
 				reflexRatio: { //Percentage of canvas height used for reflection
 					type: "checkbox", 
@@ -20979,8 +20982,9 @@ this.highlight = (elem) => {
 					checkbox.type = "checkbox";
 					checkbox.name = id;
 
+					//add checkbox to label
 					label.appendChild(checkbox);
-					label.append(` ${config.label ?? id} `); //if no label provided, use id as label
+					label.append(` ${config.label ?? id}`); //if no label provided, use id as label
 
 					chkboxesContainer.appendChild(label);
 				}
