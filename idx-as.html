@@ -7630,7 +7630,7 @@
 
 			& label {
 				display: block;
-				margin-top: 12px;
+				/* margin-top: 12px; */
 				&:has(input[type="checkbox"]) {
 					white-space: nowrap;
 					overflow: hidden;
@@ -7646,7 +7646,7 @@
 			& .aspGroupContainer {
 				display: grid;
 				grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-				gap: 1px 8px;
+				gap: 8px 4px;
 				margin-top: 8px;
 				&:has(select){
 					grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -7664,7 +7664,7 @@
 			}
 
 			& button {
-				margin-top: 18px;
+				margin-top: 12px;
 				width: 100%;
 				padding: 8px;
 				background: #2a2a2a;
@@ -7921,7 +7921,8 @@
           </select>
         </label>
 	 </div>
-	   <div class="aspGroupContainer" name="aspCheckboxContainer">
+	   <fieldset class="aspGroupContainer" name="aspCheckboxContainer">
+		<legend>Options</legend>
 		<!-- <label> <input type="checkbox" name="ledBars" /> LED Bars </label>
 
 		<label> <input type="checkbox" name="showFPS" /> Show FPS </label>
@@ -7933,7 +7934,11 @@
 		<label> <input type="checkbox" name="fadePeaks" /> Fade Peaks </label>
 
 		<label> <input type="checkbox" name="peakLine" /> Peak Line </label> -->
-	   </div>
+	   </fieldset>
+
+	   <fieldset class="aspGroupContainer" name="aspFeaturesContainer">
+		<legend>Features</legend>
+	   </fieldset>
 
 	   <div class="aspGroupContainer">
 		<button name="fullScreen">Full screen</button>
@@ -15145,18 +15150,18 @@
 
 				const toggleAudioSpectrumBtn = document.getElementById("toggleAudioSpectrumBtn");
 				if(!toggleAudioSpectrumBtn.onclick){
-					const btText = ssData.audioMotionAnalyzerObj ? "Tắt" : "Bật";
+					const btText = ssData.audioMotionObj ? "Tắt" : "Bật";
 				
 					//set label for button based on the state of audio spectrum being shown or not
 					const btnLabel = toggleAudioSpectrumBtn.nextElementSibling;
 					btnLabel.innerText = btText + " phổ âm thanh";
-					if(ssData.audioMotionAnalyzerObj) toggleAudioSpectrumBtn.querySelector("svg").style.color = "goldenrod"; // set color for svg icon
+					if(ssData.audioMotionObj) toggleAudioSpectrumBtn.querySelector("svg").style.color = "goldenrod"; // set color for svg icon
 
 					//switch audio spectrum show/hide when clicking on the button
 					toggleAudioSpectrumBtn.onclick = function(){
 						if (!confirm("Bạn muốn " + btText + " phổ âm thanh?\n\n Sẽ cần phải nạp lại trang Web.")) return;
 
-						if(!ssData.audioMotionAnalyzerObj) {
+						if(!ssData.audioMotionObj) {
 							xState.audio.showSpectrum = 1; // set to show spectrum
 							btnLabel.innerText = "Tắt phổ âm thanh";
 						}
@@ -16848,27 +16853,12 @@
 			}
 
 			function playStop() {
-				//const pvtaudioMotionAnalyzerObj = ssData.audioMotionAnalyzerObj; //shortcut variable
 				//readyState = 4: video is playing
 				if (xAudio.paused) {
 					xAudio.play();
-					/* if(pvtaudioMotionAnalyzerObj) {
-						ssData.audioCtx.resume(); //make sure audio context is running before stopping audio motion analyzer
-
-						//pvtaudioMotionAnalyzerObj.start(); //start analyzing audio motion
-
-						//pvtaudioMotionAnalyzerObj.connectOutput(); //re-connect to audio output device
-					} */
 				}
 				else {
 					xAudio.pause();
-					/* if(pvtaudioMotionAnalyzerObj){
-						ssData.audioCtx.suspend(); //suspend audio context to save resource
-
-						//pvtaudioMotionAnalyzerObj.stop(); //stop analyzing audio motion
-
-						//pvtaudioMotionAnalyzerObj.disconnectOutput(); //disconnect from audio output device to avoid echoing in iOS devices
-					} */
 				}
 			}
 
@@ -20799,74 +20789,128 @@ this.highlight = (elem) => {
 		// Load module from Skypack CDN
     		//import AudioMotionAnalyzer from "https://cdn.skypack.dev/audiomotion-analyzer?min";
 
-		//ssData.audioMotionAnalyzerObj = null;	
 		/** Set-up eveything for Audio Motion Analyzer 
 		This function would be called from init() function after xState and xAudio has been loaded
 		@return: void
 		*/
 		async function loadAudioSpectrum(){
 
-			// Check if enable audio spectrum or not
-			if (!xState.audio.showSpectrum) { //audio spectrum
-				xAudio.crossOrigin = null; //reset CORS setting, so that some source that apply CORS "strict-origin-when-cross-origin" would been loaded normally into xAudio
-				return; //disable audio spectrum for now
-			}
-
 			//show svgWavesForm only when audio is playing based on audio spectrum show/hide state
 			document.getElementById("svgWavesForm").classList.toggle("elm-hidden", xState.audio.showSpectrum); 
 
-			xAudio.crossOrigin = "anonymous"; //to avoid CORS issue. Spectrum analyzer need to access audio data, so that it need to bypass CORS policy if audio source from external domain
+			// Check if enable audio spectrum or not
+			if (!xState.audio.showSpectrum) { //audio spectrum
+				xAudio.crossOrigin = null; //reset CORS setting, so that some source that apply CORS "strict-origin-when-cross-origin" would been loaded normally into xAudio
 
-			xAudio.playsInline = true; // good for iOS Safari
+				return; // not using audio spectrum
+			}
 
-			// Create Audio Context
-			const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-			// Create Media Element Source Node from the audio element
-			const mesSrc = audioCtx.createMediaElementSource(xAudio);
-			
-			// Load module from Skypack CDN
-			const { AudioMotionAnalyzer } = await import("https://cdn.skypack.dev/audiomotion-analyzer?min");
+			/** Function to hook AudioMotionAnalyzer to xAudio element and audioSpectrumDiv container
+			 * @param xAudio {HTMLAudioElement} the audio element that play the audio source
+			 * @param audioSpectrumDiv {HTMLElement} the div element that contain audio spectrum canvas
+			 * @return: AudioMotionAnalyzer object
+			*/
+			async function hookAudioMotion(xAudio, audioSpectrumDiv) {
+				xAudio.crossOrigin = "anonymous"; //to avoid CORS issue. Spectrum analyzer need to access audio data, so that it need to bypass CORS policy if audio source from external domain
+				xAudio.playsInline = true; // good for iOS Safari
+
+				// Create Audio Context
+				const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+				// Create Media Element Source Node from the audio element
+				const mesSrc = audioCtx.createMediaElementSource(xAudio);
+				
+				// load audio spectrum options from xState
+				function loadAudioMotionOptions(){
+
+					// the audio Option for AudioMotionAnalyzer connect and draw callback
+					const amaConnectOptions = {
+						//source: xAudio, // this can replace src and audioCtx variable below
+						audioCtx: audioCtx,
+						source: mesSrc,
+						onCanvasDraw: drawCallback, // callback function used to add custom features for this demo
+					}
+
+					//set default audio spectrum options if not defined in xState
+					let amaOptions = {
+						
+						height: 100,
+						responsive: true, //canvas resize according to container size
+						ansiBands: false,
+						showScaleX: false,
+						bgAlpha: 1, // these 3 settings make the canvas background opape. Set this 0 to make background transparent
+						overlay: true,
+						showBgColor: true, 
+						smoothing: 0.7,
+						mode: 3,
+						channelLayout: "dual-combined", //single, dual-combined, dual-horizontal, dual-vertical
+						frequencyScale: "log", //bark, "linear", "log", mel
+						reflexRatio: 0, //0.4,
+						reflexAlpha: .3,
+						showPeaks: true,
+						mirror: 0,
+						maxFreq: 12000,
+						lineWidth: 2,
+						fillAlpha: 0.2,
+						ledBars: true, //to activate the LED bars effect for frequency bands modes
+						gradient: 'rainbow', //'classic', orangered, prism, rainbow, steelblue
+						showFPS : true,
+						//start: false, 
+					};
+					
+					if(!xState.hasOwnProperty("audioSpectrum") || typeof xState.audioSpectrum !== 'object'){
+						//window.audioSpectrumOptions = 
+						xState.audioSpectrum = {
+							mode: 1, 
+							channelLayout: "dual-combined",
+							frequencyScale: "log",
+							gradient: 'rainbow',
+							loRes: true, // Low resolution mode resulting in four times less pixels to render.
+							ledBars: true,
+							showFPS : true,
+							// showPeaks: true,
+							// fadePeaks: false,
+							// showScaleX: true,
+						};
+					}
+
+					// merge user options from xState.audioSpectrum into default options
+					amaOptions = Object.assign(amaOptions, amaConnectOptions, xState.audioSpectrum);
+
+					// return the merged options
+					return amaOptions;
+				}
+
+				//options for AudioMotionAnalyzer
+				const amaOptions = loadAudioMotionOptions();
+		
+				// Load module from Skypack CDN
+				const { AudioMotionAnalyzer } = await import("https://cdn.skypack.dev/audiomotion-analyzer?min");
+
+				// ✅ Create AudioMotionAnalyzer object
+				const ama = new AudioMotionAnalyzer(
+					audioSpectrumDiv,
+					amaOptions
+				);
+
+				// ✅ Analyzer gets the signal: connect source to AudioMotion for visualization
+				// Feed audio into analyzer ONLY
+				//mesSrc.connect(ama.input);
+
+				// ✅ Speaker output is handled by <audio> automatically
+				// ❌ Do NOT connect to audioCtx.destination like src.connect(ama.destination);
+
+				// ❌ Do NOT call ama.connectOutput()
+				// ❌ Do NOT mute xAudio
+
+				return ama;
+			}
 
 			// the div that contain audio spectrum canvas
 			const audioSpectrumDiv = document.getElementById("divAudioSpectrum");
-	
 			// ✅ Create AudioMotionAnalyzer object
-			ssData.audioMotionAnalyzerObj = new AudioMotionAnalyzer(
-				audioSpectrumDiv,
-				{
-					//source: xAudio, // this can replace src and audioCtx variable below
-					audioCtx: audioCtx,
-					source: mesSrc,
-					height: 100,
-					responsive: true, //canvas resize according to container size
-					ansiBands: false,
-					showScaleX: false,
-					bgAlpha: 1, // these 3 settings make the canvas background opape. Set this 0 to make background transparent
-					overlay: true,
-					showBgColor: true, 
-					smoothing: 0.7,
-					mode: 3,
-					channelLayout: "dual-combined", //single, dual-combined, dual-horizontal, dual-vertical
-					frequencyScale: "log", //bark, "linear", "log", mel
-					reflexRatio: 0, //0.4,
-					reflexAlpha: .3,
-					showPeaks: true,
-					mirror: 0,
-					maxFreq: 12000,
-					lineWidth: 2,
-					fillAlpha: 0.2,
-					ledBars: true, //to activate the LED bars effect for frequency bands modes
-					gradient: 'rainbow', //'classic', orangered, prism, rainbow, steelblue
-					showFPS : true,
-					//start: false, 
-				}
-			);
-
-			// ✅ Analyzer gets the signal: connect source to AudioMotion for visualization
-			//src.connect(ssData.audioMotionAnalyzerObj.input);
-
-			// ✅ Speaker output is handled by <audio> automatically
-			// ❌ Do NOT connect to audioCtx.destination like src.connect(ssData.audioMotionAnalyzerObj.destination);
+			const ama = ssData.audioMotionObj = await hookAudioMotion(xAudio, audioSpectrumDiv);
+			const audioCtx = ama.audioCtx;
 
 			/* IIFE function to handle audio spectrum when xAudio is played or paused AND when document visibility changes */
 			void function(){
@@ -20895,34 +20939,6 @@ this.highlight = (elem) => {
 				});
 			}();
 
-			// load audio spectrum options from xState
-			function loadxStateAudioSpectrumOptions(){
-				
-				if(!xState.hasOwnProperty("audioSpectrum") || typeof xState.audioSpectrum !== 'object'){
-					//window.audioSpectrumOptions = 
-					xState.audioSpectrum = {
-						mode: 1, 
-						channelLayout: "dual-combined",
-						frequencyScale: "log",
-						gradient: 'rainbow',
-						ledBars: true,
-						showFPS : true,
-						showPeaks: true,
-						fadePeaks: false,
-					};
-				}
-
-				//audioMotionAnalyzerObj
-				for (const [id, value] of Object.entries(xState.audioSpectrum)) {
-					ssData.audioMotionAnalyzerObj.setOptions({ [id]: value, });
-				}
-
-				//updateAudioSpectrumOptions();
-			}
-			
-			//ssData.audioMotionAnalyzerObj.connectInput(xAudio); //connect audio source 
-			loadxStateAudioSpectrumOptions();
-
 			// The overlay dialog for audio spectrum options (including the panel inside)
 			const aspectrumOptionsOverlay = document.getElementById( "aspectrumDialogOverlay" );
 			// The panel that contain audio spectrum options
@@ -20948,22 +20964,23 @@ this.highlight = (elem) => {
 						type: "select", 
 						parse: (v) => +v, //convert string to number
 					},
-					ledBars: { type: "checkbox", label: "LED Bars", },
-					lumiBars: { type: "checkbox", label: "Luminous Bars", },
-					trueLeds: { type: "checkbox", label: "True LEDs", },
-					roundBars: { type: "checkbox", label: "Round Bars", },
-					showFPS: { type: "checkbox", label: "Show FPS", },
-					showScaleX: { type: "checkbox", label: "Show Scale X", },
-					noteLabels: { type: "checkbox", label: "Note Labels", },
-					loRes: { type: "checkbox", label: "Low Resolution", },
+					ledBars: { type: "checkbox", label: "LED Bars", hint: "Activate the LED bars effect for frequency bands modes", },
+					lumiBars: { type: "checkbox", label: "Luminous Bars", hint: "Only for frequency bands modes.&#xa;When set to true all analyzer bars will be displayed at full height with varying luminance", },
+					trueLeds: { type: "checkbox", label: "True LEDs", hint: "When set to true, LEDs are painted with individual colors from the current gradient, instead of using the gradient itself"},
+					roundBars: { type: "checkbox", label: "Round Bars", hint: "Round the corners of the bars. Only effective to one of the bands modes", },
+					showFPS: { type: "checkbox", label: "Show FPS", hint: "Show the current frame rate (frames per second) in the top-left corner of the canvas", },
+					showScaleX: { type: "checkbox", label: "Show ScaleX", hint: "Show the frequency scale along the X axis", },
+					noteLabels: { type: "checkbox", label: "Note Labels", hint: "Show note labels on the frequency scale along the X axis", },
+					loRes: { type: "checkbox", label: "Low Resolution", hint: "Low resolution mode halves the effective pixel ratio, resulting in four times less pixels to render"},
 					reflexRatio: { //Percentage of canvas height used for reflection
 						type: "checkbox", 
 						label: "Reflection",
+						hint: "Show the reflection effect below the main spectrum display.&#xa;When checked, the reflection ratio is fixed to 0.4",
 						parse: (v) => v?0.4:0, //fix the ratio to 0.5 when checked, 0 when unchecked. It can be any value from 0 to 1
 					}, 
-					showPeaks: { type: "checkbox", label: "Show Peaks", },
-					fadePeaks: { type: "checkbox", label: "Fade Peaks", },
-					peakLine: { type: "checkbox", label: "Peak Line" }, // only work for  mode 10 - Graph
+					showPeaks: { type: "checkbox", label: "Show Peaks", hint: "Show peak levels for each frequency band", },
+					fadePeaks: { type: "checkbox", label: "Fade Peaks", hint: "Make peak levels fade out instead of falling", },
+					peakLine: { type: "checkbox", label: "Peak Line", hint: "Show a line connecting the peak levels of all frequency band.&#xa;Only works for mode 10 - Graph" }, // only work for  mode 10 - Graph
 				};
 
 				// go through each option control element and bind it to AudioMotionAnalyzer option
@@ -20976,6 +20993,8 @@ this.highlight = (elem) => {
 						checkbox.type = "checkbox";
 						checkbox.name = id;
 
+						config.hint && (label.dataset.tooltip = config.hint); //add hint as tooltip if provided
+						
 						//add checkbox to label
 						label.appendChild(checkbox);
 						label.append(` ${config.label ?? id}`); //if no label provided, use id as label
@@ -20988,12 +21007,12 @@ this.highlight = (elem) => {
 					// initialize each option control element (which can be checkbox, select, etc) with current value from audioMotionAnalyzerObj.
 					switch (config.type) {
 						case "checkbox":
-							element.checked = ssData.audioMotionAnalyzerObj.getOptions()[id];
+							element.checked = ama[id]; // ama.getOptions()[id];
 							break;
 
 						case "select":
 						default:
-							element.value = ssData.audioMotionAnalyzerObj.getOptions()[id];
+							element.value = ama[id]; //ama.getOptions()[id];
 					}
 
 					// bind onchange event for each option control element
@@ -21016,7 +21035,7 @@ this.highlight = (elem) => {
 						}
 
 						// update the option
-						ssData.audioMotionAnalyzerObj.setOptions({ [id]: value, });
+						ama.setOptions({ [id]: value, });
 
 						// save to xState
 						xState.audioSpectrum[id] = value;
@@ -21039,12 +21058,12 @@ this.highlight = (elem) => {
 				/* audioSpectrumDiv.addEventListener("dblclick", (e) => {
 					e.stopPropagation();
 					//reset to default settings
-					ssData.audioMotionAnalyzerObj.toggleFullscreen();
+					ama.toggleFullscreen();
 				}); */
 
 				// Show / hide the settings panel
 				audioSpectrumDiv.addEventListener("click", () => {
-					if(ssData.audioMotionAnalyzerObj.canvas === document.fullscreenElement) return; //do nothing if spectrum already in fullscreen mode
+					if(ama.canvas === document.fullscreenElement) return; //do nothing if spectrum already in fullscreen mode
 
 					aspectrumOptionsOverlay.style.display = "block";
 				});
@@ -21059,7 +21078,7 @@ this.highlight = (elem) => {
 				}
 				else{
 					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = (evt) => {
-						ssData.audioMotionAnalyzerObj.toggleFullscreen();
+						ama.toggleFullscreen();
 						evt.stopPropagation();
 					}
 				}
@@ -21084,8 +21103,8 @@ this.highlight = (elem) => {
 				/* show or hide spectrum's background according to page theme */
 				const switchSpectrumBgrnd = _ => {
 					// show or hide background color according to page theme
-					//ssData.audioMotionAnalyzerObj.setOptions( {showBgColor: !document.body.classList.contains("dark-theme")});
-					ssData.audioMotionAnalyzerObj.showBgColor = !document.body.classList.contains("dark-theme");
+					//ama.setOptions( {showBgColor: !document.body.classList.contains("dark-theme")});
+					ama.showBgColor = !document.body.classList.contains("dark-theme");
 				};
 				//run once to set initial background according to current page theme
 				switchSpectrumBgrnd(); 
@@ -21095,6 +21114,178 @@ this.highlight = (elem) => {
 
 			})();
 			
+			const featuresDefaultOptions = {
+				energyMeter: {defVal: 0, type: "checkbox", label: "Energy Meter",},
+				showLogo: {defVal: 0, type: "checkbox", label: "Show Logo",},
+				songProgress: {defVal: 0, type: "checkbox", label: "Song Progress",},
+			};
+
+			/* Function to populate checkboxes in options panel and handle event for selects, checkboxes of options panel */
+			void function(){
+				
+				if(!xState?.audioSpectrum?.features)
+					//initialize features options from default options
+					xState.audioSpectrum.features = {};
+				
+				const xStateFeatures = xState.audioSpectrum.features;
+				// merge features options from default options and from xState
+				for(const [id, config] of Object.entries(featuresDefaultOptions)){
+					config.val = xStateFeatures[id] ?? config.defVal;
+					// copy the default value to xState if not defined
+					xStateFeatures[id] = config.val;
+				}
+
+				// go through each option control element and bind it to AudioMotionAnalyzer option
+				const chkboxesContainer = aspectrumOptionsPanel.querySelector('[name="aspFeaturesContainer"]');
+				for (const [id, config] of Object.entries(featuresDefaultOptions)) {
+					if(config.type === "checkbox"){
+						const label = document.createElement("label");
+
+						const checkbox = document.createElement("input");
+						checkbox.type = "checkbox";
+						checkbox.name = id;
+
+						checkbox.checked = config.val;
+
+						//add checkbox to label
+						label.appendChild(checkbox);
+						label.append(` ${config.label ?? id}`); //if no label provided, use id as label
+
+						chkboxesContainer.appendChild(label);
+					}
+
+					const element = el(id); //get the option control element by its name attribute
+
+					// bind onchange event for each option control element
+					element.onchange = (e) => {
+						let value;
+
+						switch (config.type) {
+							case "checkbox":
+								value = e.target.checked;
+								break;
+
+							case "select":
+							default:
+								value = e.target.value;
+						}
+
+						// if a parse function is provided
+						if (config.parse) {
+							value = config.parse(value);
+						}
+
+						// update the option
+						featuresDefaultOptions[id].val = value;
+
+						// save to xState
+						xStateFeatures[id] = value;
+					};
+				}
+			}();
+			// Custom drawing on top of the audio spectrum
+			function drawCallback() {
+				const audioMotion = ama;
+				const audioEl    = xAudio;
+
+				const canvas     = audioMotion.canvas,
+					ctx        = audioMotion.canvasCtx,
+					pixelRatio = audioMotion.pixelRatio, // for scaling the size of things drawn on canvas, on Hi-DPI screens or loRes mode
+					baseSize   = Math.max( 20 * pixelRatio, canvas.height / 27 | 0 ),
+					centerX    = canvas.width >> 1,
+					centerY    = canvas.height >> 1;
+
+				if ( featuresDefaultOptions.energyMeter.val ) {
+					const energy     = audioMotion.getEnergy(),
+						peakEnergy = audioMotion.getEnergy('peak');
+
+					// overall energy peak
+					const width = 50 * pixelRatio;
+					const peakY = -canvas.height * ( peakEnergy - 1 );
+					ctx.fillStyle = '#f008';
+					ctx.fillRect( width, peakY, width, 2 );
+
+					ctx.font = `${ 16 * pixelRatio }px sans-serif`;
+					ctx.textAlign = 'left';
+					ctx.fillText( peakEnergy.toFixed(4), width, peakY - 4 );
+
+					// overall energy bar
+					ctx.fillStyle = '#fff8';
+					ctx.fillRect( width, canvas.height, width, -canvas.height * energy );
+
+					// bass, midrange and treble meters
+
+					const drawLight = ( posX, color, alpha ) => {
+						const halfWidth   = width >> 1,
+							doubleWidth = width << 1;
+
+						const grad = ctx.createLinearGradient( 0, 0, 0, canvas.height );
+						grad.addColorStop( 0, color );
+						grad.addColorStop( .75, `${color}0` );
+
+						ctx.beginPath();
+						ctx.moveTo( posX - halfWidth, 0 );
+						ctx.lineTo( posX - doubleWidth, canvas.height );
+						ctx.lineTo( posX + doubleWidth, canvas.height );
+						ctx.lineTo( posX + halfWidth, 0 );
+
+						ctx.save();
+						ctx.fillStyle = grad;
+						ctx.shadowColor = color;
+						ctx.shadowBlur = 40;
+						ctx.globalCompositeOperation = 'screen';
+						ctx.globalAlpha = alpha;
+						ctx.fill();
+						ctx.restore();
+					}
+
+					ctx.textAlign = 'center';
+					const growSize = baseSize * 4;
+
+					const bassEnergy = audioMotion.getEnergy('bass');
+					ctx.font = `bold ${ baseSize + growSize * bassEnergy }px sans-serif`;
+					ctx.fillText( 'BASS', canvas.width * .15, centerY );
+					drawLight( canvas.width * .15, '#f00', bassEnergy );
+
+					drawLight( canvas.width * .325, '#f80', audioMotion.getEnergy('lowMid') );
+
+					const midEnergy = audioMotion.getEnergy('mid');
+					ctx.font = `bold ${ baseSize + growSize * midEnergy }px sans-serif`;
+					ctx.fillText( 'MIDRANGE', centerX, centerY );
+					drawLight( centerX, '#ff0', midEnergy );
+
+					drawLight( canvas.width * .675, '#0f0', audioMotion.getEnergy('highMid') );
+
+					const trebleEnergy = audioMotion.getEnergy('treble');
+					ctx.font = `bold ${ baseSize + growSize * trebleEnergy }px sans-serif`;
+					ctx.fillText( 'TREBLE', canvas.width * .85, centerY );
+					drawLight( canvas.width * .85, '#0ff', trebleEnergy );
+				}
+
+				if ( featuresDefaultOptions.showLogo.val ) {
+					// the overall energy provides a simple way to sync a pulsating text/image to the beat
+					// it usually works best than specific frequency ranges, for a wider range of music styles
+					ctx.font = `${ baseSize + audioMotion.getEnergy() * 25 * pixelRatio }px sans-serif`;
+
+					ctx.fillStyle = '#fff8';
+					ctx.textAlign = 'center';
+					ctx.fillText( xAudio.title ?? 'Audio Books', canvas.width - baseSize * 4, baseSize * 2 );
+				}
+
+				if ( featuresDefaultOptions.songProgress.val ) {
+					const lineWidth = canvas.height / 40,
+						posY = lineWidth >> 1;
+
+					ctx.beginPath();
+					ctx.moveTo( 0, posY );
+					ctx.lineTo( canvas.width * audioEl.currentTime / audioEl.duration, posY );
+					ctx.lineCap = 'round';
+					ctx.lineWidth = lineWidth;
+					ctx.globalAlpha = audioMotion.getEnergy(); // use the song energy to control the bar opacity
+					ctx.stroke();
+				}
+
+			}
 		}
 	</script>
 
