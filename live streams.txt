@@ -1,0 +1,137 @@
+{bookId:"94381f42",title:"Nghe nhạc trực tuyến",eTitle:"Live internet audio",author:"Multiple Artists",type:"Music",mc:"Multiple Artists",cover:"https://i1.sndcdn.com/avatars-000688434627-lneheb-t1080x1080.jpg",ssrc:["https://soundcloud.com/"],grp:["LIVE.STREAM1$5X","XIANXIA.MMC","XIANXIA.MMC"],tap:[{label:"Rock station",f:1,t:6},{label:"Hard & Heavy Metal",f:7,t:17},{label:"Beethoven",f:18,t:24}],year:"",intro:"This collection brings together a diverse range of live radio streams from around the world, spanning classic and modern rock, powerful heavy metal, and timeless classical music. From iconic rock anthems and underground metal sounds to the enduring masterpieces of composers such as Beethoven, these channels offer continuous, high-quality audio for every mood and listening style. All streams are carefully selected for direct playback, making it easy to enjoy nonstop music instantly through your browser or audio player, without downloads or interruptions.",parts:[{tit:"Live Rock Radio",sTit:"A nonstop live rock station featuring a mix of classic rock, hard rock, and modern rock anthems.",url:["https://stream.zenolive.com/0xw67fkqbsquv"]},{tit:"Rock Radio SI",sTit:"A European rock station delivering energetic rock tracks from classic to contemporary styles.",url:["http://stream.rockradio.si:9034/stream/"]},{tit:"Classic Rock Planet HD",sTit:"A dedicated classic rock stream playing legendary rock hits from the golden era of rock music.",url:["http://144.217.158.59:5098/stream"]},{tit:"ROQ FM",sTit:"A hard-rock-focused radio station blending classic hard rock with modern rock favorites.",url:["http://thassos.cdnstream.com:5143/stream.mp3"]},{tit:"Radio Paradise (AAC 320)",sTit:"A high-quality eclectic rock stream mixing classic rock, modern rock, and deep album cuts.",url:["http://stream.radioparadise.com/aac-320"]},{tit:"Radio Paradise (MP3 192)",sTit:"A bandwidth-friendly version of Radio Paradise offering the same diverse rock programming.",url:["http://stream.radioparadise.com/mp3-192"]},{tit:"Hard & Heavy Metal Hits Radio",sTit:"A powerful metal station playing nonstop heavy metal and hard-hitting rock tracks.",url:["https://audio.serv.pt/8040/stream"]},{tit:"SomaFM – Metal Detector (AAC)",sTit:"A curated heavy metal stream featuring modern metal, industrial, and aggressive subgenres.",url:["https://ice6.somafm.com/metal-128-aac"]},{tit:"SomaFM – Metal Detector (MP3)",sTit:"The MP3 version of Metal Detector, delivering the same cutting-edge metal selection.",url:["https://ice6.somafm.com/metal-128-mp3"]},{tit:"La Grosse Radio Metal",sTit:"A French metal radio station showcasing heavy metal, alternative metal, and new releases.",url:["http://hd.lagrosseradio.info:8000/lagrosseradio-metal-192.mp3"]},{tit:"Metal Express Radio",sTit:"A metal station focused on classic heavy metal, melodic metal, and metal history.",url:["http://c13.radioboss.fm:8099/autodj"]},{tit:"Radio Heavy Metal (Radio Rock HD)",sTit:"A high-energy metal stream playing heavy, hard rock, and metal anthems around the clock.",url:["http://manager7.streamradio.fr:1430/stream"]},{tit:"BCHS Metal Rock",sTit:"An underground-style metal and hard rock station with a raw, independent sound.",url:["http://3dworlddjstreams.xyz:8204/stream"]},{tit:"Insane Realm Radio II",sTit:"A dark and aggressive metal station featuring extreme metal and underground bands.",url:["http://radio.streemlion.com:3940/stream"]},{tit:"Munich’s Hardest Hits",sTit:"A German heavy metal station delivering classic metal and hard-hitting rock tracks.",url:["http://munichhh.stream.vip/live/mp3-320/"]},{tit:"UnderGRAND Radio",sTit:"An independent metal and rock station highlighting underground and lesser-known artists.",url:["http://stream.zeno.fm/rp1swb5pgzzuv"]},{tit:"Calm Radio – Beethoven / Classical",sTit:"A relaxing classical music stream featuring Beethoven alongside other classical composers.",url:["https://streams.calmradio.com:6928/stream/1/"]},{tit:"Calm Radio – Essential Beethoven",sTit:"A classical channel emphasizing Beethoven’s most famous and influential works.",url:["https://streams.calmradio.com:6928/stream/1/"]},{tit:"Classical Radio – Beethoven Channel",sTit:"A composer-focused classical stream dedicated primarily to the music of Beethoven.",url:["https://classicalradiostream.com/stream"]},{tit:"Beethoven FM (Chile)",sTit:"A classical radio station from Chile featuring Beethoven and other major classical composers.",url:["http://s1.broadcastify.com/BeethovenFM"]},{tit:"ABC Classic 2",sTit:"A contemporary classical station blending traditional composers like Beethoven with modern works.",url:["https://radio.abc.net.au/stations/classic2/live"]},{tit:"DR P2 Classical",sTit:"A public Danish classical music channel featuring orchestral, chamber, and solo classical music.",url:["http://stream.dr.dk/p2classic/aac"]},{tit:"NPO Klassiek",sTit:"A Dutch classical radio station offering a wide range of classical repertoire, including Beethoven.",url:["https://npoklassiek.nl/live"]}]}
+
+{
+  "bookId": "94381f42",
+  "title": "Nghe nhạc trực tuyến",
+  "eTitle": "Live internet audio",
+  "author": "Multiple Artists",
+  "type": "Music",
+  "mc": "Multiple Artists",
+  "cover": "https://i1.sndcdn.com/avatars-000688434627-lneheb-t1080x1080.jpg",
+  "ssrc": ["https://soundcloud.com/"],
+  "grp": ["LIVE.STREAM1$5X", "XIANXIA.LIVES", "XIANXIA.LIVES"],
+  "tap": [
+    {"label": "Rock station",       "f":  1, "t":  6},
+    {"label": "Hard & Heavy Metal", "f":  7, "t": 17},
+    {"label": "Beethoven",          "f": 18, "t": 24}
+  ],
+  "year": "",
+  "intro": "This collection brings together a diverse range of live radio streams from around the world, spanning classic and modern rock, powerful heavy metal, and timeless classical music. From iconic rock anthems and underground metal sounds to the enduring masterpieces of composers such as Beethoven, these channels offer continuous, high-quality audio for every mood and listening style. All streams are carefully selected for direct playback, making it easy to enjoy nonstop music instantly through your browser or audio player, without downloads or interruptions.",
+  "parts": [
+    {
+      "tit": "Live Rock Radio",
+      "sTit": "A nonstop live rock station featuring a mix of classic rock, hard rock, and modern rock anthems.",
+      "url": ["https://stream.zenolive.com/0xw67fkqbsquv"]
+    },
+    {
+      "tit": "Rock Radio SI",
+      "sTit": "A European rock station delivering energetic rock tracks from classic to contemporary styles.",
+      "url": ["http://stream.rockradio.si:9034/stream/"]
+    },
+    {
+      "tit": "Classic Rock Planet HD",
+      "sTit": "A dedicated classic rock stream playing legendary rock hits from the golden era of rock music.",
+      "url": ["http://144.217.158.59:5098/stream"]
+    },
+    {
+      "tit": "ROQ FM",
+      "sTit": "A hard-rock-focused radio station blending classic hard rock with modern rock favorites.",
+      "url": ["http://thassos.cdnstream.com:5143/stream.mp3"]
+    },
+    {
+      "tit": "Radio Paradise (AAC 320)",
+      "sTit": "A high-quality eclectic rock stream mixing classic rock, modern rock, and deep album cuts.",
+      "url": ["http://stream.radioparadise.com/aac-320"]
+    },
+    {
+      "tit": "Radio Paradise (MP3 192)",
+      "sTit": "A bandwidth-friendly version of Radio Paradise offering the same diverse rock programming.",
+      "url": ["http://stream.radioparadise.com/mp3-192"]
+    },
+    {
+      "tit": "Hard & Heavy Metal Hits Radio",
+      "sTit": "A powerful metal station playing nonstop heavy metal and hard-hitting rock tracks.",
+      "url": ["https://audio.serv.pt/8040/stream"]
+    },
+    {
+      "tit": "SomaFM – Metal Detector (AAC)",
+      "sTit": "A curated heavy metal stream featuring modern metal, industrial, and aggressive subgenres.",
+      "url": ["https://ice6.somafm.com/metal-128-aac"]
+    },
+    {
+      "tit": "SomaFM – Metal Detector (MP3)",
+      "sTit": "The MP3 version of Metal Detector, delivering the same cutting-edge metal selection.",
+      "url": ["https://ice6.somafm.com/metal-128-mp3"]
+    },
+    {
+      "tit": "La Grosse Radio Metal",
+      "sTit": "A French metal radio station showcasing heavy metal, alternative metal, and new releases.",
+      "url": ["http://hd.lagrosseradio.info:8000/lagrosseradio-metal-192.mp3"]
+    },
+    {
+      "tit": "Metal Express Radio",
+      "sTit": "A metal station focused on classic heavy metal, melodic metal, and metal history.",
+      "url": ["http://c13.radioboss.fm:8099/autodj"]
+    },
+    {
+      "tit": "Radio Heavy Metal (Radio Rock HD)",
+      "sTit": "A high-energy metal stream playing heavy, hard rock, and metal anthems around the clock.",
+      "url": ["http://manager7.streamradio.fr:1430/stream"]
+    },
+    {
+      "tit": "BCHS Metal Rock",
+      "sTit": "An underground-style metal and hard rock station with a raw, independent sound.",
+      "url": ["http://3dworlddjstreams.xyz:8204/stream"]
+    },
+    {
+      "tit": "Insane Realm Radio II",
+      "sTit": "A dark and aggressive metal station featuring extreme metal and underground bands.",
+      "url": ["http://radio.streemlion.com:3940/stream"]
+    },
+    {
+      "tit": "Munich’s Hardest Hits",
+      "sTit": "A German heavy metal station delivering classic metal and hard-hitting rock tracks.",
+      "url": ["http://munichhh.stream.vip/live/mp3-320/"]
+    },
+    {
+      "tit": "UnderGRAND Radio",
+      "sTit": "An independent metal and rock station highlighting underground and lesser-known artists.",
+      "url": ["http://stream.zeno.fm/rp1swb5pgzzuv"]
+    },
+    {
+      "tit": "Calm Radio – Beethoven / Classical",
+      "sTit": "A relaxing classical music stream featuring Beethoven alongside other classical composers.",
+      "url": ["https://streams.calmradio.com:6928/stream/1/"]
+    },
+    {
+      "tit": "Calm Radio – Essential Beethoven",
+      "sTit": "A classical channel emphasizing Beethoven’s most famous and influential works.",
+      "url": ["https://streams.calmradio.com:6928/stream/1/"]
+    },
+    {
+      "tit": "Classical Radio – Beethoven Channel",
+      "sTit": "A composer-focused classical stream dedicated primarily to the music of Beethoven.",
+      "url": ["https://classicalradiostream.com/stream"]
+    },
+    {
+      "tit": "Beethoven FM (Chile)",
+      "sTit": "A classical radio station from Chile featuring Beethoven and other major classical composers.",
+      "url": ["http://s1.broadcastify.com/BeethovenFM"]
+    },
+    {
+      "tit": "ABC Classic 2",
+      "sTit": "A contemporary classical station blending traditional composers like Beethoven with modern works.",
+      "url": ["https://radio.abc.net.au/stations/classic2/live"]
+    },
+    {
+      "tit": "DR P2 Classical",
+      "sTit": "A public Danish classical music channel featuring orchestral, chamber, and solo classical music.",
+      "url": ["http://stream.dr.dk/p2classic/aac"]
+    },
+    {
+      "tit": "NPO Klassiek",
+      "sTit": "A Dutch classical radio station offering a wide range of classical repertoire, including Beethoven.",
+      "url": ["https://npoklassiek.nl/live"]
+    }
+  ]
+}
