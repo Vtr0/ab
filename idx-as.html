@@ -7620,6 +7620,16 @@
 			padding: 4px 16px 16px;
 			margin: 70px auto;
 
+			& .aspGroupContainer {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+				gap: 8px 6px;
+				margin-top: 8px;
+				&:has(select){
+					grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+				}
+			}
+
 			& *{
 				/* font-size: .95em; */
 				color: #eee;
@@ -7635,6 +7645,26 @@
 					white-space: nowrap;
 					overflow: hidden;
 					text-overflow: ellipsis;
+
+					padding: 4px;
+					text-align: center;
+					cursor: pointer;
+    				vertical-align: bottom;
+					border: 1px solid #ddd;
+
+					& input[type="checkbox"] {
+						display: none;
+					}
+
+					&:has(input[type="checkbox"]:checked) {
+						background: #444;
+						border: none;
+						/* box-shadow: inset 1px 1px 0 #000; */
+						border: 1px solid #999;
+						color: #0f0;
+						/* padding: 8px; */
+						text-shadow: 2px 2px 10px #0f08, -2px -2px 10px #0f08;
+					}
 				}
 			}
 
@@ -7643,15 +7673,6 @@
 				margin-top: 4px;
 			}
 
-			& .aspGroupContainer {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-				gap: 8px 4px;
-				margin-top: 8px;
-				&:has(select){
-					grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-				}
-			}
 			& select {
 				width: 100%;
 				background: #222;
@@ -7922,7 +7943,7 @@
         </label>
 	 </div>
 	   <fieldset class="aspGroupContainer" name="aspCheckboxContainer">
-		<legend>Options</legend>
+		<legend>Option flags</legend>
 		<!-- <label> <input type="checkbox" name="ledBars" /> LED Bars </label>
 
 		<label> <input type="checkbox" name="showFPS" /> Show FPS </label>
@@ -20815,7 +20836,7 @@ this.highlight = (elem) => {
 				xAudio.playsInline = true; // good for iOS Safari
 
 				// Create Audio Context
-				const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+				const audioCtx = new (window.AudioContext || window.webkitAudioContext)({latencyHint: 'playback'}); //default latencyHint is 'interactive'
 
 				// Create Media Element Source Node from the audio element
 				const mesSrc = audioCtx.createMediaElementSource(xAudio);
@@ -20842,6 +20863,7 @@ this.highlight = (elem) => {
 						overlay: true,
 						showBgColor: true, 
 						smoothing: 0.7,
+						fftSize: 2048, //1024, 2048, 4096, 8192, 16384
 						mode: 3,
 						channelLayout: "dual-combined", //single, dual-combined, dual-horizontal, dual-vertical
 						frequencyScale: "log", //bark, "linear", "log", mel
@@ -21269,7 +21291,8 @@ this.highlight = (elem) => {
 
 					ctx.fillStyle = '#fff8';
 					ctx.textAlign = 'center';
-					ctx.fillText( xAudio.title ?? 'Audio Books', canvas.width - baseSize * 4, baseSize * 2 );
+					const logoText = xAudio.title ?? 'Audio Books';
+					ctx.fillText( logoText, canvas.width - baseSize * logoText.length / 2, baseSize * 2 ); //canvas.width - baseSize * 4
 				}
 
 				if ( featuresDefaultOptions.songProgress.val ) {
