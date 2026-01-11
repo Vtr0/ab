@@ -7705,6 +7705,39 @@
 			<div class='loading-text-loader loading-text-splash-screen'></div>			
 		</div>
 	</div>
+
+	<!-- HTML MODAL DIAGLOG ALERT, PROMPT, CONFIRM -->
+	<div id="dialog-root">
+		<!-- Alert -->
+		<dialog id="dlg-alert">
+			<form method="dialog">
+			<p class="message"></p>
+			<button value="ok" autofocus>OK</button>
+			</form>
+		</dialog>
+
+		<!-- Confirm -->
+		<dialog id="dlg-confirm">
+			<p class="message"></p>
+			<form method="dialog">
+			<button value="ok" autofocus>OK</button>
+			<button value="cancel">Cancel</button>
+			</form>
+		</dialog>
+
+		<!-- Prompt -->
+		<dialog id="dlg-prompt">
+			<form method="dialog">
+			<p class="message"></p>
+			<input class="input" type="text" />
+			<div style="margin-top:10px">
+				<button value="ok" autofocus>OK</button>
+				<button value="cancel">Cancel</button>
+			</div>
+			</form>
+		</dialog>
+	</div>
+
 	<!-- HTML MODAL POPUP -->
 	<div class="modalPopup" id="modalSettingPopup">
 		<div class="modalPopupOverlay" onclick="ssData.setting.closeSettingModal()"></div>
@@ -9370,6 +9403,147 @@
 
 	</script>
 
+	<!-- DIALOG STYLES -->
+	<style>
+		/* =========================
+		Dialog Base
+		========================= */
+
+		#dialog-root {
+		dialog {
+			border: none;
+			border-radius: 10px;
+			padding: 20px 22px;
+			min-width: 320px;
+			max-width: 90vw;
+
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			font-size: 14px;
+
+			background: #fff;
+			color: #222;
+			box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+
+			&::backdrop {
+			background: rgba(0, 0, 0, 0.45);
+			}
+
+			.message {
+			margin: 0 0 14px;
+			line-height: 1.4;
+			}
+
+			form {
+			display: flex;
+			flex-direction: column;
+
+			&[method="dialog"],
+			> div {
+				display: flex;
+				justify-content: flex-end;
+				gap: 8px;
+			}
+			}
+
+			input {
+			width: 100%;
+			padding: 8px 10px;
+			margin-top: 6px;
+			border-radius: 6px;
+			font-size: 14px;
+
+			background: #fff;
+			color: #222;
+			border: 1px solid #ccc;
+
+			&:focus {
+				outline: none;
+				border-color: #0078d4;
+				box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.25);
+			}
+			}
+
+			button {
+			min-width: 80px;
+			padding: 6px 14px;
+			border-radius: 6px;
+			font-size: 13px;
+			cursor: pointer;
+
+			background: #f3f3f3;
+			color: #222;
+			border: 1px solid #ccc;
+
+			&:hover {
+				background: #e7e7e7;
+			}
+
+			&:focus-visible {
+				outline: none;
+			}
+
+			&[value="ok"] {
+				background: #0078d4;
+				color: #fff;
+				border-color: #0078d4;
+
+				&:hover {
+				background: #006cbe;
+				}
+			}
+			}
+		}
+		}
+
+		/* =========================
+		Dark Theme
+		========================= */
+
+		body.dark-theme {
+		#dialog-root {
+			dialog {
+			background: #1e1e1e;
+			color: #eaeaea;
+
+			&::backdrop {
+				background: rgba(0, 0, 0, 0.7);
+			}
+
+			input {
+				background: #2b2b2b;
+				color: #eaeaea;
+				border-color: #444;
+
+				&:focus {
+				border-color: #4fa3ff;
+				box-shadow: 0 0 0 2px rgba(79, 163, 255, 0.35);
+				}
+			}
+
+			button {
+				background: #333;
+				color: #eaeaea;
+				border-color: #444;
+
+				&:hover {
+				background: #3d3d3d;
+				}
+
+				&[value="ok"] {
+				background: #4fa3ff;
+				color: #000;
+				border-color: #4fa3ff;
+
+				&:hover {
+					background: #4096f0;
+				}
+				}
+			}
+			}
+		}
+		}
+		
+	</style>
 	<!-- TOAST + PROTOTYPE FUNCTION THAT EFFECT UI -->
 	<script>
 		"use strict";
@@ -9389,6 +9563,76 @@
 				}
 			}
 		};
+
+		/** Dialog class to show modal dialogs, the replacement for alert/confirm/prompt standard js functions
+		 * @usage: 
+		 * await Dialog.alert("Saved successfully");
+
+				if (await Dialog.confirm("Delete this file?")) {
+				console.log("Deleted");
+				}
+
+				const name = await Dialog.prompt("Enter your name:", "John");
+				if (name !== null) {
+				console.log("Hello", name);
+				}
+		 */
+		const Dialog = (() => {
+			const root = document.getElementById("dialog-root");
+
+			const dlgAlert   = root.querySelector("#dlg-alert");
+			const dlgConfirm = root.querySelector("#dlg-confirm");
+			const dlgPrompt  = root.querySelector("#dlg-prompt");
+
+			function alert(message) {
+				return new Promise((resolve) => {
+				dlgAlert.querySelector(".message").textContent = message;
+				dlgAlert.showModal();
+				dlgAlert.onclose = () => resolve();
+				});
+			}
+
+			function confirm(message) {
+				return new Promise((resolve) => {
+				dlgConfirm.querySelector(".message").textContent = message;
+				dlgConfirm.showModal();
+				dlgConfirm.onclose = () =>
+					resolve(dlgConfirm.returnValue === "ok");
+				});
+			}
+
+			function prompt(message, defaultValue = "") {
+				return new Promise((resolve) => {
+				const msg = dlgPrompt.querySelector(".message");
+				const input = dlgPrompt.querySelector(".input");
+
+				const propagationPrenvent = (e) => {
+					//if(!e.key !== "Enter")
+					e.stopPropagation();
+				}
+
+				input.addEventListener("keydown", propagationPrenvent);
+				input.addEventListener("keyup", propagationPrenvent);
+				input.addEventListener("keypress", propagationPrenvent);
+
+				msg.textContent = message;
+				input.value = defaultValue;
+
+				dlgPrompt.showModal();
+				input.focus();
+
+				dlgPrompt.onclose = () => {
+					resolve(
+					dlgPrompt.returnValue === "ok"
+						? input.value
+						: null
+					);
+				};
+				});
+			}
+
+			return { alert, confirm, prompt };
+		})();
 
 		/* Prototype for Audio element to get/set attribute */
 		/* Element.prototype.attr = function (attrName, attrVal) {
@@ -14288,9 +14532,9 @@
 						@value 0 or missing: completely wipe out xState (which store environment variable across page session) and xDBFilesCfg (which store setting for DBs file)
 					@value 1: just clean xState, keep xDBFilesCfg so next session, the page would load only DBs that user set
 			*/
-			static wipeAll(mode) {
+			static async wipeAll(mode) {
 				mode = mode ?? 0;
-				if (!confirm("Bạn muốn xóa toàn bộ lịch sử trang Web đã lưu?\n\n Sẽ cần phải nạp lại trang Web.")) return;
+				if (!await Dialog.confirm("Bạn muốn xóa toàn bộ lịch sử trang Web đã lưu?\n\n Sẽ cần phải nạp lại trang Web.")) return;
 				xState = {}; //clear the xState
 				localStorage.clear(); //clear local storage
 				
@@ -15179,8 +15423,8 @@
 					if(ssData.audioMotionObj) toggleAudioSpectrumBtn.querySelector("svg").style.color = "goldenrod"; // set color for svg icon
 
 					//switch audio spectrum show/hide when clicking on the button
-					toggleAudioSpectrumBtn.onclick = function(){
-						if (!confirm("Bạn muốn " + btText + " phổ âm thanh?\n\n Sẽ cần phải nạp lại trang Web.")) return;
+					toggleAudioSpectrumBtn.onclick = async function(){
+						if (!await Dialog.confirm("Bạn muốn " + btText + " phổ âm thanh?\n\n Sẽ cần phải nạp lại trang Web.")) return;
 
 						if(!ssData.audioMotionObj) {
 							xState.audio.showSpectrum = 1; // set to show spectrum
@@ -16222,7 +16466,7 @@
 				_dragObj = null;
 
 				//Save xState, xDBFilesCfg into localStorage. Only after done saving, we do some other work. The reason is when there are changes in DB files settings, and require user to restart the page to update the setting, we need to wait for the saveState2Disk() to save new xDBFilesCfg before restarting
-				saveState2Disk(false).then(_ => {
+				saveState2Disk(false).then(async _ => {
 				
 					//re-populate the ssData.sddBooks if current group line configuration has any changes
 					if( !objsEqual(_xGrpCfgSetting[xState.grpLine].grp, xState.grpCfg[xState.grpLine].grp) ){
@@ -16242,7 +16486,7 @@
 					//check if there is any changes in DB files settings
 					//TODO: note that when addJsDatabaseFileReport() trying to load a DBfile that has loadMode = 0 (no show) and its failed, then xDBFilesCfg.toLoad[idx].failCount would increase by 1 (see the .catch in addJsDatabaseFileReport()), so the below objsEqual() will return @true even if there is no user-change in the DBfiles setting, thus it will false-alarm the user that there is a change.
 					if( !objsEqual(_xDBFilesCfg_filtered_toLoadSetting, _filterDBFileCfg(xDBFilesCfg)) ){
-						if (confirm("Có thay đổi trong Database Files Setting.\nBạn có muốn nạp lại trang Web?")) 
+						if (await Dialog.confirm("Có thay đổi trong Database Files Setting.\nBạn có muốn nạp lại trang Web?")) 
 							//Force a hard reload to clear the cache if supported by the browser
 							window.location.reload(true);
 					}
@@ -16562,7 +16806,8 @@
 					return (
 						audio.duration === Infinity ||
 						isNaN(audio.duration) ||
-						audio.seekable.length === 0
+						audio.seekable.length === 0 ||
+						(audio.seekable.length === 1 && audio.seekable.end(0) === Infinity)
 					);
 				}
 
