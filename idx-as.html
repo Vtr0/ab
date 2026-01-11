@@ -7651,6 +7651,7 @@
 					cursor: pointer;
     				vertical-align: bottom;
 					border: 1px solid #ddd;
+					border-radius: 5px;
 
 					& input[type="checkbox"] {
 						display: none;
@@ -9124,7 +9125,7 @@
 				})
 				.catch(err => {
 					console.error(err);
-					alert("Không nạp được file config.js, trang Web không thể hoạt động.");
+					Dialog.alert("Không nạp được file config.js, trang Web không thể hoạt động.");
 				});
 			}
 	</script>
@@ -9410,27 +9411,28 @@
 		========================= */
 
 		#dialog-root {
-		dialog {
+		& dialog {
 			border: none;
 			border-radius: 10px;
 			padding: 20px 22px;
 			min-width: 320px;
-			max-width: 90vw;
+			max-width: min(90vw, 520px);
+			border: 1px solid #000;
 
 			font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 			font-size: 14px;
 
 			background: #fff;
 			color: #222;
-			box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+			box-shadow: 0 0 20px 5px #000;
 
 			&::backdrop {
-			background: rgba(0, 0, 0, 0.45);
+				background: rgba(0, 0, 0, 0.75);
 			}
 
 			.message {
-			margin: 0 0 14px;
-			line-height: 1.4;
+				margin: 0 0 14px;
+				line-height: 1.4;
 			}
 
 			form {
@@ -9501,12 +9503,14 @@
 
 		body.dark-theme {
 		#dialog-root {
-			dialog {
+			& dialog {
 			background: #1e1e1e;
 			color: #eaeaea;
+			border-color: #fff;
+			box-shadow: 0 0 20px 5px #fff8;
 
 			&::backdrop {
-				background: rgba(0, 0, 0, 0.7);
+				background: rgba(0, 0, 0, 0.4);
 			}
 
 			input {
@@ -9566,16 +9570,25 @@
 
 		/** Dialog class to show modal dialogs, the replacement for alert/confirm/prompt standard js functions
 		 * @usage: 
-		 * await Dialog.alert("Saved successfully");
+		  	await Dialog.alert("Saved successfully");
 
-				if (await Dialog.confirm("Delete this file?")) {
-				console.log("Deleted");
-				}
+			if (await Dialog.confirm("Delete this file?")) {
+			console.log("Deleted");
+			}
 
-				const name = await Dialog.prompt("Enter your name:", "John");
-				if (name !== null) {
+			const name = await Dialog.prompt("Enter your name:", "John");
+			if (name !== null) {
 				console.log("Hello", name);
+			}
+
+			Dialog.prompt("Enter your name:", "John")
+			.then((result) => {
+				if (result !== null) {
+					console.log("Hello", result);
+				} else {
+					console.log("Prompt was cancelled");
 				}
+			});
 		 */
 		const Dialog = (() => {
 			const root = document.getElementById("dialog-root");
@@ -9586,7 +9599,7 @@
 
 			function alert(message) {
 				return new Promise((resolve) => {
-				dlgAlert.querySelector(".message").textContent = message;
+				dlgAlert.querySelector(".message").innerHTML = message; //textContent
 				dlgAlert.showModal();
 				dlgAlert.onclose = () => resolve();
 				});
@@ -9594,7 +9607,7 @@
 
 			function confirm(message) {
 				return new Promise((resolve) => {
-				dlgConfirm.querySelector(".message").textContent = message;
+				dlgConfirm.querySelector(".message").innerHTML = message; //textContent
 				dlgConfirm.showModal();
 				dlgConfirm.onclose = () =>
 					resolve(dlgConfirm.returnValue === "ok");
@@ -9615,7 +9628,7 @@
 				input.addEventListener("keyup", propagationPrenvent);
 				input.addEventListener("keypress", propagationPrenvent);
 
-				msg.textContent = message;
+				msg.innerHTML = message; //textContent
 				input.value = defaultValue;
 
 				dlgPrompt.showModal();
@@ -9630,6 +9643,19 @@
 				};
 				});
 			}
+
+			// Add event listener to close dialog when clicking outside the content area
+			const dialogs = document.querySelectorAll("#dialog-root dialog");
+
+			dialogs.forEach((dlg) => {
+			dlg.addEventListener("click", (e) => {
+				// Only close if the click was **outside the content**, i.e., on the backdrop
+				if (e.target === dlg) {
+					dlg.close(); // default returnValue will be ""
+				}
+			});
+			});
+
 
 			return { alert, confirm, prompt };
 		})();
@@ -12883,7 +12909,7 @@
 				const remainDuration = BookData.prototype.bookStatistics(_bData, newChap).totalDur;
 				const _listenedDur = _bData.statistics.totalDur - remainDuration;
 				// calculte percentage of all chapters (from chapter 1 to chapter right before current chapter) has been listen in compared with the whole book
-				const _listenedPercent = ( (1 - remainDuration / _bData.statistics.totalDur)*100 ).toFixed(1);
+				const _listenedPercent = _bData.statistics.totalDur == 0 ? 0 : ( (1 - remainDuration / _bData.statistics.totalDur)*100 ).toFixed(1);
 
 				
 				/* inforType 0:🎧 1:🕓 2:📆 3:🎤 4: cId
@@ -14534,7 +14560,7 @@
 			*/
 			static async wipeAll(mode) {
 				mode = mode ?? 0;
-				if (!await Dialog.confirm("Bạn muốn xóa toàn bộ lịch sử trang Web đã lưu?\n\n Sẽ cần phải nạp lại trang Web.")) return;
+				if (!await Dialog.confirm("Bạn muốn xóa toàn bộ lịch sử trang Web đã lưu?<br><br><b style='color:#00aaff'>Sẽ cần phải nạp lại trang Web.</b>")) return;
 				xState = {}; //clear the xState
 				localStorage.clear(); //clear local storage
 				
@@ -15424,7 +15450,7 @@
 
 					//switch audio spectrum show/hide when clicking on the button
 					toggleAudioSpectrumBtn.onclick = async function(){
-						if (!await Dialog.confirm("Bạn muốn " + btText + " phổ âm thanh?\n\n Sẽ cần phải nạp lại trang Web.")) return;
+						if (!await Dialog.confirm("<b>Bạn muốn " + btText + " phổ âm thanh?</b><br><br>Lưu ý, khi bật chế độ hiện phổ âm thanh, sẽ có nhiều hạn chế như sau:<ol><li>Không hỗ trợ phát từ một số nguồn audio (do CORS), nhưng nghe bình thường khi tắt phổ âm thanh.</li><li>Sẽ bị mất những đoạn audio nhỏ khi phát với tốc độ > 1.</li><li>Đôi khi mất tiếng, phải Pause và Play lại mới được.</li><li>Phổ âm thanh có thể không hiện trong một số trường hợp (ví dụ: nghe live radio trên iOs/iPadOS)</li></ol><b style='color:#00aaff'>Sẽ cần phải nạp lại trang Web.</b>")) return;
 
 						if(!ssData.audioMotionObj) {
 							xState.audio.showSpectrum = 1; // set to show spectrum
@@ -16486,7 +16512,7 @@
 					//check if there is any changes in DB files settings
 					//TODO: note that when addJsDatabaseFileReport() trying to load a DBfile that has loadMode = 0 (no show) and its failed, then xDBFilesCfg.toLoad[idx].failCount would increase by 1 (see the .catch in addJsDatabaseFileReport()), so the below objsEqual() will return @true even if there is no user-change in the DBfiles setting, thus it will false-alarm the user that there is a change.
 					if( !objsEqual(_xDBFilesCfg_filtered_toLoadSetting, _filterDBFileCfg(xDBFilesCfg)) ){
-						if (await Dialog.confirm("Có thay đổi trong Database Files Setting.\nBạn có muốn nạp lại trang Web?")) 
+						if (await Dialog.confirm("Có thay đổi trong Database Files Setting.<br><br><b style='color:#00aaff'>Bạn có muốn nạp lại trang Web?</b>")) 
 							//Force a hard reload to clear the cache if supported by the browser
 							window.location.reload(true);
 					}
@@ -16802,7 +16828,8 @@
 					switchPlayPauseButton(1, 0); // Play icon but 3 buttons got disabled
 				}
 			
-				function isLikelyLive(audio) {
+				// detect if the audio source is a live stream or on-demand audio
+				function isSrcLikelyLive(audio) {
 					return (
 						audio.duration === Infinity ||
 						isNaN(audio.duration) ||
@@ -16811,8 +16838,9 @@
 					);
 				}
 
+				// when the metadata has been loaded, we can check if the source is live stream or not
 				xAudio.addEventListener("loadedmetadata", () => {
-					if (isLikelyLive(xAudio)) {
+					if (isSrcLikelyLive(xAudio)) {
 						console.log("✅ Live stream detected");
 						const apTitleElm = document.querySelector(".ap-title");
 						if(!apTitleElm.textContent.startsWith("🔴 ")) {
@@ -20974,7 +21002,7 @@ this.highlight = (elem) => {
 					//remove all space from the name, because the name will be used as attribute of sddState json which will be save to localStorage as environment variables
 					let _sddName = _settings.name.replace(/\s/g,"");
 					if(_sddName == "") {
-						alert("SDD instance must have unique name defined in {settings.name} attribute. Different instances must has diffrent names !!!");
+						Dialog.alert("SDD instance must have unique name defined in {settings.name} attribute. Different instances must has diffrent names !!!");
 						return;
 					}
 					//adding prefix SDD_ to the name to easily identify
