@@ -7618,7 +7618,7 @@
 			border-radius: 20px;
 			box-shadow: 0 0 3px 4px #fff5;
 			padding: 4px 16px 16px;
-			margin: 70px auto;
+			margin: 30px auto;
 
 			& .aspGroupContainer {
 				display: grid;
@@ -7918,7 +7918,7 @@
             <option value="linear">Linear</option>
             <option value="log">Logarithmic</option>
             <option value="mel">Mel (better for mid-range)</option>
-            <option value="erb">ERB</option>
+            <!-- <option value="erb">ERB</option> -->
           </select>
         </label>
 
@@ -16557,6 +16557,27 @@
 
 					switchPlayPauseButton(1, 0); // Play icon but 3 buttons got disabled
 				}
+			
+				function isLikelyLive(audio) {
+					return (
+						audio.duration === Infinity ||
+						isNaN(audio.duration) ||
+						audio.seekable.length === 0
+					);
+				}
+
+				xAudio.addEventListener("loadedmetadata", () => {
+					if (isLikelyLive(xAudio)) {
+						console.log("✅ Live stream detected");
+						const apTitleElm = document.querySelector(".ap-title");
+						if(!apTitleElm.textContent.startsWith("🔴 ")) {
+							apTitleElm.textContent = "🔴 " + apTitleElm.textContent;
+						}
+						
+					} else {
+						console.log("📦 On-demand audio");
+					}
+				});
 			}
 
 			/** Function contains sub-function that relate to audio source control including: load audio source, play it and handle its fail. Also, provide function to switch audio source among multple audio source provided by the page */
