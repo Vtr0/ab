@@ -7571,6 +7571,7 @@
 	}
  	</style>
 
+	<!-- AUDIO SPECTRUM CANVAS AND OPTIONS PANELS -->
 	<style>
 		/* #divAudioSpectrum{
 			background: #111;
@@ -7642,16 +7643,21 @@
 				display: block;
 				/* margin-top: 12px; */
 				&:has(input[type="checkbox"]) {
-					white-space: nowrap;
-					overflow: hidden;
-					text-overflow: ellipsis;
+					
 
 					padding: 4px;
 					text-align: center;
 					cursor: pointer;
-    				vertical-align: bottom;
+    					vertical-align: bottom;
 					border: 1px solid #ddd;
 					border-radius: 5px;
+
+					& code{
+						/* the reason is that "overflow: hidden" prevent the tooltip form being shown */
+						white-space: nowrap;
+						overflow: hidden;
+						text-overflow: ellipsis;
+					}
 
 					& input[type="checkbox"] {
 						display: none;
@@ -7661,10 +7667,15 @@
 						background: #444;
 						border: none;
 						/* box-shadow: inset 1px 1px 0 #000; */
-						border: 1px solid #999;
-						color: #0f0;
 						/* padding: 8px; */
+						border: 1px solid #999;
+
+						& code{
+						color: #0f0;
 						text-shadow: 2px 2px 10px #0f08, -2px -2px 10px #0f08;
+						/* color: #00ffe5;
+						text-shadow: 2px 2px 10px #00ffbe88, -2px -2px 10px #00ffd188; */
+						}
 					}
 				}
 			}
@@ -7696,6 +7707,155 @@
 			}
 		}
 	</style>
+	
+	<!-- DIALOG STYLES -->
+	<style>
+		/* =========================
+		Dialog Base
+		========================= */
+
+		#dialog-root {
+			& dialog {
+				border: none;
+				border-radius: 10px;
+				padding: 20px 22px;
+				min-width: 320px;
+				max-width: min(90vw, 520px);
+				border: 1px solid #000;
+
+				font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+				font-size: 14px;
+
+				background: #fff;
+				color: #222;
+				box-shadow: 0 0 20px 5px #000;
+
+				&::backdrop {
+					background: rgba(0, 0, 0, 0.75);
+				}
+
+				& .message {
+					margin: 0 0 14px;
+					line-height: 1.4;
+				}
+
+				& form {
+					display: flex;
+					flex-direction: column;
+
+					/* &[method="dialog"], */
+					& > div.btnContainer {
+						display: flex;
+						/* the reason for following two lines is to make OK button is default one (when user press Enter) but still keep it on the right of Cancel button */
+						justify-content: flex-start;
+						flex-flow: row-reverse wrap;
+						gap: 8px;
+						margin-top:10px;
+					}
+				}
+
+				& input {
+					width: 100%;
+					padding: 8px 10px;
+					margin-top: 6px;
+					border-radius: 6px;
+					font-size: 14px;
+
+					background: #fff;
+					color: #222;
+					border: 1px solid #ccc;
+
+					&:focus {
+						outline: none;
+						border-color: #0078d4;
+						box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.25);
+					}
+				}
+
+				& button {
+					min-width: 80px;
+					padding: 6px 14px;
+					border-radius: 6px;
+					/* font-size: 13px; */
+					cursor: pointer;
+
+					background: #f3f3f3;
+					color: #222;
+					border: 1px solid #ccc;
+
+					&:hover {
+						background: #e7e7e7;
+					}
+
+					&:focus-visible {
+						outline: none;
+					}
+
+					&[value="ok"] {
+						background: #0078d4;
+						color: #fff;
+						border-color: #0078d4;
+
+						&:hover {
+							background: #006cbe;
+						}
+					}
+				}
+			}
+		}
+
+		/* =========================
+		Dark Theme
+		========================= */
+
+		body.dark-theme {
+			#dialog-root {
+				& dialog {
+					background: #1e1e1e;
+					color: #eaeaea;
+					border-color: #fff;
+					box-shadow: 0 0 20px 5px #fff8;
+
+					&::backdrop {
+						background: rgba(0, 0, 0, 0.4);
+					}
+
+					& input {
+						background: #2b2b2b;
+						color: #eaeaea;
+						border-color: #444;
+
+						&:focus {
+							border-color: #4fa3ff;
+							box-shadow: 0 0 0 2px rgba(79, 163, 255, 0.35);
+						}
+					}
+
+					& button {
+						background: #333;
+						color: #eaeaea;
+						border-color: #444;
+
+						&:hover {
+							background: #3d3d3d;
+						}
+
+						&[value="ok"] {
+							background: #4fa3ff;
+							color: #000;
+							border-color: #4fa3ff;
+
+							&:hover {
+								background: #4096f0;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+	</style>
+	
 </head>
 
 <body onload="loadPage();" class="niceScrollBar dark-theme">
@@ -7712,29 +7872,33 @@
 		<!-- Alert -->
 		<dialog id="dlg-alert">
 			<form method="dialog">
-			<p class="message"></p>
-			<button value="ok" autofocus>OK</button>
+				<p class="message"></p>
+				<div class="btnContainer">
+					<button value="ok" autofocus>☑️ OK</button>
+				</div>
 			</form>
 		</dialog>
 
 		<!-- Confirm -->
 		<dialog id="dlg-confirm">
-			<p class="message"></p>
 			<form method="dialog">
-			<button value="ok" autofocus>OK</button>
-			<button value="cancel">Cancel</button>
+				<p class="message"></p>
+				<div class="btnContainer">
+					<button value="ok" autofocus>☑️ OK</button>
+					<button value="cancel">❌ Cancel</button>
+				</div>
 			</form>
 		</dialog>
 
-		<!-- Prompt -->
+		<!-- Prompt ✅ -->
 		<dialog id="dlg-prompt">
 			<form method="dialog">
-			<p class="message"></p>
-			<input class="input" type="text" />
-			<div style="margin-top:10px">
-				<button value="ok" autofocus>OK</button>
-				<button value="cancel">Cancel</button>
-			</div>
+				<p class="message"></p>
+				<input class="input" type="text" />
+				<div class="btnContainer">
+					<button value="ok" autofocus>☑️ OK</button>
+					<button value="cancel">❌ Cancel</button>
+				</div>
 			</form>
 		</dialog>
 	</div>
@@ -7909,73 +8073,72 @@
 	<!-- aspectrumDialog Options Dialog -->
     <div id="aspectrumDialogOverlay">
       <div name="aspectrumPanel">
-		<div class="aspGroupContainer">	
-        <label>
-          Mode
-          <select name="mode">
-            <option value="0">0 – Discrete frequencies</option>
-            <option value="1">1 – 240 bands</option>
-            <option value="2">2 – 120 bands</option>
-            <option value="3">3 – 80 bands</option>
-            <option value="4">4 – 60 bands</option>
-            <option value="5">5 – 40 bands</option>
-            <option value="6">6 – 30 bands</option>
-            <option value="7">7 – 20 bands</option>
-            <option value="8">8 – 10 bands</option>
-            <option value="10">10 – Graph</option>
-          </select>
-        </label>
+	   <div class="aspGroupContainer">	
+		<label>
+			Mode
+			<select name="mode">
+			<option value="0">0 – Discrete frequencies</option>
+			<option value="1">1 – 240 bands</option>
+			<option value="2">2 – 120 bands</option>
+			<option value="3">3 – 80 bands</option>
+			<option value="4">4 – 60 bands</option>
+			<option value="5">5 – 40 bands</option>
+			<option value="6">6 – 30 bands</option>
+			<option value="7">7 – 20 bands</option>
+			<option value="8">8 – 10 bands</option>
+			<option value="10">10 – Graph</option>
+			</select>
+		</label>
 
-        <label>
-          Channel Layout
-          <select name="channelLayout">
-            <option value="single">Single</option>
-            <option value="dual-combined">Dual Combined</option>
-            <option value="dual-horizontal">Dual Horizontal</option>
-            <option value="dual-vertical">Dual Vertical</option>
-          </select>
-        </label>
+		<label>
+			Channel Layout
+			<select name="channelLayout">
+				<option value="single">Single</option>
+				<option value="dual-combined">Dual Combined</option>
+				<option value="dual-horizontal">Dual Horizontal</option>
+				<option value="dual-vertical">Dual Vertical</option>
+			</select>
+		</label>
 
-	   <label>
-          Color Mode
-          <select name="colorMode">
-            <option value="gradient">Gradient</option>
-            <option value="bar-index">Bar Index</option>
-            <option value="bar-level">Bar Level</option>
-          </select>
-        </label>
+		<label>
+			Color Mode
+			<select name="colorMode">
+				<option value="gradient">Gradient</option>
+				<option value="bar-index">Bar Index</option>
+				<option value="bar-level">Bar Level</option>
+			</select>
+		</label>
 
-        <label>
-          Frequency Scale
-          <select name="frequencyScale">
-            <option value="bark">Bark (better for mid-range)</option>
-            <option value="linear">Linear</option>
-            <option value="log">Logarithmic</option>
-            <option value="mel">Mel (better for mid-range)</option>
-            <!-- <option value="erb">ERB</option> -->
-          </select>
-        </label>
+		<label>
+			Frequency Scale
+			<select name="frequencyScale">
+				<option value="bark">Bark</option>
+				<option value="linear">Linear</option>
+				<option value="log">Logarithmic</option>
+				<option value="mel">Mel</option>
+			</select>
+		</label>
 
-        <label>
-          Gradient
-          <select name="gradient">
-            <option value="classic">Classic</option>
-            <option value="orangered">Orangered</option>
-            <option value="prism">Prism</option>
-            <option value="rainbow">Rainbow</option>
-            <option value="steelblue">Steelblue</option>
-          </select>
-        </label>
+		<label>
+			Gradient
+			<select name="gradient">
+				<option value="classic">Classic</option>
+				<option value="orangered">Orangered</option>
+				<option value="prism">Prism</option>
+				<option value="rainbow">Rainbow</option>
+				<option value="steelblue">Steelblue</option>
+			</select>
+		</label>
 
-	   <label>
-          Mirror
-          <select name="mirror">
-            <option value="-1">Mirror left</option>
-            <option value="0">No mirror</option>
-            <option value="1">Mirror right</option>
-          </select>
-        </label>
-	 </div>
+		<label>
+			Mirror
+			<select name="mirror">
+				<option value="-1">Mirror left</option>
+				<option value="0">No mirror</option>
+				<option value="1">Mirror right</option>
+			</select>
+		</label>
+	   </div>
 	   <fieldset class="aspGroupContainer" name="aspCheckboxContainer">
 		<legend>Option flags</legend>
 		<!-- <label> <input type="checkbox" name="ledBars" /> LED Bars </label>
@@ -9404,150 +9567,6 @@
 
 	</script>
 
-	<!-- DIALOG STYLES -->
-	<style>
-		/* =========================
-		Dialog Base
-		========================= */
-
-		#dialog-root {
-		& dialog {
-			border: none;
-			border-radius: 10px;
-			padding: 20px 22px;
-			min-width: 320px;
-			max-width: min(90vw, 520px);
-			border: 1px solid #000;
-
-			font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-			font-size: 14px;
-
-			background: #fff;
-			color: #222;
-			box-shadow: 0 0 20px 5px #000;
-
-			&::backdrop {
-				background: rgba(0, 0, 0, 0.75);
-			}
-
-			.message {
-				margin: 0 0 14px;
-				line-height: 1.4;
-			}
-
-			form {
-			display: flex;
-			flex-direction: column;
-
-			&[method="dialog"],
-			> div {
-				display: flex;
-				justify-content: flex-end;
-				gap: 8px;
-			}
-			}
-
-			input {
-			width: 100%;
-			padding: 8px 10px;
-			margin-top: 6px;
-			border-radius: 6px;
-			font-size: 14px;
-
-			background: #fff;
-			color: #222;
-			border: 1px solid #ccc;
-
-			&:focus {
-				outline: none;
-				border-color: #0078d4;
-				box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.25);
-			}
-			}
-
-			button {
-			min-width: 80px;
-			padding: 6px 14px;
-			border-radius: 6px;
-			font-size: 13px;
-			cursor: pointer;
-
-			background: #f3f3f3;
-			color: #222;
-			border: 1px solid #ccc;
-
-			&:hover {
-				background: #e7e7e7;
-			}
-
-			&:focus-visible {
-				outline: none;
-			}
-
-			&[value="ok"] {
-				background: #0078d4;
-				color: #fff;
-				border-color: #0078d4;
-
-				&:hover {
-				background: #006cbe;
-				}
-			}
-			}
-		}
-		}
-
-		/* =========================
-		Dark Theme
-		========================= */
-
-		body.dark-theme {
-		#dialog-root {
-			& dialog {
-			background: #1e1e1e;
-			color: #eaeaea;
-			border-color: #fff;
-			box-shadow: 0 0 20px 5px #fff8;
-
-			&::backdrop {
-				background: rgba(0, 0, 0, 0.4);
-			}
-
-			input {
-				background: #2b2b2b;
-				color: #eaeaea;
-				border-color: #444;
-
-				&:focus {
-				border-color: #4fa3ff;
-				box-shadow: 0 0 0 2px rgba(79, 163, 255, 0.35);
-				}
-			}
-
-			button {
-				background: #333;
-				color: #eaeaea;
-				border-color: #444;
-
-				&:hover {
-				background: #3d3d3d;
-				}
-
-				&[value="ok"] {
-				background: #4fa3ff;
-				color: #000;
-				border-color: #4fa3ff;
-
-				&:hover {
-					background: #4096f0;
-				}
-				}
-			}
-			}
-		}
-		}
-		
-	</style>
 	<!-- TOAST + PROTOTYPE FUNCTION THAT EFFECT UI -->
 	<script>
 		"use strict";
@@ -21229,14 +21248,20 @@ this.highlight = (elem) => {
 			const audioCtx = ama.audioCtx;
 
 			/* IIFE function to handle audio spectrum when xAudio is played or paused AND when document visibility changes */
-			void function(){
-				// Required on user gesture
-				xAudio.addEventListener('play', () => {
+			void function handlexAudioEvents(){
+				const resumeAudioContext = () => {
 					if (audioCtx.state === 'suspended') {
 						audioCtx.resume(); //resume audio context when audio play
 					}
-				});
+				};
 
+				// Required on user gesture
+				xAudio.addEventListener('play', resumeAudioContext);
+				xAudio.addEventListener('seeked', resumeAudioContext);
+
+				//TODO: may suspend audio context when audio is "seeking" and resume when "seeked" (as above)
+
+				// suspend audio context when audio is paused to save resource
 				xAudio.addEventListener('pause', () => {
 					audioCtx.suspend(); //suspend audio context to save resource
 				});
@@ -21265,7 +21290,7 @@ this.highlight = (elem) => {
 			}
 
 			/* Function to populate checkboxes in options panel and handle event for selects, checkboxes of options panel */
-			void function(){
+			void function optionPanelElemsHandler(){
 				// Bind the options controls to AudioMotionAnalyzer options. The optionsBindings object defines the type of each control and any necessary parsing, in which, keys are the AudioMotionAnalyzer's option names and also the name of the element.
 				const optionsBindings = {
 					mode: { // 1 to 10 (except 9)
@@ -21302,6 +21327,7 @@ this.highlight = (elem) => {
 				// go through each option control element and bind it to AudioMotionAnalyzer option
 				const chkboxesContainer = aspectrumOptionsPanel.querySelector('[name="aspCheckboxContainer"]');
 				for (const [id, config] of Object.entries(optionsBindings)) {
+					// Create checkbox element if the option is of type checkbox
 					if(config.type === "checkbox"){
 						const label = document.createElement("label");
 
@@ -21311,9 +21337,13 @@ this.highlight = (elem) => {
 
 						config.hint && (label.dataset.tooltip = config.hint); //add hint as tooltip if provided
 						
+						const codeElm = document.createElement("code");
+						codeElm.textContent = `${config.label ?? id}`; //if no label provided, use id as label
+
 						//add checkbox to label
 						label.appendChild(checkbox);
-						label.append(` ${config.label ?? id}`); //if no label provided, use id as label
+						label.appendChild(codeElm);
+						//label.append(` ${config.label ?? id}`); //if no label provided, use id as label
 
 						chkboxesContainer.appendChild(label);
 					}
@@ -21431,9 +21461,9 @@ this.highlight = (elem) => {
 			})();
 			
 			const featuresDefaultOptions = {
-				energyMeter: {defVal: 0, type: "checkbox", label: "Energy Meter",},
-				showLogo: {defVal: 0, type: "checkbox", label: "Show Logo",},
-				songProgress: {defVal: 0, type: "checkbox", label: "Song Progress",},
+				energyMeter: {val: 0, type: "checkbox", label: "Energy Meter",},
+				showLogo: {val: 0, type: "checkbox", label: "Chapter title",},
+				songProgress: {val: 0, type: "checkbox", label: "Song Progress",},
 			};
 
 			/* Function to populate checkboxes in options panel and handle event for selects, checkboxes of options panel */
@@ -21446,7 +21476,7 @@ this.highlight = (elem) => {
 				const xStateFeatures = xState.audioSpectrum.features;
 				// merge features options from default options and from xState
 				for(const [id, config] of Object.entries(featuresDefaultOptions)){
-					config.val = xStateFeatures[id] ?? config.defVal;
+					config.val = xStateFeatures[id] ?? config.val;
 					// copy the default value to xState if not defined
 					xStateFeatures[id] = config.val;
 				}
@@ -21463,9 +21493,13 @@ this.highlight = (elem) => {
 
 						checkbox.checked = config.val;
 
+						const codeElm = document.createElement("code");
+						codeElm.textContent = `${config.label ?? id}`; //if no label provided, use id as label
+
 						//add checkbox to label
 						label.appendChild(checkbox);
-						label.append(` ${config.label ?? id}`); //if no label provided, use id as label
+						label.appendChild(codeElm);
+						//label.append(` ${config.label ?? id}`); //if no label provided, use id as label
 
 						chkboxesContainer.appendChild(label);
 					}
