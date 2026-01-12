@@ -7643,7 +7643,10 @@
 				display: block;
 				/* margin-top: 12px; */
 				&:has(input[type="checkbox"]) {
-					
+					white-space: nowrap;
+					/* This prevent tooltip from being shown, that is, the tooltip would be clipped by the overflow: hidden. Without this "ellipsis" does not work */
+					/* overflow: hidden;
+					text-overflow: ellipsis; */
 
 					padding: 4px;
 					text-align: center;
@@ -7652,31 +7655,21 @@
 					border: 1px solid #ddd;
 					border-radius: 5px;
 
-					& code{
-						display: inline-block;
-						/* the reason is that "overflow: hidden" prevent the tooltip form being shown */
-						white-space: nowrap;
-						overflow: hidden;
-						text-overflow: ellipsis;
-					}
-
 					& input[type="checkbox"] {
 						display: none;
 					}
 
-					&:has(input[type="checkbox"]:checked) {
+					&:has(input[type="checkbox"]:checked){
 						background: #444;
 						border: none;
 						/* box-shadow: inset 1px 1px 0 #000; */
 						/* padding: 8px; */
 						border: 1px solid #999;
 
-						& code{
 						color: #0f0;
 						text-shadow: 2px 2px 10px #0f08, -2px -2px 10px #0f08;
 						/* color: #00ffe5;
 						text-shadow: 2px 2px 10px #00ffbe88, -2px -2px 10px #00ffd188; */
-						}
 					}
 				}
 			}
@@ -8075,7 +8068,7 @@
     <div id="aspectrumDialogOverlay">
       <div name="aspectrumPanel">
 	   <div class="aspGroupContainer">	
-		<label>
+		<label data-tooltip="Visualization mode.&#xa;-Mode 0 provides the highest resolution, allowing you to visualize individual frequencies&#xa;-Modes 1 - 8 divide the frequency spectrum in bands, each band represents the nth part of an octave.&#xa;-Mode 10 uses the discrete FFT data points to draw a continuous line and/or a filled area graph." data-tooltip-location="bottom">
 			Mode
 			<select name="mode">
 			<option value="0">0 – Discrete frequencies</option>
@@ -8091,7 +8084,7 @@
 			</select>
 		</label>
 
-		<label>
+		<label data-tooltip="Defines the number and layout of analyzer channels." data-tooltip-location="bottom">
 			Channel Layout
 			<select name="channelLayout">
 				<option value="single">Single</option>
@@ -8101,7 +8094,7 @@
 			</select>
 		</label>
 
-		<label>
+		<label data-tooltip="Selects the desired mode for coloring the analyzer bars.&#xa;This property has no effect in Graph mode (mode 10)." data-tooltip-location="bottom">
 			Color Mode
 			<select name="colorMode">
 				<option value="gradient">Gradient</option>
@@ -8110,7 +8103,7 @@
 			</select>
 		</label>
 
-		<label>
+		<label data-tooltip="Scale used to represent frequencies in the horizontal axis." data-tooltip-location="bottom">
 			Frequency Scale
 			<select name="frequencyScale">
 				<option value="bark">Bark</option>
@@ -8120,7 +8113,7 @@
 			</select>
 		</label>
 
-		<label>
+		<label data-tooltip="The color gradient scheme used for analyzer graphs." data-tooltip-location="bottom">
 			Gradient
 			<select name="gradient">
 				<option value="classic">Classic</option>
@@ -8131,7 +8124,7 @@
 			</select>
 		</label>
 
-		<label>
+		<label data-tooltip="Mirrors the spectrum image to the left or right side." data-tooltip-location="bottom">
 			Mirror
 			<select name="mirror">
 				<option value="-1">Mirror left</option>
@@ -21307,7 +21300,7 @@ this.highlight = (elem) => {
 						parse: (v) => +v, //convert string to number
 					},
 					ledBars: { type: "checkbox", label: "LED Bars", hint: "Activate the LED bars effect for frequency bands modes", },
-					lumiBars: { type: "checkbox", label: "Luminous Bars", hint: "Only for frequency bands modes.&#xa;When set to true all analyzer bars will be displayed at full height with varying luminance", },
+					lumiBars: { type: "checkbox", label: "Luminous Bars", hint: "Only for frequency bands modes.\nWhen set to true all analyzer bars will be displayed at full height with varying luminance", },
 					trueLeds: { type: "checkbox", label: "True LEDs", hint: "When set to true, LEDs are painted with individual colors from the current gradient, instead of using the gradient itself"},
 					roundBars: { type: "checkbox", label: "Round Bars", hint: "Round the corners of the bars. Only effective to one of the bands modes", },
 					showFPS: { type: "checkbox", label: "Show FPS", hint: "Show the current frame rate (frames per second) in the top-left corner of the canvas", },
@@ -21317,12 +21310,12 @@ this.highlight = (elem) => {
 					reflexRatio: { //Percentage of canvas height used for reflection
 						type: "checkbox", 
 						label: "Reflection",
-						hint: "Show the reflection effect below the main spectrum display.&#xa;When checked, the reflection ratio is fixed to 0.4",
+						hint: "Show the reflection effect below the main spectrum display.\nWhen checked, the reflection ratio is fixed to 0.4",
 						parse: (v) => v?0.4:0, //fix the ratio to 0.5 when checked, 0 when unchecked. It can be any value from 0 to 1
 					}, 
 					showPeaks: { type: "checkbox", label: "Show Peaks", hint: "Show peak levels for each frequency band", },
 					fadePeaks: { type: "checkbox", label: "Fade Peaks", hint: "Make peak levels fade out instead of falling", },
-					peakLine: { type: "checkbox", label: "Peak Line", hint: "Show a line connecting the peak levels of all frequency band.&#xa;Only works for mode 10 - Graph" }, // only work for  mode 10 - Graph
+					peakLine: { type: "checkbox", label: "Peak Line", hint: "Show a line connecting the peak levels of all frequency band.\nOnly works for mode 10 - Graph" }, // only work for  mode 10 - Graph
 				};
 
 				// go through each option control element and bind it to AudioMotionAnalyzer option
@@ -21338,13 +21331,9 @@ this.highlight = (elem) => {
 
 						config.hint && (label.dataset.tooltip = config.hint); //add hint as tooltip if provided
 						
-						const codeElm = document.createElement("code");
-						codeElm.textContent = `${config.label ?? id}`; //if no label provided, use id as label
-
 						//add checkbox to label
 						label.appendChild(checkbox);
-						label.appendChild(codeElm);
-						//label.append(` ${config.label ?? id}`); //if no label provided, use id as label
+						label.append(` ${config.label ?? id}`); //if no label provided, use id as label
 
 						chkboxesContainer.appendChild(label);
 					}
@@ -21413,6 +21402,13 @@ this.highlight = (elem) => {
 					if(ama.canvas === document.fullscreenElement) return; //do nothing if spectrum already in fullscreen mode
 
 					aspectrumOptionsOverlay.style.display = "block";
+
+					//reposition tooltips inside options panel only once when panel is opened first time
+					if(!audioSpectrumDiv.beenLoaded) {
+						audioSpectrumDiv.beenLoaded = true;
+
+						guiUtils.reposTooltips(aspectrumOptionsPanel, {container: document.documentElement});
+					}
 				});
 				
 
@@ -21462,9 +21458,9 @@ this.highlight = (elem) => {
 			})();
 			
 			const featuresDefaultOptions = {
-				energyMeter: {val: 0, type: "checkbox", label: "Energy Meter",},
-				showLogo: {val: 0, type: "checkbox", label: "Chapter title",},
-				songProgress: {val: 0, type: "checkbox", label: "Song Progress",},
+				energyMeter: {val: 0, type: "checkbox", label: "Energy Meter", hint: "Show energy meter and bass/midrange/treble indicators",},
+				showLogo: {val: 0, type: "checkbox", label: "Show Title", hint: "Show current chapter title at top of spectrum",},
+				songProgress: {val: 0, type: "checkbox", label: "Song Progress", hint: "Show song progress bar at very top of spectrum",},
 			};
 
 			/* Function to populate checkboxes in options panel and handle event for selects, checkboxes of options panel */
@@ -21494,13 +21490,11 @@ this.highlight = (elem) => {
 
 						checkbox.checked = config.val;
 
-						const codeElm = document.createElement("code");
-						codeElm.textContent = `${config.label ?? id}`; //if no label provided, use id as label
+						config.hint && (label.dataset.tooltip = config.hint); //add hint as tooltip if provided
 
 						//add checkbox to label
 						label.appendChild(checkbox);
-						label.appendChild(codeElm);
-						//label.append(` ${config.label ?? id}`); //if no label provided, use id as label
+						label.append(` ${config.label ?? id}`); //if no label provided, use id as label
 
 						chkboxesContainer.appendChild(label);
 					}
@@ -21638,7 +21632,8 @@ this.highlight = (elem) => {
 				}
 
 			}
-		}
+					
+		} //end of loadAudioSpectrum function
 	</script>
 
 	<!-- SVG ICONS LIBRARY -->
