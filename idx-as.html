@@ -619,9 +619,6 @@
 				/* in column mode: to push big Playing time closer to audio buttons */
 				margin-bottom: -5px;
 
-				/* css variable --margin-hack (see the hack explain below) when element details[name='chapterInforDetails'] collapsed */
-				--margin-hack: 5px;
-
 				position: relative; /* so that ::before pseudo could take this div as offsetParent */
 				&::before{
 					content: "";
@@ -660,29 +657,6 @@
 					/* https://www.svgrepo.com/show/224460/sword.svg */
 					/* url(https://www.svgrepo.com/show/224446/axe.svg); */
 				}
-
-				/* Hack for chapter infor tooltip not to be clipped. Because #elmChapterInfor has class .detailContent (which contains max-height for detail/summary to expand/collapse animation), thus its has property display:block, so tooltip contained in ::before pseudo of its <code> descendant being clipped by boudingRect of #elmChapterInfor. Can change #elmChapterInfor display to 'inline' for tooltip to fully shows up, but #elmChapterInfor cannot be collapsed anymore. So, I do this hack using padding */
-				&>div:has(> details[name='chapterInforDetails']){					
-
-					/* compensate the room of its presibling .detailContent */
-					margin-bottom: calc(0px - var(--margin-hack));						
-
-					&>.detailContent {
-						/* make room for bottom tooltip*/
-						padding-bottom: var(--margin-hack);
-					}
-
-					/* --margin-hack when element details[name='chapterInforDetails'] expanded */
-					/* &:has( > details[open]) {
-						--margin-hack: 60px;
-					} */
-				}
-
-				/* --margin-hack when element details[name='chapterInforDetails'] expanded */
-				&:has( details[name='chapterInforDetails'][open]) {
-					--margin-hack: 60px;
-				}
-				/* End of tooltip hack */
 			}
 
 			/* Adapt from https://css-tricks.com/almanac/properties/a/animation-timeline/ to create a progress-scroll-bar at the top or bottom of viewport */
@@ -1029,7 +1003,9 @@
 
 			max-width: 100%;
 			/* max-height: 0px; */
-			overflow: hidden;
+
+			/* With "overflow: hidden;", all tooltips inside this div will be clipped by this div, so that tooltip of chapter infor will be clipped. That why I had to apply a small hack (using a css variable --margin-hack), but without this css rule, I have removed that hack */
+			/* overflow: hidden; */
 			
 			/* to compensate the bottom-margin of previous sibling <detail> element */
 			margin-top: -3px;
@@ -1074,7 +1050,7 @@
 		}
 
 		#elmChapterInfor {
-			margin-bottom: 5px;
+			margin-bottom: 7px;
 			/* padding-bottom: 3px; */
 		}
 
@@ -7611,15 +7587,28 @@
 			background: rgba(0, 0, 0, 0.65);
 			display: none;
 		}
+		
 
 		[name="aspectrumPanel"] {
-			width: min( calc(100vw - 60px), 710px); /* 360px; */
+			width: min( 95vw, 720px); /* calc(100vw - 40px) */
 			background: #111;
 			border: 2px solid #999;
 			border-radius: 20px;
 			box-shadow: 0 0 3px 4px #fff5;
 			padding: 4px 16px 16px;
-			margin: 30px auto;
+			max-height: 90dvh;
+			
+			overflow: hidden auto;
+			
+			
+			position: absolute;
+			z-index: 100;
+			top: 0px;
+			left: 50%;
+			/* transition: all 300ms ease-in-out;
+			transform: translate(-50%, -50%) scale(0); */
+			/* margin: 30px auto; */
+			transform: translate(-50%, max(calc(20dvh - 25%), 4dvh)) scale(1);	
 
 			& .aspGroupContainer {
 				display: grid;
@@ -7631,8 +7620,13 @@
 				}
 			}
 
+			/* & [name="aspSelectContainer"]{
+				max-height: calc(90dvh - 500px);
+				overflow: hidden;
+			} */
+
 			& *{
-				/* font-size: .95em; */
+				font-size: .95em;
 				color: #eee;
 				&:hover {
 					color: #999;
@@ -8067,9 +8061,9 @@
 	<!-- aspectrumDialog Options Dialog -->
     <div id="aspectrumDialogOverlay">
       <div name="aspectrumPanel">
-	   <div class="aspGroupContainer">	
+	   <div class="aspGroupContainer" name="aspSelectContainer">	
 		<label>
-			<span data-tooltip="Visualization mode.&#xa;-Mode 0 provides the highest resolution, allowing you to visualize individual frequencies&#xa;-Modes 1 - 8 divide the frequency spectrum in bands, each band represents the nth part of an octave.&#xa;-Mode 10 uses the discrete FFT data points to draw a continuous line and/or a filled area graph." data-tooltip-location="bottom"> Mode</span>
+			<span data-tooltip="Visualization mode.&#xa;-Mode 0 provides the highest resolution, allowing you to visualize individual frequencies&#xa;-Modes 1 - 8 divide the frequency spectrum in bands, each band represents the nth part of an octave.&#xa;-Mode 10 uses the discrete FFT data points to draw a continuous line and/or a filled area graph." data-tooltip-location="bottom">Mode</span>
 			<select name="mode">
 			<option value="0">0 – Discrete frequencies</option>
 			<option value="1">1 – 240 bands</option>
@@ -8085,7 +8079,7 @@
 		</label>
 
 		<label>
-			<span data-tooltip="Defines the number and layout of analyzer channels." data-tooltip-location="bottom"> Channel Layout</span>
+			<span data-tooltip="Defines the number and layout of analyzer channels." data-tooltip-location="bottom">Channel Layout</span>
 			<select name="channelLayout">
 				<option value="single">Single</option>
 				<option value="dual-combined">Dual Combined</option>
@@ -8095,26 +8089,7 @@
 		</label>
 
 		<label>
-			<span data-tooltip="Selects the desired mode for coloring the analyzer bars.&#xa;This property has no effect in Graph mode (mode 10)." data-tooltip-location="bottom"> Color Mode</span>
-			<select name="colorMode">
-				<option value="gradient">Gradient</option>
-				<option value="bar-index">Bar Index</option>
-				<option value="bar-level">Bar Level</option>
-			</select>
-		</label>
-
-		<label>
-			<span data-tooltip="Scale used to represent frequencies in the horizontal axis." data-tooltip-location="bottom"> Frequency Scale</span>
-			<select name="frequencyScale">
-				<option value="bark">Bark</option>
-				<option value="linear">Linear</option>
-				<option value="log">Logarithmic</option>
-				<option value="mel">Mel</option>
-			</select>
-		</label>
-
-		<label>
-			<span data-tooltip="The color gradient scheme used for analyzer graphs." data-tooltip-location="bottom"> Gradient</span>
+			<span data-tooltip="The color gradient scheme used for analyzer graphs." data-tooltip-location="bottom">Color scheme</span>
 			<select name="gradient">
 				<option value="classic">Classic</option>
 				<option value="orangered">Orangered</option>
@@ -8125,7 +8100,26 @@
 		</label>
 
 		<label>
-			<span data-tooltip="Mirrors the spectrum image to the left or right side." data-tooltip-location="bottom"> Mirror</span>
+			<span data-tooltip="Scale used to represent frequencies in the horizontal axis." data-tooltip-location="bottom">Frequency Scale</span>
+			<select name="frequencyScale">
+				<option value="bark">Bark</option>
+				<option value="linear">Linear</option>
+				<option value="log">Logarithmic</option>
+				<option value="mel">Mel</option>
+			</select>
+		</label>
+
+		<label>
+			<span data-tooltip="Selects the desired mode for coloring the analyzer bars.&#xa;This property has no effect in Graph mode (mode 10)." data-tooltip-location="bottom">Color Mode</span>
+			<select name="colorMode">
+				<option value="gradient">Gradient</option>
+				<option value="bar-index">Bar Index</option>
+				<option value="bar-level">Bar Level</option>
+			</select>
+		</label>
+
+		<label>
+			<span data-tooltip="Mirrors the spectrum image to the left or right side." data-tooltip-location="bottom">Mirror</span>
 			<select name="mirror">
 				<option value="-1">Mirror left</option>
 				<option value="0">No mirror</option>
@@ -21407,7 +21401,7 @@ this.highlight = (elem) => {
 					if(!audioSpectrumDiv.beenLoaded) {
 						audioSpectrumDiv.beenLoaded = true;
 
-						guiUtils.reposTooltips(aspectrumOptionsPanel, {container: document.documentElement});
+						guiUtils.reposTooltips(aspectrumOptionsPanel, {container: aspectrumOptionsPanel }); //document.documentElement
 					}
 				});
 				
