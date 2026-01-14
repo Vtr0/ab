@@ -21183,7 +21183,7 @@ this.highlight = (elem) => {
 						fillAlpha: 0.2,
 						ledBars: true, //to activate the LED bars effect for frequency bands modes
 						gradient: 'rainbow', //'classic', orangered, prism, rainbow, steelblue
-						showFPS : true,
+						showFPS : false,
 						//start: false, 
 						radius: 0.8, //for radial (circular) mode
 					};
@@ -21464,8 +21464,8 @@ this.highlight = (elem) => {
 				showTitle: {val: 1, type: "checkbox", label: "Title", hint: "Show current chapter title at top of spectrum",},
 				songProgress: {val: 0, type: "checkbox", label: "Song Progress", hint: "Show song progress bar at very top of spectrum",},
 				showSphere: {val: 0, type: "checkbox", label: "Sphere", hint: "Show zooming sphere at center of spectrum",},
-				showParticalExplosion: {val: 0, type: "checkbox", label: "Particles", hint: "Show particle explosion effect at center of spectrum on bass beat",},
-				showCircle: {val: 0, type: "checkbox", label: "Circle", hint: "Show pulsating circle at center of spectrum on bass beat",},
+				showRadialBars: {val: 0, type: "checkbox", label: "Radial Bars", hint: "Show particle explosion effect at center of spectrum on bass beat",},
+				showPulsatingCircle: {val: 0, type: "checkbox", label: "Circle", hint: "Show pulsating circle at center of spectrum on bass beat",},
 				showMultipleWaves: {val: 0, type: "checkbox", label: "Waves", hint: "Show multiple waveforms at center of spectrum",},
 				showHorizoltalEnergy: {val: 0, type: "checkbox", label: "Energy Bars", hint: "Show horizontal energy bar at middle of spectrum",},
 			};
@@ -21542,8 +21542,7 @@ this.highlight = (elem) => {
 			 */
 			function drawCallback(amaInstance) {
 				const audioMotion = amaInstance; //ama;
-				const audioEl    = xAudio;
-
+				
 				const canvas     = audioMotion.canvas,
 					ctx        = audioMotion.canvasCtx,
 					pixelRatio = audioMotion.pixelRatio, // for scaling the size of things drawn on canvas, on Hi-DPI screens or loRes mode
@@ -21552,8 +21551,9 @@ this.highlight = (elem) => {
 					centerX    = canvas.width >> 1,
 					centerY    = canvas.height >> 1;
 
-				if ( featuresDefaultOptions.energyMeter.val ) {
-					const energy     = audioMotion.getEnergy(),
+				//--- energy meters ---
+				function drawEnergyMeters() {
+					const energy    = audioMotion.getEnergy(),
 						peakEnergy = audioMotion.getEnergy('peak');
 
 					// overall energy peak
@@ -21618,8 +21618,9 @@ this.highlight = (elem) => {
 					ctx.fillText( 'TREBLE', canvas.width * .85, centerY );
 					drawLight( canvas.width * .85, '#0ff', trebleEnergy );
 				}
-
-				if ( featuresDefaultOptions.showTitle.val ) {
+				
+				//--- title ---
+				function drawTitle() {
 					// the overall energy provides a simple way to sync a pulsating text/image to the beat
 					// it usually works best than specific frequency ranges, for a wider range of music styles
 					ctx.font = `${ baseSize + audioMotion.getEnergy() * 25 * pixelRatio }px sans-serif`;
@@ -21629,22 +21630,29 @@ this.highlight = (elem) => {
 					const logoText = xAudio.title ?? 'Audio Books';
 					ctx.fillText( logoText, canvas.width - baseSize * logoText.length / 2, baseSize * 2 ); //canvas.width - baseSize * 4
 				}
-
-				if ( featuresDefaultOptions.songProgress.val ) {
+				
+				//--- song progress bar ---
+				function drawSongProgress() {
+					const audioEl    = xAudio;
 					const lineWidth = canvas.height / 40,
 						posY = lineWidth >> 1;
+
+					ctx.save();
 
 					ctx.beginPath();
 					ctx.moveTo( 0, posY );
 					ctx.lineTo( canvas.width * audioEl.currentTime / audioEl.duration, posY );
+					ctx.fillStyle = '#fff';
 					ctx.lineCap = 'round';
 					ctx.lineWidth = lineWidth;
-					ctx.globalAlpha = audioMotion.getEnergy(); // use the song energy to control the bar opacity
+					ctx.globalAlpha = 1; //audioMotion.getEnergy(); // use the song energy to control the bar opacity
 					ctx.stroke();
+
+					ctx.restore();
 				}
 
 				// --- custom sphere visualizer ---
-				if ( featuresDefaultOptions.showSphere.val ) {
+				function drawSphere() {
 					// --- energies ---
 					const bass = amaInstance.getEnergy('bass');
 					const midE = amaInstance.getEnergy('mid');
@@ -21710,7 +21718,7 @@ this.highlight = (elem) => {
 				}
 
 				// --- peak and overall energy horizontal bars ---
-				if( featuresDefaultOptions.showHorizoltalEnergy.val) {
+				function drawHorizontalEnergyBars() {
 
 					const peak = amaInstance.getEnergy('peak');
 					const rms = amaInstance.getEnergy();
@@ -21734,7 +21742,7 @@ this.highlight = (elem) => {
 				}
 				
 				// --- radial bars visualizer ---
-				if(featuresDefaultOptions.showParticalExplosion.val){
+				function drawRadialBars() {
 
 					const bass = amaInstance.getEnergy('bass');
 					const bars = 64;
@@ -21765,8 +21773,8 @@ this.highlight = (elem) => {
 
 				}
 				
-				// --- particle explosion ---
-				if( featuresDefaultOptions.showCircle.val ) {
+				// --- particle explosion circle ---
+				function drawPulsatingCircle() {
 
 					const bass = amaInstance.getEnergy('bass');
 					const midE = amaInstance.getEnergy('mid');
@@ -21792,7 +21800,7 @@ this.highlight = (elem) => {
 				}
 
 				// --- multi-layer waveform visualizer ---
-				if( featuresDefaultOptions.showMultipleWaves.val ) {
+				function drawMultipleWaves() {
 					const time = performance.now() * 0.002;
 
 					// --- ENERGY ---
@@ -21859,6 +21867,30 @@ this.highlight = (elem) => {
 
 				}
 
+				/* -- Call the custom visualizer features according to user settings --- */
+				// --- horizontal energy bars visualizer ---
+				if( featuresDefaultOptions.showHorizoltalEnergy.val) drawHorizontalEnergyBars();
+
+				// --- particle explosion circle ---
+				if( featuresDefaultOptions.showPulsatingCircle.val ) drawPulsatingCircle();
+				// --- radial bars visualizer ---
+				if(featuresDefaultOptions.showRadialBars.val) drawRadialBars();
+
+				// --- multi-layer waveform visualizer ---
+				if( featuresDefaultOptions.showMultipleWaves.val ) drawMultipleWaves();
+
+				// --- custom sphere visualizer ---
+				if ( featuresDefaultOptions.showSphere.val ) drawSphere();
+
+				// --- song progress bar ---
+				if ( featuresDefaultOptions.songProgress.val ) drawSongProgress();
+				
+				// --- title ---
+				if ( featuresDefaultOptions.showTitle.val ) drawTitle();
+				
+				// --- energy meters ---
+				if ( featuresDefaultOptions.energyMeter.val ) drawEnergyMeters();
+				
 			}
 					
 		} //end of loadAudioSpectrum function
