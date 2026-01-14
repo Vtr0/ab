@@ -8061,7 +8061,8 @@
 	<!-- aspectrumDialog Options Dialog -->
     <div id="aspectrumDialogOverlay">
       <div name="aspectrumPanel">
-	   <div class="aspGroupContainer" name="aspSelectContainer">	
+	   <fieldset class="aspGroupContainer" name="aspSelectContainer">
+		<legend>Built-in choices</legend>
 		<label>
 			<span data-tooltip="Visualization mode.&#xa;-Mode 0 provides the highest resolution, allowing you to visualize individual frequencies&#xa;-Modes 1 - 8 divide the frequency spectrum in bands, each band represents the nth part of an octave.&#xa;-Mode 10 uses the discrete FFT data points to draw a continuous line and/or a filled area graph." data-tooltip-location="bottom">Mode</span>
 			<select name="mode">
@@ -8126,9 +8127,9 @@
 				<option value="1">Mirror right</option>
 			</select>
 		</label>
-	   </div>
+	   </fieldset>
 	   <fieldset class="aspGroupContainer" name="aspCheckboxContainer">
-		<legend>Option flags</legend>
+		<legend>Built-in options</legend>
 		<!-- <label> <input type="checkbox" name="ledBars" /> LED Bars </label>
 
 		<label> <input type="checkbox" name="showFPS" /> Show FPS </label>
@@ -8143,7 +8144,7 @@
 	   </fieldset>
 
 	   <fieldset class="aspGroupContainer" name="aspFeaturesContainer">
-		<legend>Features</legend>
+		<legend>External Effects</legend>
 	   </fieldset>
 
 	   <div class="aspGroupContainer">
@@ -15988,7 +15989,7 @@
 						let _chapLiHtml = `<li class='chapter_li ${_chap == _histBook.lc? 'last-playing-chapter' : ''}' data-bookId='${_bookId}' data-chapter='${_chap}'>
 							<label>
 								${makeSvgStr(1)}<code data-rAlignGroup='chapStt'>${_chap}</code> 
-								${makeSvgStr(4)}<b data-rAlignGroup='listenedTime'>${toHhMmSs(_histBook[_chap])}</b>/<code data-rAlignGroup='chapTime'>${_chapData.dur}</code> 
+								${makeSvgStr(4)}<b data-rAlignGroup='listenedTime'>${toHhMmSs(_histBook[_chap])}</b>/<code data-rAlignGroup='chapTime'>${_chapData.dur ?? "-:--"}</code> 
 								<span class='histTitle'>⏵&thinsp;${_chapTit}</span>
 							</label></li>`;
 						return _chapLiHtml;
@@ -21117,8 +21118,13 @@ this.highlight = (elem) => {
 		*/
 		async function loadAudioSpectrum(){
 
+			// the div that contain audio spectrum canvas
+			const audioSpectrumDiv = document.getElementById("divAudioSpectrum");
+
 			//show svgWavesForm only when audio is playing based on audio spectrum show/hide state
-			document.getElementById("svgWavesForm").classList.toggle("elm-hidden", xState.audio.showSpectrum); 
+			document.getElementById("svgWavesForm").classList.toggle("elm-hidden", xState.audio.showSpectrum);
+			
+			audioSpectrumDiv.classList.toggle("elm-hidden", !xState.audio.showSpectrum);
 
 			// Check if enable audio spectrum or not
 			if (!xState.audio.showSpectrum) { //audio spectrum
@@ -21179,6 +21185,7 @@ this.highlight = (elem) => {
 						gradient: 'rainbow', //'classic', orangered, prism, rainbow, steelblue
 						showFPS : true,
 						//start: false, 
+						radius: 0.8, //for radial (circular) mode
 					};
 					
 					if(!xState.hasOwnProperty("audioSpectrum") || typeof xState.audioSpectrum !== 'object'){
@@ -21229,8 +21236,6 @@ this.highlight = (elem) => {
 				return ama;
 			}
 
-			// the div that contain audio spectrum canvas
-			const audioSpectrumDiv = document.getElementById("divAudioSpectrum");
 			// ✅ Create AudioMotionAnalyzer object
 			const ama = ssData.audioMotionObj = await hookAudioMotion(xAudio, audioSpectrumDiv);
 			const audioCtx = ama.audioCtx;
@@ -21293,6 +21298,7 @@ this.highlight = (elem) => {
 						type: "select", 
 						parse: (v) => +v, //convert string to number
 					},
+					useCanvas: { type: "checkbox", label: "Analyzer Viz", hint: "When set to false, analyzer graphics (all of 'Built-in choices' and 'Built-in options' and above setting are ignored) are not rendered to spectrum canvas, only draw 'External Effects' if any one is enabled.", },
 					ledBars: { type: "checkbox", label: "LED Bars", hint: "Activate the LED bars effect for frequency bands modes", },
 					lumiBars: { type: "checkbox", label: "Luminous Bars", hint: "Only for frequency bands modes.\nWhen set to true all analyzer bars will be displayed at full height with varying luminance", },
 					trueLeds: { type: "checkbox", label: "True LEDs", hint: "When set to true, LEDs are painted with individual colors from the current gradient, instead of using the gradient itself"},
@@ -21310,6 +21316,8 @@ this.highlight = (elem) => {
 					showPeaks: { type: "checkbox", label: "Show Peaks", hint: "Show peak levels for each frequency band", },
 					fadePeaks: { type: "checkbox", label: "Fade Peaks", hint: "Make peak levels fade out instead of falling", },
 					peakLine: { type: "checkbox", label: "Peak Line", hint: "Show a line connecting the peak levels of all frequency band.\nOnly works for mode 10 - Graph" }, // only work for  mode 10 - Graph
+					radial: { type: "checkbox", label: "Radial Mode", hint: "Switch between normal and radial modes.\nIn radial mode the spectrum is drawn in a circular fashion around the center of the canvas.\nOnly works for modes 1 to 8." },
+					radialInvert: { type: "checkbox", label: "Invert Radial", hint: "Invert the direction of the radial spectrum.\nOnly works when 'Radial Mode' is enabled."  },
 				};
 
 				// go through each option control element and bind it to AudioMotionAnalyzer option
@@ -21452,9 +21460,14 @@ this.highlight = (elem) => {
 			})();
 			
 			const featuresDefaultOptions = {
-				energyMeter: {val: 0, type: "checkbox", label: "Energy Meter", hint: "Show energy meter and bass/midrange/treble indicators",},
-				showLogo: {val: 0, type: "checkbox", label: "Show Title", hint: "Show current chapter title at top of spectrum",},
+				energyMeter: {val: 0, type: "checkbox", label: "Energy Meters", hint: "Show energy meter and bass/midrange/treble indicators",},
+				showTitle: {val: 1, type: "checkbox", label: "Title", hint: "Show current chapter title at top of spectrum",},
 				songProgress: {val: 0, type: "checkbox", label: "Song Progress", hint: "Show song progress bar at very top of spectrum",},
+				showSphere: {val: 0, type: "checkbox", label: "Sphere", hint: "Show zooming sphere at center of spectrum",},
+				showParticalExplosion: {val: 0, type: "checkbox", label: "Particles", hint: "Show particle explosion effect at center of spectrum on bass beat",},
+				showCircle: {val: 0, type: "checkbox", label: "Circle", hint: "Show pulsating circle at center of spectrum on bass beat",},
+				showMultipleWaves: {val: 0, type: "checkbox", label: "Waves", hint: "Show multiple waveforms at center of spectrum",},
+				showHorizoltalEnergy: {val: 0, type: "checkbox", label: "Energy Bars", hint: "Show horizontal energy bar at middle of spectrum",},
 			};
 
 			/* Function to populate checkboxes in options panel and handle event for selects, checkboxes of options panel */
@@ -21522,15 +21535,20 @@ this.highlight = (elem) => {
 					};
 				}
 			}();
-			// Custom drawing on top of the audio spectrum
-			function drawCallback() {
-				const audioMotion = ama;
+			
+			/** Draw custom elements on the audio spectrum canvas
+			 * @param amaInstance {AudioMotionAnalyzer} the AudioMotionAnalyzer instance
+			 * @see https://github.com/hvianna/audioMotion-analyzer?tab=readme-ov-file#oncanvasdraw-function
+			 */
+			function drawCallback(amaInstance) {
+				const audioMotion = amaInstance; //ama;
 				const audioEl    = xAudio;
 
 				const canvas     = audioMotion.canvas,
 					ctx        = audioMotion.canvasCtx,
 					pixelRatio = audioMotion.pixelRatio, // for scaling the size of things drawn on canvas, on Hi-DPI screens or loRes mode
 					baseSize   = Math.max( 20 * pixelRatio, canvas.height / 27 | 0 ),
+					w = canvas.width, h = canvas.height,
 					centerX    = canvas.width >> 1,
 					centerY    = canvas.height >> 1;
 
@@ -21601,7 +21619,7 @@ this.highlight = (elem) => {
 					drawLight( canvas.width * .85, '#0ff', trebleEnergy );
 				}
 
-				if ( featuresDefaultOptions.showLogo.val ) {
+				if ( featuresDefaultOptions.showTitle.val ) {
 					// the overall energy provides a simple way to sync a pulsating text/image to the beat
 					// it usually works best than specific frequency ranges, for a wider range of music styles
 					ctx.font = `${ baseSize + audioMotion.getEnergy() * 25 * pixelRatio }px sans-serif`;
@@ -21623,6 +21641,222 @@ this.highlight = (elem) => {
 					ctx.lineWidth = lineWidth;
 					ctx.globalAlpha = audioMotion.getEnergy(); // use the song energy to control the bar opacity
 					ctx.stroke();
+				}
+
+				// --- custom sphere visualizer ---
+				if ( featuresDefaultOptions.showSphere.val ) {
+					// --- energies ---
+					const bass = amaInstance.getEnergy('bass');
+					const midE = amaInstance.getEnergy('mid');
+					const energy = amaInstance.getEnergy();
+
+					// --- smooth zoom (low-pass filter) ---
+					amaInstance._pvtSphereZoom ??= 0; //create private variable if not yet created to use for this effect
+					amaInstance._pvtSphereZoom += (bass - amaInstance._pvtSphereZoom) * 0.08;
+
+					// --- base radius ---
+					const baseRadius = Math.min(w, h) * 0.1;
+					const radius = baseRadius +
+					amaInstance._pvtSphereZoom * baseRadius * 1.2;
+
+					// --- clear with subtle trail ---
+					ctx.fillStyle = 'rgba(0,0,0,0.25)';
+					ctx.fillRect(0, 0, w, h);
+
+					const posX = w - radius * 1.2, // centerX + radius * 0.5,
+						posY = centerY - radius * 0.5;
+
+					// --- radial gradient (fake 3D lighting) ---
+					const grad = ctx.createRadialGradient(
+						posX - radius * 0.3,
+						posY - radius * 0.3,
+						radius * 0.1,
+						posX,
+						posY,
+						radius
+					);
+
+					grad.addColorStop(0, `rgba(255,255,255,${0.8 + midE * 0.2})`);
+					grad.addColorStop(0.4, `rgba(100,180,255,0.9)`);
+					grad.addColorStop(1, `rgba(0,40,80,0.9)`);
+
+					
+					// --- draw sphere ---
+					ctx.beginPath();
+					ctx.arc(posX, posY, radius, 0, Math.PI * 2);
+					ctx.fillStyle = grad;
+					ctx.fill();
+
+					// --- subtle outline ---
+					ctx.lineWidth = 2;
+					ctx.strokeStyle = `rgba(180,220,255,${0.4 + energy * 0.4})`;
+					ctx.stroke();
+
+					// --- optional equator line (technical feel) ---
+					ctx.beginPath();
+					ctx.ellipse(
+						posX,
+						posY,
+						radius,
+						radius * 0.35,
+						0,
+						0,
+						Math.PI * 2
+					);
+					ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+					ctx.lineWidth = 1;
+					ctx.stroke();
+
+				}
+
+				// --- peak and overall energy horizontal bars ---
+				if( featuresDefaultOptions.showHorizoltalEnergy.val) {
+
+					const peak = amaInstance.getEnergy('peak');
+					const rms = amaInstance.getEnergy();
+
+					const crest = peak / (rms + 0.001);
+
+					//ctx.clearRect(0, 0, w, h);
+
+					/* ctx.fillStyle = '#333';
+					ctx.fillRect(0, 0, w, h); */
+
+					ctx.fillStyle = '#00ff88';
+					ctx.fillRect(0, centerY + (h * 0.15), w * rms, -h * 0.1);
+
+					ctx.fillStyle = '#ff4444';
+					ctx.fillRect(0, centerY, w * peak, -h * 0.1);
+
+					ctx.strokeStyle = '#fff';
+					ctx.strokeText(`Crest: ${crest.toFixed(2)}`, centerX - 100, 200);
+
+				}
+				
+				// --- radial bars visualizer ---
+				if(featuresDefaultOptions.showParticalExplosion.val){
+
+					const bass = amaInstance.getEnergy('bass');
+					const bars = 64;
+					const radius = Math.min(w, h) * 0.15;
+
+					//ctx.clearRect(0, 0, w, h);
+					ctx.strokeStyle = '#ff4444';
+					ctx.lineWidth = 2;
+
+					for (let i = 0; i < bars; i++) {
+						const angle = (i / bars) * Math.PI * 2;
+						const energy = amaInstance.getEnergy(i < 20 ? 'bass' : 'treble');
+
+						const r1 = radius;
+						const r2 = radius + energy * radius * 2;
+
+						ctx.beginPath();
+						ctx.moveTo(
+						centerX + Math.cos(angle) * r1,
+						centerY + Math.sin(angle) * r1
+					);
+					ctx.lineTo(
+						centerX + Math.cos(angle) * r2,
+						centerY + Math.sin(angle) * r2
+					);
+					ctx.stroke();
+					}
+
+				}
+				
+				// --- particle explosion ---
+				if( featuresDefaultOptions.showCircle.val ) {
+
+					const bass = amaInstance.getEnergy('bass');
+					const midE = amaInstance.getEnergy('mid');
+
+					ctx.fillStyle = 'rgba(0,0,0,0.2)';
+					ctx.fillRect(0, 0, w, h);
+
+					for (let i = 0; i < 120; i++) {
+					const angle = performance.now() * 0.0005 + i;
+					const dist =
+					40 +
+					Math.sin(i) * 30 +
+					bass * 200;
+
+					const x = centerX + Math.cos(angle) * dist;
+					const y = centerY + Math.sin(angle) * dist;
+
+					ctx.beginPath();
+					ctx.arc(x, y, 1 + midE * 3, 0, Math.PI * 2);
+					ctx.fillStyle = `rgba(120,200,255,0.7)`;
+					ctx.fill();
+					}
+				}
+
+				// --- multi-layer waveform visualizer ---
+				if( featuresDefaultOptions.showMultipleWaves.val ) {
+					const time = performance.now() * 0.002;
+
+					// --- ENERGY ---
+					const energy = amaInstance.energy;               // overall
+					const bass   = amaInstance.getEnergy('bass');    // beat driver
+					const midE   = amaInstance.getEnergy('mid');
+					const treb   = amaInstance.getEnergy('treble');
+
+					// --- BEAT DETECTION ---
+					let beat = false;
+					amaInstance._pvtLastBeat ??= 0; //create private variable if not yet created to use for this effect
+					if (bass > 0.65 && performance.now() - amaInstance._pvtLastBeat > 300) {
+						beat = true;
+						amaInstance._pvtLastBeat = performance.now();
+					}
+
+					// --- CLEAR WITH TRAIL ---
+					ctx.fillStyle = `rgba(0,0,0,0.15)`;
+					ctx.fillRect(0, 0, w, h);
+
+					// --- SHADER-LIKE GLOW ---
+					/* ctx.save();
+					ctx.globalCompositeOperation = 'lighter';
+					ctx.shadowBlur = 30 + bass * 40; */
+
+					// --- MULTI-LAYER WAVES ---
+					const layers = [
+						{ amp: bass,   color: 'rgba(255,60,60,0.9)',  speed: 1 },
+						{ amp: midE,   color: 'rgba(60,255,200,0.8)', speed: 1.5 },
+						{ amp: treb,  color: 'rgba(120,120,255,0.7)',speed: 2 }
+					];
+
+					layers.forEach((layer, l) => {
+						ctx.beginPath();
+						ctx.lineWidth = 2 + layer.amp * 3;
+						ctx.strokeStyle = layer.color;
+						ctx.shadowColor = layer.color;
+
+						const points = 160;
+						for (let i = 0; i <= points; i++) {
+						const x = (i / points) * w;
+						const wave =
+							Math.sin(i * 0.15 + time * layer.speed) *
+							layer.amp *
+							centerY *
+							0.7;
+
+						const y = centerY + wave;
+
+						if (i === 0) ctx.moveTo(x, y);
+						else ctx.lineTo(x, y);
+						}
+						ctx.stroke();
+					});
+
+					// --- BEAT PULSE FLASH ---
+					if (beat) {
+						ctx.beginPath();
+						ctx.arc(w / 2, centerY, bass * centerY * 0.8, 0, Math.PI * 2);
+						ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+						ctx.lineWidth = 4;
+						ctx.stroke();
+					}
+
 				}
 
 			}
