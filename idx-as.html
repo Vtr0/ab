@@ -21185,7 +21185,7 @@ this.highlight = (elem) => {
 						gradient: 'rainbow', //'classic', orangered, prism, rainbow, steelblue
 						showFPS : false,
 						//start: false, 
-						radius: 0.8, //for radial (circular) mode
+						radius: 0.6, //for radial (circular) mode
 					};
 					
 					if(!xState.hasOwnProperty("audioSpectrum") || typeof xState.audioSpectrum !== 'object'){
@@ -21205,7 +21205,8 @@ this.highlight = (elem) => {
 					}
 
 					// merge user options from xState.audioSpectrum into default options
-					amaOptions = Object.assign(amaOptions, amaConnectOptions, xState.audioSpectrum);
+					// note that last object: {useCanvas:true}. We need to force {useCanvas=true} so that the anlyzer canvas is add to DOM, if false by the time of initializing AudioMotionAnalyzer, there would be no spectrum canvas at all
+					amaOptions = Object.assign(amaOptions, amaConnectOptions, xState.audioSpectrum, {useCanvas:true});
 
 					// return the merged options
 					return amaOptions;
@@ -21541,11 +21542,11 @@ this.highlight = (elem) => {
 			 * @see https://github.com/hvianna/audioMotion-analyzer?tab=readme-ov-file#oncanvasdraw-function
 			 */
 			function drawCallback(amaInstance) {
-				const audioMotion = amaInstance; //ama;
+				//const amaInstance = amaInstance; //ama;
 				
-				const canvas     = audioMotion.canvas,
-					ctx        = audioMotion.canvasCtx,
-					pixelRatio = audioMotion.pixelRatio, // for scaling the size of things drawn on canvas, on Hi-DPI screens or loRes mode
+				const canvas    = amaInstance.canvas,
+					ctx        = amaInstance.canvasCtx,
+					pixelRatio = amaInstance.pixelRatio, // for scaling the size of things drawn on canvas, on Hi-DPI screens or loRes mode
 					baseSize   = Math.max( 20 * pixelRatio, canvas.height / 27 | 0 ),
 					w = canvas.width, h = canvas.height,
 					centerX    = canvas.width >> 1,
@@ -21553,8 +21554,8 @@ this.highlight = (elem) => {
 
 				//--- energy meters ---
 				function drawEnergyMeters() {
-					const energy    = audioMotion.getEnergy(),
-						peakEnergy = audioMotion.getEnergy('peak');
+					const energy    = amaInstance.getEnergy(),
+						peakEnergy = amaInstance.getEnergy('peak');
 
 					// overall energy peak
 					const width = 50 * pixelRatio;
@@ -21599,21 +21600,21 @@ this.highlight = (elem) => {
 					ctx.textAlign = 'center';
 					const growSize = baseSize * 4;
 
-					const bassEnergy = audioMotion.getEnergy('bass');
+					const bassEnergy = amaInstance.getEnergy('bass');
 					ctx.font = `bold ${ baseSize + growSize * bassEnergy }px sans-serif`;
 					ctx.fillText( 'BASS', canvas.width * .15, centerY );
 					drawLight( canvas.width * .15, '#f00', bassEnergy );
 
-					drawLight( canvas.width * .325, '#f80', audioMotion.getEnergy('lowMid') );
+					drawLight( canvas.width * .325, '#f80', amaInstance.getEnergy('lowMid') );
 
-					const midEnergy = audioMotion.getEnergy('mid');
+					const midEnergy = amaInstance.getEnergy('mid');
 					ctx.font = `bold ${ baseSize + growSize * midEnergy }px sans-serif`;
 					ctx.fillText( 'MIDRANGE', centerX, centerY );
 					drawLight( centerX, '#ff0', midEnergy );
 
-					drawLight( canvas.width * .675, '#0f0', audioMotion.getEnergy('highMid') );
+					drawLight( canvas.width * .675, '#0f0', amaInstance.getEnergy('highMid') );
 
-					const trebleEnergy = audioMotion.getEnergy('treble');
+					const trebleEnergy = amaInstance.getEnergy('treble');
 					ctx.font = `bold ${ baseSize + growSize * trebleEnergy }px sans-serif`;
 					ctx.fillText( 'TREBLE', canvas.width * .85, centerY );
 					drawLight( canvas.width * .85, '#0ff', trebleEnergy );
@@ -21623,7 +21624,7 @@ this.highlight = (elem) => {
 				function drawTitle() {
 					// the overall energy provides a simple way to sync a pulsating text/image to the beat
 					// it usually works best than specific frequency ranges, for a wider range of music styles
-					ctx.font = `${ baseSize + audioMotion.getEnergy() * 25 * pixelRatio }px sans-serif`;
+					ctx.font = `${ baseSize + amaInstance.getEnergy() * 25 * pixelRatio }px sans-serif`;
 
 					ctx.fillStyle = '#fff8';
 					ctx.textAlign = 'center';
@@ -21634,18 +21635,18 @@ this.highlight = (elem) => {
 				//--- song progress bar ---
 				function drawSongProgress() {
 					const audioEl    = xAudio;
-					const lineWidth = canvas.height / 40,
+					const lineWidth = h / 40,
 						posY = lineWidth >> 1;
 
 					ctx.save();
 
 					ctx.beginPath();
 					ctx.moveTo( 0, posY );
-					ctx.lineTo( canvas.width * audioEl.currentTime / audioEl.duration, posY );
+					ctx.lineTo( w * audioEl.currentTime / audioEl.duration, posY );
 					ctx.fillStyle = '#fff';
 					ctx.lineCap = 'round';
 					ctx.lineWidth = lineWidth;
-					ctx.globalAlpha = 1; //audioMotion.getEnergy(); // use the song energy to control the bar opacity
+					ctx.globalAlpha = amaInstance.getEnergy(); // use the song energy to control the bar opacity
 					ctx.stroke();
 
 					ctx.restore();
@@ -21657,38 +21658,43 @@ this.highlight = (elem) => {
 					const bass = amaInstance.getEnergy('bass');
 					const midE = amaInstance.getEnergy('mid');
 					const energy = amaInstance.getEnergy();
+					const peak = amaInstance.getEnergy('peak');
 
-					// --- smooth zoom (low-pass filter) ---
+					/* // --- smooth zoom (low-pass filter) ---
 					amaInstance._pvtSphereZoom ??= 0; //create private variable if not yet created to use for this effect
-					amaInstance._pvtSphereZoom += (bass - amaInstance._pvtSphereZoom) * 0.08;
+					amaInstance._pvtSphereZoom += (energy - amaInstance._pvtSphereZoom) * 0.08; */
 
 					// --- base radius ---
 					const baseRadius = Math.min(w, h) * 0.1;
-					const radius = baseRadius +
-					amaInstance._pvtSphereZoom * baseRadius * 1.2;
+					const radius = baseRadius + energy * baseRadius;
+					//amaInstance._pvtSphereZoom * baseRadius * 1.2;
 
 					// --- clear with subtle trail ---
-					ctx.fillStyle = 'rgba(0,0,0,0.25)';
-					ctx.fillRect(0, 0, w, h);
+					/* ctx.fillStyle = 'rgba(0,0,0,0.25)';
+					ctx.fillRect(0, 0, w, h); */
 
 					const posX = w - radius * 1.2, // centerX + radius * 0.5,
-						posY = centerY - radius * 0.5;
+						posY = radius * 1.2; //centerY - radius * 0.5;
 
+					// this peak to control the center of inner circle. You can set it to a fix number, such as 0.3
+					const innerCircleCenterDeltaRatio = peak;
 					// --- radial gradient (fake 3D lighting) ---
 					const grad = ctx.createRadialGradient(
-						posX - radius * 0.3,
-						posY - radius * 0.3,
-						radius * 0.1,
+						posX - radius * innerCircleCenterDeltaRatio, //0.3
+						posY - radius * innerCircleCenterDeltaRatio, //0.3
+						radius * midE,//0.1,
 						posX,
 						posY,
 						radius
 					);
 
-					grad.addColorStop(0, `rgba(255,255,255,${0.8 + midE * 0.2})`);
-					grad.addColorStop(0.4, `rgba(100,180,255,0.9)`);
+					grad.addColorStop(0, `rgba(255,255,255,.7)`);
+					// bass control the radius of inner circle
+					grad.addColorStop(bass, `rgba(100,180,255,0.9)`);
 					grad.addColorStop(1, `rgba(0,40,80,0.9)`);
 
-					
+					ctx.save();
+
 					// --- draw sphere ---
 					ctx.beginPath();
 					ctx.arc(posX, posY, radius, 0, Math.PI * 2);
@@ -21697,7 +21703,7 @@ this.highlight = (elem) => {
 
 					// --- subtle outline ---
 					ctx.lineWidth = 2;
-					ctx.strokeStyle = `rgba(180,220,255,${0.4 + energy * 0.4})`;
+					ctx.strokeStyle = `rgba(180,220,255,.6)`;
 					ctx.stroke();
 
 					// --- optional equator line (technical feel) ---
@@ -21715,29 +21721,47 @@ this.highlight = (elem) => {
 					ctx.lineWidth = 1;
 					ctx.stroke();
 
+					ctx.restore();
 				}
 
 				// --- peak and overall energy horizontal bars ---
 				function drawHorizontalEnergyBars() {
 
 					const peak = amaInstance.getEnergy('peak');
-					const rms = amaInstance.getEnergy();
+					const energy = amaInstance.getEnergy();
 
-					const crest = peak / (rms + 0.001);
+					const crest = peak / (energy + 0.001);
 
 					//ctx.clearRect(0, 0, w, h);
 
 					/* ctx.fillStyle = '#333';
 					ctx.fillRect(0, 0, w, h); */
 
-					ctx.fillStyle = '#00ff88';
-					ctx.fillRect(0, centerY + (h * 0.15), w * rms, -h * 0.1);
+					const localTop = h / 20; // centerY;
 
-					ctx.fillStyle = '#ff4444';
-					ctx.fillRect(0, centerY, w * peak, -h * 0.1);
+					ctx.save();
 
 					ctx.strokeStyle = '#fff';
-					ctx.strokeText(`Crest: ${crest.toFixed(2)}`, centerX - 100, 200);
+					ctx.font = `${baseSize* (1 + 2 * peak)}px serif`;
+					const diff = h * .07; //(h * 0.1 - baseSize* (1 + 2 * peak)) / 2;
+					
+					// peak energy
+					ctx.fillStyle = '#ff4444';
+					ctx.fillRect(0, localTop, w * peak, h * 0.1);
+					ctx.strokeStyle = '#fff';
+					ctx.strokeText(`Peak`, 20, localTop + diff);
+
+					// overall energy
+					ctx.fillStyle = '#00ff88';
+					ctx.fillRect(0, localTop + (h * 0.12), w * energy, h * 0.1);
+					ctx.strokeStyle = '#A60D00';
+					ctx.strokeText(`Energy`, 20, localTop + (h * 0.12) + diff);
+
+					/* ctx.strokeStyle = '#fff';
+					ctx.font = `${baseSize* (1 + 2 * peak)}px serif`;
+					ctx.strokeText(`Crest: ${crest.toFixed(2)}`, centerX - 100, 200); */
+
+					ctx.restore();
 
 				}
 				
@@ -21745,30 +21769,44 @@ this.highlight = (elem) => {
 				function drawRadialBars() {
 
 					const bass = amaInstance.getEnergy('bass');
-					const bars = 64;
+					const bars = 75;
 					const radius = Math.min(w, h) * 0.15;
 
 					//ctx.clearRect(0, 0, w, h);
-					ctx.strokeStyle = '#ff4444';
-					ctx.lineWidth = 2;
+					//ctx.strokeStyle = '#ff4444';
+					ctx.lineWidth = 6;
 
+					/** function to get the type of energy and corresponding color */
+					function getBarsInfor(barRange){
+						if(barRange == 0) return ['bass', '#f00'];
+						if(barRange == 1) return ['lowMid', '#f80'];
+						if(barRange == 2) return ['mid', '#ff0'];
+						if(barRange == 3) return ['highMid', '#0f0'];
+						if(barRange == 4) return ['treble', '#0ff'];
+					}
+
+					const peak = amaInstance.getEnergy('peak');
 					for (let i = 0; i < bars; i++) {
 						const angle = (i / bars) * Math.PI * 2;
-						const energy = amaInstance.getEnergy(i < 20 ? 'bass' : 'treble');
+						const rangeNo = ~~(i / (bars / 5));
+						const barInfor = getBarsInfor(rangeNo);
+						const energy = amaInstance.getEnergy(barInfor[0]);
+						ctx.strokeStyle = barInfor[1];
 
+						radius 
 						const r1 = radius;
-						const r2 = radius + energy * radius * 2;
+						const r2 = radius + energy * radius * 2 * (peak + 1); //length of lines changes with peak and correponding energy
 
 						ctx.beginPath();
 						ctx.moveTo(
-						centerX + Math.cos(angle) * r1,
-						centerY + Math.sin(angle) * r1
-					);
-					ctx.lineTo(
-						centerX + Math.cos(angle) * r2,
-						centerY + Math.sin(angle) * r2
-					);
-					ctx.stroke();
+							centerX + Math.cos(angle) * r1,
+							centerY + Math.sin(angle) * r1
+						);
+						ctx.lineTo(
+							centerX + Math.cos(angle) * r2,
+							centerY + Math.sin(angle) * r2
+						);
+						ctx.stroke();
 					}
 
 				}
@@ -21804,38 +21842,52 @@ this.highlight = (elem) => {
 					const time = performance.now() * 0.002;
 
 					// --- ENERGY ---
-					const energy = amaInstance.energy;               // overall
+					//const energy = amaInstance.energy;               // overall
 					const bass   = amaInstance.getEnergy('bass');    // beat driver
-					const midE   = amaInstance.getEnergy('mid');
-					const treb   = amaInstance.getEnergy('treble');
-
+					
 					// --- BEAT DETECTION ---
 					let beat = false;
 					amaInstance._pvtLastBeat ??= 0; //create private variable if not yet created to use for this effect
-					if (bass > 0.65 && performance.now() - amaInstance._pvtLastBeat > 300) {
+
+					// change the lower value of the 'bass' energy for sensitivity of drawing waves
+					if (bass > 0.4 && performance.now() - amaInstance._pvtLastBeat > 300) {
 						beat = true;
 						amaInstance._pvtLastBeat = performance.now();
 					}
 
 					// --- CLEAR WITH TRAIL ---
-					ctx.fillStyle = `rgba(0,0,0,0.15)`;
-					ctx.fillRect(0, 0, w, h);
+					/* ctx.fillStyle = `rgba(0,0,0,0.15)`;
+					ctx.fillRect(0, 0, w, h); */
 
 					// --- SHADER-LIKE GLOW ---
-					/* ctx.save();
-					ctx.globalCompositeOperation = 'lighter';
+					ctx.save();
+					/* ctx.globalCompositeOperation = 'lighter';
 					ctx.shadowBlur = 30 + bass * 40; */
 
 					// --- MULTI-LAYER WAVES ---
 					const layers = [
-						{ amp: bass,   color: 'rgba(255,60,60,0.9)',  speed: 1 },
-						{ amp: midE,   color: 'rgba(60,255,200,0.8)', speed: 1.5 },
-						{ amp: treb,  color: 'rgba(120,120,255,0.7)',speed: 2 }
+						{ amp: 'bass',   color: 'rgba(255,60,60,0.9)',  speed: 1 },
+						{ amp: 'lowMid',   color: 'rgba(255,120,0,0.85)',  speed: 1.2 },
+						{ amp: 'mid',   color: 'rgba(60,255,200,0.8)', speed: 1.5 },
+						{ amp: 'highMid',   color: 'rgba(0,255,0,0.75)',  speed: 1.8 },
+						{ amp: 'treble',  color: 'rgba(120,120,255,0.7)',speed: 2 }
 					];
+					/* const mid   = amaInstance.getEnergy('mid'),
+						lowMid = amaInstance.getEnergy('lowMid'),
+						highMid = amaInstance.getEnergy('highMid'),
+						treble   = amaInstance.getEnergy('treble');
+					const layers = [
+						{ amp: bass,   color: `rgba(255,60,60, ${bass})`,  speed: 1 },
+						{ amp: lowMid,   color: `rgba(255,120,0,${lowMid})`,  speed: 1.2 },
+						{ amp: mid, color: `rgba(60,255,200,${mid})`, speed: 1.5 },
+						{ amp: highMid,   color: `rgba(0,255,0, ${highMid})`,  speed: 1.8 },
+						{ amp: treble,  color: `rgba(120,120,255,${treble})`,speed: 2 }
+					]; */
 
 					layers.forEach((layer, l) => {
+						const amp = amaInstance.getEnergy(layer.amp);
 						ctx.beginPath();
-						ctx.lineWidth = 2 + layer.amp * 3;
+						ctx.lineWidth = 2 + amp * 3;
 						ctx.strokeStyle = layer.color;
 						ctx.shadowColor = layer.color;
 
@@ -21844,7 +21896,7 @@ this.highlight = (elem) => {
 						const x = (i / points) * w;
 						const wave =
 							Math.sin(i * 0.15 + time * layer.speed) *
-							layer.amp *
+							amp *
 							centerY *
 							0.7;
 
@@ -21860,10 +21912,12 @@ this.highlight = (elem) => {
 					if (beat) {
 						ctx.beginPath();
 						ctx.arc(w / 2, centerY, bass * centerY * 0.8, 0, Math.PI * 2);
-						ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+						ctx.strokeStyle = 'rgba(255,255,255,0.5)';
 						ctx.lineWidth = 4;
 						ctx.stroke();
 					}
+
+					ctx.restore();
 
 				}
 
@@ -21871,16 +21925,17 @@ this.highlight = (elem) => {
 				// --- horizontal energy bars visualizer ---
 				if( featuresDefaultOptions.showHorizoltalEnergy.val) drawHorizontalEnergyBars();
 
+				// --- custom sphere visualizer ---
+				if ( featuresDefaultOptions.showSphere.val ) drawSphere();
+
 				// --- particle explosion circle ---
 				if( featuresDefaultOptions.showPulsatingCircle.val ) drawPulsatingCircle();
+				
 				// --- radial bars visualizer ---
 				if(featuresDefaultOptions.showRadialBars.val) drawRadialBars();
 
 				// --- multi-layer waveform visualizer ---
 				if( featuresDefaultOptions.showMultipleWaves.val ) drawMultipleWaves();
-
-				// --- custom sphere visualizer ---
-				if ( featuresDefaultOptions.showSphere.val ) drawSphere();
 
 				// --- song progress bar ---
 				if ( featuresDefaultOptions.songProgress.val ) drawSongProgress();
