@@ -7611,11 +7611,10 @@
 			border-radius: 20px;
 			box-shadow: 0 0 3px 4px #fff5;
 			padding: 8px 10px 10px;
-			max-height: 90dvh;
+			max-height: calc(100dvh - 40px);
 			
 			overflow: hidden auto;
-			
-			
+						
 			position: absolute;
 			z-index: 100;
 			top: 0px;
@@ -21644,7 +21643,7 @@ this.highlight = (elem) => {
 				showTitle: {val: 1, type: "checkbox", label: "Title", hint: "Show current chapter title at top of spectrum",},
 				songProgress: {val: 0, type: "checkbox", label: "Song Progress", hint: "Show song progress bar at very top of spectrum",},
 				showSphere: {val: 0, type: "checkbox", label: "Sphere", hint: "Show zooming sphere at center of spectrum",},
-				showBouncingBalls: {val: 0, type: "checkbox", label: "Bouncing Balls", hint: "Show bouncing balls at center bottom of spectrum on bass, midLow, mid, highMid, treble beat",},
+				showJumpingBalls: {val: 0, type: "checkbox", label: "Jumping Balls", hint: "Show balls jumping at center bottom of spectrum on bass, midLow, mid, highMid, treble beat",},
 				showMultipleWaves: {val: 0, type: "checkbox", label: "Waves", hint: "Show multiple waveforms at center of spectrum",},
 				showRadialBars: {val: 0, type: "checkbox", label: "Radial Bars", hint: "Show particle explosion effect at center of spectrum on bass beat",},
 				showHorizoltalEnergy: {val: 0, type: "checkbox", label: "Energy Bars", hint: "Show horizontal energy bar at middle of spectrum",},
@@ -22105,7 +22104,7 @@ this.highlight = (elem) => {
 				}
 
 				// --- bouncing balls visualizer ---
-				function drawBouncingBalls() {
+				function drawJumpingBalls() {
 					
 					//ctx.clearRect(0, 0, w, h);
 
@@ -22185,7 +22184,7 @@ this.highlight = (elem) => {
 				if ( featuresDefaultOptions.showSphere.val ) drawSphere();
 
 				// --- bouncing balls circle ---
-				if( featuresDefaultOptions.showBouncingBalls.val ) drawBouncingBalls(); //drawPulsatingCircle();
+				if( featuresDefaultOptions.showJumpingBalls.val ) drawJumpingBalls(); //drawPulsatingCircle();
 				
 				// --- radial bars visualizer ---
 				if(featuresDefaultOptions.showRadialBars.val) drawRadialBars();
