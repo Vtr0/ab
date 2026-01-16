@@ -7577,6 +7577,22 @@
 					color: #999;
 				}
 			}
+
+			/* overlayMode to make spectrum overlay the poster workart */
+			&.overlayMode{
+				max-width: 100%;
+				width: 100%;
+				/* set this so that if fit and overlay the poster image */
+				position: absolute;
+				height: 100%;
+				top: 0;
+				left: 0;
+
+				/* set the DOM parent of its to be its containing block parent (offsetParent) */
+				div:has(> &){
+					position: relative;
+				}
+			}
 		}
 
 		/* aspectrumDialogOverlay overlay */
@@ -7587,15 +7603,14 @@
 			background: rgba(0, 0, 0, 0.65);
 			display: none;
 		}
-		
 
 		[name="aspectrumPanel"] {
-			width: min( 95vw, 720px); /* calc(100vw - 40px) */
+			width: min( 95vw, 710px); /* calc(100vw - 40px) */
 			background: #111;
 			border: 2px solid #999;
 			border-radius: 20px;
 			box-shadow: 0 0 3px 4px #fff5;
-			padding: 4px 16px 16px;
+			padding: 8px 10px 10px;
 			max-height: 90dvh;
 			
 			overflow: hidden auto;
@@ -7614,6 +7629,7 @@
 				display: grid;
 				grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
 				gap: 8px 6px;
+				padding: 4px;
 				margin-top: 8px;
 				&:has(select){
 					grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -7665,18 +7681,26 @@
 						/* color: #00ffe5;
 						text-shadow: 2px 2px 10px #00ffbe88, -2px -2px 10px #00ffd188; */
 					}
-				}
-			}
 
-			& select,
-			& input[type="checkbox"] {
-				margin-top: 4px;
+					/* paint a bit different color for checkbox that can disable all built-in spectrum option inside */
+					&:has(input[name="disableBuiltinSpectrum"][type="checkbox"]:checked){
+						color: #ffbe00; /* #00d8ff */
+						text-shadow: 2px 2px 10px #ffbe0080, -2px -2px 10px #ffbe0080;
+					}
+
+					/* to prevent the shadow to effect the tooltip */
+					&::before, &::after{
+						text-shadow: none;
+					}
+				}
 			}
 
 			& select {
 				width: 100%;
 				background: #222;
 				border: 1px solid #444;
+				border-radius: .6em;
+				margin-top: 4px;
 				padding: 4px;
 
 				& option {
@@ -7690,8 +7714,33 @@
 				padding: 8px;
 				background: #2a2a2a;
 				border: 1px solid #555;
+				border-radius: .6em;
 				cursor: pointer;
 				
+			}
+
+			[name="toggleAnalyzer"].analyzerStop{
+				background: #444;
+				color: #0f0;
+			}
+
+			[name="toggleOverlayMode"].onOverlayedMode{
+				background: #444;
+				color: #0f0;
+			}
+
+			label:has([name="disableBuiltinSpectrum"]){
+				background: #111;
+			}
+
+			fieldset > div[class="aspGroupContainer"]{
+				/* border: 1px solid #bdbec0;
+    				border-radius: .4em;
+				padding: 2px; */
+				margin-top: 2px;
+				& + & {
+					margin-top: 12px;
+				}
 			}
 		}
 	</style>
@@ -8061,86 +8110,92 @@
 	<!-- aspectrumDialog Options Dialog -->
     <div id="aspectrumDialogOverlay">
       <div name="aspectrumPanel">
-	   <fieldset class="aspGroupContainer" name="aspSelectContainer">
-		<legend>Built-in choices</legend>
-		<label>
-			<span data-tooltip="Visualization mode.&#xa;-Mode 0 provides the highest resolution, allowing you to visualize individual frequencies&#xa;-Modes 1 - 8 divide the frequency spectrum in bands, each band represents the nth part of an octave.&#xa;-Mode 10 uses the discrete FFT data points to draw a continuous line and/or a filled area graph." data-tooltip-location="bottom">Mode</span>
-			<select name="mode">
-			<option value="0">0 – Discrete frequencies</option>
-			<option value="1">1 – 240 bands</option>
-			<option value="2">2 – 120 bands</option>
-			<option value="3">3 – 80 bands</option>
-			<option value="4">4 – 60 bands</option>
-			<option value="5">5 – 40 bands</option>
-			<option value="6">6 – 30 bands</option>
-			<option value="7">7 – 20 bands</option>
-			<option value="8">8 – 10 bands</option>
-			<option value="10">10 – Graph</option>
-			</select>
-		</label>
+	   <fieldset>
+		<legend><label data-tooltip="When this is set (it is highlighted)&#xa;- Analyzer graphics are not rendered to spectrum canvas.&#xa;- All of 'Built-in choices and options' inside this box are ignored.&#xa;- Only draw 'External Effects' if any one is enabled." data-tooltip-location="bottom"><input type="checkbox" name="disableBuiltinSpectrum" />Disable Built-in Spectrum</label></legend>
 
-		<label>
-			<span data-tooltip="Defines the number and layout of analyzer channels." data-tooltip-location="bottom">Channel Layout</span>
-			<select name="channelLayout">
-				<option value="single">Single</option>
-				<option value="dual-combined">Dual Combined</option>
-				<option value="dual-horizontal">Dual Horizontal</option>
-				<option value="dual-vertical">Dual Vertical</option>
-			</select>
-		</label>
+		<!-- container that contains select boxes -->
+		<div class="aspGroupContainer" name="aspSelectContainer">
+			<label>
+				<span data-tooltip="Visualization mode.&#xa;-Mode 0 provides the highest resolution, allowing you to visualize individual frequencies&#xa;-Modes 1 - 8 divide the frequency spectrum in bands, each band represents the nth part of an octave.&#xa;-Mode 10 uses the discrete FFT data points to draw a continuous line and/or a filled area graph." data-tooltip-location="bottom">Mode</span>
+				<select name="mode">
+				<option value="0">0 – Discrete frequencies</option>
+				<option value="1">1 – 240 bands</option>
+				<option value="2">2 – 120 bands</option>
+				<option value="3">3 – 80 bands</option>
+				<option value="4">4 – 60 bands</option>
+				<option value="5">5 – 40 bands</option>
+				<option value="6">6 – 30 bands</option>
+				<option value="7">7 – 20 bands</option>
+				<option value="8">8 – 10 bands</option>
+				<option value="10">10 – Graph</option>
+				</select>
+			</label>
 
-		<label>
-			<span data-tooltip="The color gradient scheme used for analyzer graphs." data-tooltip-location="bottom">Color scheme</span>
-			<select name="gradient">
-				<option value="classic">Classic</option>
-				<option value="orangered">Orangered</option>
-				<option value="prism">Prism</option>
-				<option value="rainbow">Rainbow</option>
-				<option value="steelblue">Steelblue</option>
-			</select>
-		</label>
+			<label>
+				<span data-tooltip="Defines the number and layout of analyzer channels." data-tooltip-location="bottom">Channel Layout</span>
+				<select name="channelLayout">
+					<option value="single">Single</option>
+					<option value="dual-combined">Dual Combined</option>
+					<option value="dual-horizontal">Dual Horizontal</option>
+					<option value="dual-vertical">Dual Vertical</option>
+				</select>
+			</label>
 
-		<label>
-			<span data-tooltip="Scale used to represent frequencies in the horizontal axis." data-tooltip-location="bottom">Frequency Scale</span>
-			<select name="frequencyScale">
-				<option value="bark">Bark</option>
-				<option value="linear">Linear</option>
-				<option value="log">Logarithmic</option>
-				<option value="mel">Mel</option>
-			</select>
-		</label>
+			<label>
+				<span data-tooltip="The color gradient scheme used for analyzer graphs." data-tooltip-location="bottom">Color scheme</span>
+				<select name="gradient">
+					<option value="classic">Classic</option>
+					<option value="orangered">Orangered</option>
+					<option value="prism">Prism</option>
+					<option value="rainbow">Rainbow</option>
+					<option value="steelblue">Steelblue</option>
+				</select>
+			</label>
 
-		<label>
-			<span data-tooltip="Selects the desired mode for coloring the analyzer bars.&#xa;This property has no effect in Graph mode (mode 10)." data-tooltip-location="bottom">Color Mode</span>
-			<select name="colorMode">
-				<option value="gradient">Gradient</option>
-				<option value="bar-index">Bar Index</option>
-				<option value="bar-level">Bar Level</option>
-			</select>
-		</label>
+			<label>
+				<span data-tooltip="Scale used to represent frequencies in the horizontal axis." data-tooltip-location="bottom">Frequency Scale</span>
+				<select name="frequencyScale">
+					<option value="bark">Bark</option>
+					<option value="linear">Linear</option>
+					<option value="log">Logarithmic</option>
+					<option value="mel">Mel</option>
+				</select>
+			</label>
 
-		<label>
-			<span data-tooltip="Mirrors the spectrum image to the left or right side." data-tooltip-location="bottom">Mirror</span>
-			<select name="mirror">
-				<option value="-1">Mirror left</option>
-				<option value="0">No mirror</option>
-				<option value="1">Mirror right</option>
-			</select>
-		</label>
-	   </fieldset>
-	   <fieldset class="aspGroupContainer" name="aspCheckboxContainer">
-		<legend>Built-in options</legend>
-		<!-- <label> <input type="checkbox" name="ledBars" /> LED Bars </label>
+			<label>
+				<span data-tooltip="Selects the desired mode for coloring the analyzer bars.&#xa;This property has no effect in Graph mode (mode 10)." data-tooltip-location="bottom">Color Mode</span>
+				<select name="colorMode">
+					<option value="gradient">Gradient</option>
+					<option value="bar-index">Bar Index</option>
+					<option value="bar-level">Bar Level</option>
+				</select>
+			</label>
 
-		<label> <input type="checkbox" name="showFPS" /> Show FPS </label>
+			<label>
+				<span data-tooltip="Mirrors the spectrum image to the left or right side." data-tooltip-location="bottom">Mirror</span>
+				<select name="mirror">
+					<option value="-1">Mirror left</option>
+					<option value="0">No mirror</option>
+					<option value="1">Mirror right</option>
+				</select>
+			</label>
+		</div>
 
-		<label> <input type="checkbox" name="reflexRatio" /> Reflex </label>
+		<!-- checkboxes -->
+		<div class="aspGroupContainer" name="aspCheckboxContainer">
+			<!-- <label> <input type="checkbox" name="ledBars" /> LED Bars </label>
 
-		<label> <input type="checkbox" name="showPeaks" /> Show Peaks </label>
+			<label> <input type="checkbox" name="showFPS" /> Show FPS </label>
 
-		<label> <input type="checkbox" name="fadePeaks" /> Fade Peaks </label>
+			<label> <input type="checkbox" name="reflexRatio" /> Reflex </label>
 
-		<label> <input type="checkbox" name="peakLine" /> Peak Line </label> -->
+			<label> <input type="checkbox" name="showPeaks" /> Show Peaks </label>
+
+			<label> <input type="checkbox" name="fadePeaks" /> Fade Peaks </label>
+
+			<label> <input type="checkbox" name="peakLine" /> Peak Line </label> -->
+		</div>
+
 	   </fieldset>
 
 	   <fieldset class="aspGroupContainer" name="aspFeaturesContainer">
@@ -8149,6 +8204,10 @@
 
 	   <div class="aspGroupContainer">
 		<button name="fullScreen">Full screen</button>
+
+		<button name="toggleAnalyzer">Toggle Analyzer</button>
+
+		<button name="toggleOverlayMode">Overlay mode</button>
 
 		<button name="closeDialog">Close</button>
 	   </div>
@@ -11581,7 +11640,7 @@
 							evt.stopImmediatePropagation();
 						}},
 
-						// S, Tab: switch mp3 audio sources for current chapter
+						// L, Tab: switch mp3 audio sources for current chapter
 						{task: "global_switchAudioSource", kCode: ["Tab", "KeyL"], desc: "Đổi phát chương bằng link dự phòng.", callback: () => {
 							const _switchSrcBtn = document.querySelector(".switchChapterAudioSrc");
 							if(_switchSrcBtn) _switchSrcBtn.click();
@@ -11645,6 +11704,15 @@
 						// Q: open Setting modal
 						{task: "global_openSettingModal", kCode: ["KeyC", "KeyQ"], desc: "Mở hộp thoại cấu hình.", callback: () => {
 							ssData.setting.openSettingModal();
+							
+							evt.preventDefault();
+							evt.stopPropagation();
+						}},
+
+						// F: Fullscreen the audio spectrum
+						{task: "global_fullscreenSpectrum", kCode: ["KeyF"], desc: "Hiện phổ âm thanh toàn màn hình.", callback: () => {
+							const btn = document.querySelector('button[name="specFullscreenBtn"]');
+							if(btn && btn.offsetParent) btn.click();
 							
 							evt.preventDefault();
 							evt.stopPropagation();
@@ -21197,7 +21265,7 @@ this.highlight = (elem) => {
 							gradient: 'rainbow',
 							loRes: true, // Low resolution mode resulting in four times less pixels to render.
 							ledBars: true,
-							showFPS : true,
+							showFPS : false,
 							// showPeaks: true,
 							// fadePeaks: false,
 							// showScaleX: true,
@@ -21285,6 +21353,35 @@ this.highlight = (elem) => {
 
 			/* Function to populate checkboxes in options panel and handle event for selects, checkboxes of options panel */
 			void function optionPanelElemsHandler(){
+
+				// handle for built-in spectrum enable/disable
+				void function handleBuiltinSpectrum(){
+					// disableBuiltinSpectrumChkbox
+					const disableBSChkbox = el("disableBuiltinSpectrum");
+					const xStateSpectrum = xState.audioSpectrum;
+					xStateSpectrum.disableBuiltin ??= false;
+
+					// function to make change to analyzer, fieldset element and xState according to the checked/unchecked state of disableBSChkbox
+					const changeState = _ => {
+						// change the disabled state of <fieldset> that contains all configurations for built-in spectrum
+						disableBSChkbox.closest("fieldset").disabled = xState.audioSpectrum.disableBuiltin = disableBSChkbox.checked;
+
+						// set caption for the label accordingly (without touching the checkbox disableBSChkbox inside it)
+						disableBSChkbox.closest("label").lastChild.textContent = (disableBSChkbox.checked ? "Enable" : "Disable") + " Built-in Spectrum";
+
+						// This will display or hide the built-in spectrum
+						ama.useCanvas = !disableBSChkbox.checked;
+					}
+
+					// make initial change according to the state of show/hide canvas of last session (which save in xState.audioSpectrum.disableBuiltin)
+					// first set the value of checkbox
+					disableBSChkbox.checked = xStateSpectrum.disableBuiltin;
+					changeState();
+
+					// event handler for check/uncheck the checkbox
+					disableBSChkbox.onchange = changeState;
+				}();
+
 				// Bind the options controls to AudioMotionAnalyzer options. The optionsBindings object defines the type of each control and any necessary parsing, in which, keys are the AudioMotionAnalyzer's option names and also the name of the element.
 				const optionsBindings = {
 					mode: { // 1 to 10 (except 9)
@@ -21299,7 +21396,7 @@ this.highlight = (elem) => {
 						type: "select", 
 						parse: (v) => +v, //convert string to number
 					},
-					useCanvas: { type: "checkbox", label: "Analyzer Viz", hint: "When set to false, analyzer graphics (all of 'Built-in choices' and 'Built-in options' and above setting are ignored) are not rendered to spectrum canvas, only draw 'External Effects' if any one is enabled.", },
+					//useCanvas: { type: "checkbox", label: "Analyzer Viz", hint: "When set to false, analyzer graphics (all of 'Built-in choices' and 'Built-in options' and above setting are ignored) are not rendered to spectrum canvas, only draw 'External Effects' if any one is enabled.", },
 					ledBars: { type: "checkbox", label: "LED Bars", hint: "Activate the LED bars effect for frequency bands modes", },
 					lumiBars: { type: "checkbox", label: "Luminous Bars", hint: "Only for frequency bands modes.\nWhen set to true all analyzer bars will be displayed at full height with varying luminance", },
 					trueLeds: { type: "checkbox", label: "True LEDs", hint: "When set to true, LEDs are painted with individual colors from the current gradient, instead of using the gradient itself"},
@@ -21383,7 +21480,8 @@ this.highlight = (elem) => {
 			}();
 			
 			// Setup event handlers for the audio spectrum (something related to spectrum div) and buttons in options panel.
-			(() => {
+			void function handleGenerals(){
+				
 				/* // Keyboard handling for the options panel
 				aspectrumOptionsPanel.onKeyDown = (evt) => {
 					// Close dialog on ESC key
@@ -21413,7 +21511,6 @@ this.highlight = (elem) => {
 						guiUtils.reposTooltips(aspectrumOptionsPanel, {container: aspectrumOptionsPanel }); //document.documentElement
 					}
 				});
-				
 
 				/*  Full-Screen dialog button */
 				if(!document.webkitExitFullscreen && !document.exitFullscreen){
@@ -21428,6 +21525,76 @@ this.highlight = (elem) => {
 						evt.stopPropagation();
 					}
 				}
+
+				/* toggle Overlay Mode */
+				void function toggleOverlayModeBtn(){
+					const toggleOverlayModeBtn = el("toggleOverlayMode");
+
+					const workArtParentDiv = document.querySelector("div:has(> #elmArtwork)");
+					
+					const xStateSpectrum = xState.audioSpectrum;
+					xStateSpectrum.posterOverlay ??= false;
+
+					// change button appearance
+					const changeMode = () => {
+						if(xState.posterOverlay){
+							audioSpectrumDiv.classList.add("overlayMode");
+							workArtParentDiv.append(audioSpectrumDiv);
+						}
+						else{
+							audioSpectrumDiv.classList.remove("overlayMode");
+							workArtParentDiv.parentElement.insertBefore(audioSpectrumDiv, workArtParentDiv);
+						}
+
+						toggleOverlayModeBtn.classList.toggle("onOverlayedMode", xState.posterOverlay);
+					}
+					changeMode();
+
+					toggleOverlayModeBtn.addEventListener("click", e => {
+						e.stopPropagation();
+
+						// toggle mode
+						xState.posterOverlay = !xState.posterOverlay;
+
+						// change button appearance
+						changeMode();
+
+						//save to xState
+						xStateSpectrum.posterOverlay = audioSpectrumDiv.classList.contains("overlayMode");
+					});
+				}();
+				
+				/* toggle Analyzer */
+				void function toggleAnalyzerBtn(){
+					const toggleAnalyzerBtn = el("toggleAnalyzer");
+					const xStateSpectrum = xState.audioSpectrum;
+					xStateSpectrum.stopAnalyzer ??= false;
+
+					// stop analyzer if last time it was stopped
+					if(xStateSpectrum.stopAnalyzer) ama.stop();
+
+					// change button appearance
+					const changeBtnAppearance = () => {
+						const isAmaStop = !ama.isOn;
+
+						toggleAnalyzerBtn.classList.toggle("analyzerStop", isAmaStop);
+						toggleAnalyzerBtn.textContent = (isAmaStop? "Start" : "Stop") + " Analyzer";
+					}
+					changeBtnAppearance();
+
+					toggleAnalyzerBtn.addEventListener("click", e => {
+						e.stopPropagation();
+
+						// start/stop analyzer
+						ama.toggleAnalyzer();
+
+						// change button appearance
+						changeBtnAppearance();
+
+						//save to xState
+						xStateSpectrum.stopAnalyzer = !ama.isOn;
+					});
+				}();
 
 				/* Handle to close the options panel */
 				const closeOptionsPanel = (e) => {
@@ -21458,16 +21625,17 @@ this.highlight = (elem) => {
 				//bind event to switch background when page theme switch button is clicked
 				document.querySelector('[name="switchPageTheme"]').addEventListener("click", switchSpectrumBgrnd);
 
-			})();
+			}();
 			
+			/* === External / Custom Effects === */
 			const featuresDefaultOptions = {
 				energyMeter: {val: 0, type: "checkbox", label: "Energy Meters", hint: "Show energy meter and bass/midrange/treble indicators",},
 				showTitle: {val: 1, type: "checkbox", label: "Title", hint: "Show current chapter title at top of spectrum",},
 				songProgress: {val: 0, type: "checkbox", label: "Song Progress", hint: "Show song progress bar at very top of spectrum",},
 				showSphere: {val: 0, type: "checkbox", label: "Sphere", hint: "Show zooming sphere at center of spectrum",},
-				showRadialBars: {val: 0, type: "checkbox", label: "Radial Bars", hint: "Show particle explosion effect at center of spectrum on bass beat",},
-				showPulsatingCircle: {val: 0, type: "checkbox", label: "Circle", hint: "Show pulsating circle at center of spectrum on bass beat",},
+				showBouncingBalls: {val: 0, type: "checkbox", label: "Bouncing Balls", hint: "Show bouncing balls at center bottom of spectrum on bass, midLow, mid, highMid, treble beat",},
 				showMultipleWaves: {val: 0, type: "checkbox", label: "Waves", hint: "Show multiple waveforms at center of spectrum",},
+				showRadialBars: {val: 0, type: "checkbox", label: "Radial Bars", hint: "Show particle explosion effect at center of spectrum on bass beat",},
 				showHorizoltalEnergy: {val: 0, type: "checkbox", label: "Energy Bars", hint: "Show horizontal energy bar at middle of spectrum",},
 			};
 
@@ -21563,9 +21731,10 @@ this.highlight = (elem) => {
 					ctx.fillStyle = '#f008';
 					ctx.fillRect( width, peakY, width, 2 );
 
-					ctx.font = `${ 16 * pixelRatio }px sans-serif`;
+					ctx.font = `${ 40 * pixelRatio }px sans-serif`;
 					ctx.textAlign = 'left';
-					ctx.fillText( peakEnergy.toFixed(4), width, peakY - 4 );
+					ctx.fillStyle = '#ccc';
+					ctx.fillText( peakEnergy.toFixed(4), width * .3, peakY - 4 );
 
 					// overall energy bar
 					ctx.fillStyle = '#fff8';
@@ -21626,10 +21795,19 @@ this.highlight = (elem) => {
 					// it usually works best than specific frequency ranges, for a wider range of music styles
 					ctx.font = `${ baseSize + amaInstance.getEnergy() * 25 * pixelRatio }px sans-serif`;
 
-					ctx.fillStyle = '#fff8';
-					ctx.textAlign = 'center';
 					const logoText = xAudio.title ?? 'Audio Books';
-					ctx.fillText( logoText, canvas.width - baseSize * logoText.length / 2, baseSize * 2 ); //canvas.width - baseSize * 4
+
+					ctx.fillStyle = '#fff8';					
+					// center the text 
+					ctx.textAlign = 'center';
+					ctx.fillText( logoText, w / 2, baseSize * 2 );
+
+					/* //right align the text 
+					ctx.textAlign = 'right';
+					ctx.fillText( logoText, w - baseSize, baseSize * 2 ); */
+					
+					// ctx.fillText( logoText, canvas.width  - baseSize * logoText.length / 2, baseSize * 2 );
+
 				}
 				
 				//--- song progress bar ---
@@ -21688,10 +21866,30 @@ this.highlight = (elem) => {
 						radius
 					);
 
-					grad.addColorStop(0, `rgba(255,255,255,.7)`);
+					// muktiple colorBands so that each time run the app and turn on this effect, the sphere's color may different
+					const colorBands = [
+						[100,180,255],
+						[255, 60, 60],
+						[60, 255, 200],
+						[255, 120, 0], 
+						[0, 255, 0], 
+						[120, 120, 255]						
+					];
+					// choose a random colorBand and save into a private var of amaInstance
+					amaInstance._pvtSphereColorBand ??= colorBands[Math.floor(Math.random() * colorBands.length)];
+
+					const [r, g, b] = amaInstance._pvtSphereColorBand;
+					const alpha = Math.max( peak * 2.5, 0.5 );// .8;
+
+					grad.addColorStop(0, `rgba(${r * 1.1},${g * 1.1},${b * 1.1},${alpha})`);
+					grad.addColorStop(bass, `rgba(${r},${g},${b},${alpha})`);
+					grad.addColorStop(1, `rgba(${r * 0.3},${g * 0.3},${b * 0.3},${alpha})`);
+
+					/* //grad.addColorStop(0, `rgba(255,255,255,.7)`);
+					grad.addColorStop(0, `rgba(135,196,255,.9)`);
 					// bass control the radius of inner circle
 					grad.addColorStop(bass, `rgba(100,180,255,0.9)`);
-					grad.addColorStop(1, `rgba(0,40,80,0.9)`);
+					grad.addColorStop(1, `rgba(0,40,80,0.9)`); */
 
 					ctx.save();
 
@@ -21701,7 +21899,7 @@ this.highlight = (elem) => {
 					ctx.fillStyle = grad;
 					ctx.fill();
 
-					// --- subtle outline ---
+					// --- subtle outline (sphere outer border) ---
 					ctx.lineWidth = 2;
 					ctx.strokeStyle = `rgba(180,220,255,.6)`;
 					ctx.stroke();
@@ -21717,7 +21915,7 @@ this.highlight = (elem) => {
 						0,
 						Math.PI * 2
 					);
-					ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+					ctx.strokeStyle = 'rgba(255,255,255,0.3)';
 					ctx.lineWidth = 1;
 					ctx.stroke();
 
@@ -21811,32 +22009,6 @@ this.highlight = (elem) => {
 
 				}
 				
-				// --- particle explosion circle ---
-				function drawPulsatingCircle() {
-
-					const bass = amaInstance.getEnergy('bass');
-					const midE = amaInstance.getEnergy('mid');
-
-					ctx.fillStyle = 'rgba(0,0,0,0.2)';
-					ctx.fillRect(0, 0, w, h);
-
-					for (let i = 0; i < 120; i++) {
-					const angle = performance.now() * 0.0005 + i;
-					const dist =
-					40 +
-					Math.sin(i) * 30 +
-					bass * 200;
-
-					const x = centerX + Math.cos(angle) * dist;
-					const y = centerY + Math.sin(angle) * dist;
-
-					ctx.beginPath();
-					ctx.arc(x, y, 1 + midE * 3, 0, Math.PI * 2);
-					ctx.fillStyle = `rgba(120,200,255,0.7)`;
-					ctx.fill();
-					}
-				}
-
 				// --- multi-layer waveform visualizer ---
 				function drawMultipleWaves() {
 					const time = performance.now() * 0.002;
@@ -21921,6 +22093,79 @@ this.highlight = (elem) => {
 
 				}
 
+				// --- bouncing balls visualizer ---
+				function drawBouncingBalls() {
+					
+					//ctx.clearRect(0, 0, w, h);
+
+					// Energy bands
+					const bands = [
+						{ name: 'bass',    color: [255, 60, 60] },
+						{ name: 'lowMid',  color: [255, 120, 0] },
+						{ name: 'mid',     color: [60, 255, 200] },
+						{ name: 'highMid', color: [0, 255, 0] },
+						{ name: 'treble',  color: [120, 120, 255] }
+					];
+
+					// Overall energy controls ball size
+					const overallEnergy = amaInstance.getEnergy('peak'); // 0–1
+					const baseRadius = baseSize * 2;
+					const radius = baseRadius + overallEnergy * 30;
+
+					const spacing = w / (bands.length + 1);
+					const floorY = h - radius - 10;
+					const maxBounceHeight = h * 0.7;
+
+					/* bands.forEach((band, i) => {
+						const energy = amaInstance.getEnergy(band.name); // 0–1
+
+						// Bounce height from energy
+						const bounce = energy * maxBounceHeight;
+						const y = floorY - bounce;
+
+						// Transparency from energy
+						const alpha = Math.max(energy, 0.05);
+
+						const x = spacing * (i + 1);
+						const [r, g, b] = band.color;
+
+						ctx.beginPath();
+						ctx.arc(x, y, radius, 0, Math.PI * 2);
+						ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+						ctx.fill();
+					}); */
+					bands.forEach((band, i) => {
+						const energy = amaInstance.getEnergy(band.name);
+						const bounce = Math.pow(energy, 0.7) * maxBounceHeight;
+
+						const x = spacing * (i + 1);
+						const y = floorY - bounce;
+						const alpha = Math.min(0.25 + energy * 0.75, 1);
+
+						const [r, g, b] = band.color;
+
+						// 🌕 Radial gradient for sphere shading
+						const grad = ctx.createRadialGradient(
+							x - radius * 0.3,
+							y - radius * 0.3,
+							radius * 0.1,
+							x,
+							y,
+							radius
+						);
+
+						//grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+						grad.addColorStop(0, `rgba(${r * 1.2},${g * 1.2},${b * 1.2},${alpha})`);
+						grad.addColorStop(0.25, `rgba(${r},${g},${b},${alpha})`);
+						grad.addColorStop(1, `rgba(${r * 0.3},${g * 0.3},${b * 0.3},${alpha})`);
+
+						ctx.beginPath();
+						ctx.arc(x, y, radius, 0, Math.PI * 2);
+						ctx.fillStyle = grad;
+						ctx.fill();
+					});
+				};
+
 				/* -- Call the custom visualizer features according to user settings --- */
 				// --- horizontal energy bars visualizer ---
 				if( featuresDefaultOptions.showHorizoltalEnergy.val) drawHorizontalEnergyBars();
@@ -21928,8 +22173,8 @@ this.highlight = (elem) => {
 				// --- custom sphere visualizer ---
 				if ( featuresDefaultOptions.showSphere.val ) drawSphere();
 
-				// --- particle explosion circle ---
-				if( featuresDefaultOptions.showPulsatingCircle.val ) drawPulsatingCircle();
+				// --- bouncing balls circle ---
+				if( featuresDefaultOptions.showBouncingBalls.val ) drawBouncingBalls(); //drawPulsatingCircle();
 				
 				// --- radial bars visualizer ---
 				if(featuresDefaultOptions.showRadialBars.val) drawRadialBars();
