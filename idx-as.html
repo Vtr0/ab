@@ -7629,8 +7629,8 @@
 				display: grid;
 				/* grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); */
 
-				/* fix to maximum 4 columns. since the margin is 8px, so 8px/4=2ps, I take 3 */
-				grid-template-columns: repeat(auto-fit, minmax( max(130px,calc(25% - 3px)), 1fr ));
+				/* fix to maximum 4 columns. since the margin + 3 gap is 8px + 6px*3 = 26px, so 26px/4=8px */
+				grid-template-columns: repeat(auto-fit, minmax( max(130px,calc(25% - 8px)), 1fr ));
 				gap: 8px 6px;
 				padding: 4px;
 				margin-top: 8px;
