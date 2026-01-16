@@ -7634,6 +7634,9 @@
 				&:has(select){
 					grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 				}
+				& > *{
+					min-width: 0;
+				}
 			}
 
 			/* & [name="aspSelectContainer"]{
@@ -7911,7 +7914,7 @@
 			<form method="dialog">
 				<p class="message"></p>
 				<div class="btnContainer">
-					<button value="ok" autofocus>☑️ OK</button>
+					<button value="ok" autofocus>🌑 OK</button>
 				</div>
 			</form>
 		</dialog>
@@ -7921,13 +7924,13 @@
 			<form method="dialog">
 				<p class="message"></p>
 				<div class="btnContainer">
-					<button value="ok" autofocus>☑️ OK</button>
+					<button value="ok" autofocus>🌕 OK</button>
 					<button value="cancel">❌ Cancel</button>
 				</div>
 			</form>
 		</dialog>
 
-		<!-- Prompt ✅ -->
+		<!-- Prompt ✅☑️ -->
 		<dialog id="dlg-prompt">
 			<form method="dialog">
 				<p class="message"></p>
@@ -21537,16 +21540,21 @@ this.highlight = (elem) => {
 
 					// change button appearance
 					const changeMode = () => {
-						if(xState.posterOverlay){
-							audioSpectrumDiv.classList.add("overlayMode");
+						const isOverlay = xStateSpectrum.posterOverlay;
+						if(isOverlay){
+							// move the spectrum div to overlap the workart img
 							workArtParentDiv.append(audioSpectrumDiv);
 						}
 						else{
-							audioSpectrumDiv.classList.remove("overlayMode");
+							// move the spectrum div back to its original location (which is hard code in HTML mark-up)
 							workArtParentDiv.parentElement.insertBefore(audioSpectrumDiv, workArtParentDiv);
 						}
 
-						toggleOverlayModeBtn.classList.toggle("onOverlayedMode", xState.posterOverlay);
+						// set the class for spectrum div (which contains the canvas)
+						audioSpectrumDiv.classList.toggle("overlayMode", isOverlay);
+
+						// set for appearance of the button
+						toggleOverlayModeBtn.classList.toggle("onOverlayedMode", isOverlay);
 					}
 					changeMode();
 
@@ -21554,7 +21562,7 @@ this.highlight = (elem) => {
 						e.stopPropagation();
 
 						// toggle mode
-						xState.posterOverlay = !xState.posterOverlay;
+						xStateSpectrum.posterOverlay = !xStateSpectrum.posterOverlay;
 
 						// change button appearance
 						changeMode();
@@ -22140,7 +22148,7 @@ this.highlight = (elem) => {
 
 						const x = spacing * (i + 1);
 						const y = floorY - bounce;
-						const alpha = Math.min(0.25 + energy * 0.75, 1);
+						const alpha = Math.min(0.3 + energy , 1);
 
 						const [r, g, b] = band.color;
 
