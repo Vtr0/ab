@@ -21903,13 +21903,13 @@ this.highlight = (elem) => {
 					amaInstance._pvtSphereColorBand ??= colorBands[Math.floor(Math.random() * colorBands.length)];
 
 					const [r, g, b] = amaInstance._pvtSphereColorBand;
-					const alpha = Math.max( bass * 2.5, 0.5 );// .8;
+					const alpha = Math.max( peak * 2.5, 0.5 );// .8;
 
 					// deduct the similar color from base color
 					const shiftColor = (ratio) => `rgba(${r * ratio},${g * ratio},${b * ratio},${alpha})`;
 
 					grad.addColorStop(0, shiftColor(1.1));
-					grad.addColorStop(peak, shiftColor(1));
+					grad.addColorStop(bass, shiftColor(1));
 					grad.addColorStop(1, shiftColor(.3));
 
 					/* //grad.addColorStop(0, `rgba(255,255,255,.7)`);
