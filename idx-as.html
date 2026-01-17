@@ -7605,7 +7605,7 @@
 		}
 
 		[name="aspectrumPanel"] {
-			width: min( 95vw, 710px); /* calc(100vw - 40px) */
+			width: min( 95vw, 720px); /* calc(100vw - 40px) */
 			background: #111;
 			border: 2px solid #999;
 			border-radius: 20px;
@@ -7628,9 +7628,9 @@
 				display: grid;
 				/* grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); */
 
-				/* fix to maximum 4 columns. since the margin + 3 gap is 8px + 6px*3 = 26px, so 26px/4=8px */
-				grid-template-columns: repeat(auto-fit, minmax( max(130px,calc(25% - 8px)), 1fr ));
-				gap: 8px 6px;
+				/* fix to maximum 4 columns. since the margin + 3 gap is 8px + 10px*3 = 38px, so 38px/4=10px */
+				grid-template-columns: repeat(auto-fit, minmax( max(130px,calc(25% - 10px)), 1fr ));
+				gap: 10px;
 				padding: 4px;
 				margin-top: 8px;
 				&:has(select){
@@ -7663,7 +7663,7 @@
 					/* overflow: hidden;
 					text-overflow: ellipsis; */
 
-					padding: 4px;
+					padding: 6px 4px;
 					text-align: center;
 					cursor: pointer;
     					vertical-align: bottom;
@@ -21906,11 +21906,11 @@ this.highlight = (elem) => {
 					const alpha = Math.max( peak * 2.5, 0.5 );// .8;
 
 					// deduct the similar color from base color
-					const deductColor = (ratio) => `rgba(${r * ratio},${g * ratio},${b * ratio},${alpha})`;
+					const shiftColor = (ratio) => `rgba(${r * ratio},${g * ratio},${b * ratio},${alpha})`;
 
-					grad.addColorStop(0, deductColor(1.1));
-					grad.addColorStop(peak, deductColor(1));
-					grad.addColorStop(1, deductColor(.3));
+					grad.addColorStop(0, shiftColor(1.1));
+					grad.addColorStop(bass, shiftColor(1));
+					grad.addColorStop(1, shiftColor(.3));
 
 					/* //grad.addColorStop(0, `rgba(255,255,255,.7)`);
 					grad.addColorStop(0, `rgba(135,196,255,.9)`);
@@ -21928,7 +21928,7 @@ this.highlight = (elem) => {
 
 					// --- subtle outline (sphere outer border) ---
 					ctx.lineWidth = 2;
-					ctx.strokeStyle = deductColor(1.3); //`rgba(180,220,255,.6)`;
+					ctx.strokeStyle = shiftColor(1.3); //`rgba(180,220,255,.6)`;
 					ctx.stroke();
 
 					// --- optional equator line (technical feel) ---
@@ -22177,6 +22177,9 @@ this.highlight = (elem) => {
 
 						const [r, g, b] = band.color;
 
+						// deduct the similar color from base color
+						const shiftColor = (ratio) => `rgba(${r * ratio},${g * ratio},${b * ratio},${alpha})`;
+
 						// 🌕 Radial gradient for sphere shading
 						const grad = ctx.createRadialGradient(
 							x - radius * 0.3,
@@ -22188,9 +22191,9 @@ this.highlight = (elem) => {
 						);
 
 						//grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
-						grad.addColorStop(0, `rgba(${r * 1.2},${g * 1.2},${b * 1.2},${alpha})`);
-						grad.addColorStop(0.25, `rgba(${r},${g},${b},${alpha})`);
-						grad.addColorStop(1, `rgba(${r * 0.5},${g * 0.5},${b * 0.5},${alpha})`);
+						grad.addColorStop(0, shiftColor(1.2));
+						grad.addColorStop(0.25, shiftColor(1));
+						grad.addColorStop(1, shiftColor(.5));
 
 						ctx.beginPath();
 						ctx.arc(x, y, radius, 0, Math.PI * 2);
