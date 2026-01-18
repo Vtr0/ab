@@ -21635,6 +21635,9 @@ this.highlight = (elem) => {
 							ama.height = CANVAS_DEF_HEIGHT;
 						}
 
+						// need this because in overlay mode, canvas spectrum background is transparent in both light and dark theme
+						//switchSpectrumBgrnd();
+
 						// set the class for spectrum div (which contains the canvas)
 						audioSpectrumDiv.classList.toggle("overlayMode", isOverlay);
 
@@ -21715,6 +21718,8 @@ this.highlight = (elem) => {
 				const switchSpectrumBgrnd = _ => {
 					// show or hide background color according to page theme
 					//ama.setOptions( {showBgColor: !document.body.classList.contains("dark-theme")});
+					if(xState.audioSpectrum.posterOverlay) ama.showBgColor = false; //always transparent background when in overlay mode
+					else
 					ama.showBgColor = !document.body.classList.contains("dark-theme");
 				};
 				//run once to set initial background according to current page theme
