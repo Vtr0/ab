@@ -7601,7 +7601,6 @@
 			inset: 0;
 			z-index: 1000;
 			background: rgba(0, 0, 0, 0.65);
-			display: none;
 		}
 
 		[name="aspectrumPanel"] {
@@ -7622,7 +7621,29 @@
 			/* transition: all 300ms ease-in-out;
 			transform: translate(-50%, -50%) scale(0); */
 			/* margin: 30px auto; */
-			transform: translate(-50%, max(calc(20dvh - 25%), 4dvh)) scale(1);	
+			transform: translate(-50%, max(calc(20dvh - 25%), 4dvh)) scale(1);
+
+			/* opacity: 1;
+			display: block; */
+			transition: transform .5s/* opacity .75s ease-in, transform .75s, display .75s allow-discrete */;
+
+			#aspectrumDialogOverlay.elm-hidden > &{
+				/* opacity: 0;
+				display: none; */
+				transform: translate(-50%, -50%) scale(0);
+			}
+
+			@starting-style {
+				/* opacity: 0;
+				display: none; */
+				transform: translate(-50%, -50%) scale(0);
+			}
+			
+			& > *{
+				& + & {
+					margin-top: 12px;
+				}
+			}
 
 			& .aspGroupContainer {
 				display: grid;
@@ -7687,7 +7708,11 @@
 						text-shadow: 2px 2px 10px #00ffbe88, -2px -2px 10px #00ffd188; */
 					}
 
-					/* paint a bit different color for checkbox that can disable all built-in spectrum option inside */
+					/* paint a bit different color for checkbox that can disable all built-in spectrum option inside This one is on legend of the container fieldset */
+					&:has(input[name="disableBuiltinSpectrum"][type="checkbox"]){
+						padding-left: 10px;
+						padding-right: 10px;
+					}
 					&:has(input[name="disableBuiltinSpectrum"][type="checkbox"]:checked){
 						color: #ffbe00; /* #00d8ff */
 						text-shadow: 2px 2px 10px #ffbe0080, -2px -2px 10px #ffbe0080;
@@ -7714,8 +7739,8 @@
 			}
 
 			& button {
-				margin-top: 12px;
-				width: 100%;
+				/* margin-top: 12px;
+				width: 100%; */
 				padding: 8px;
 				background: #2a2a2a;
 				border: 1px solid #555;
@@ -7786,6 +7811,31 @@
 
 				&::backdrop {
 					background: rgba(0, 0, 0, 0.75);
+					opacity: 0;
+					transition: opacity 500ms ease-out, display 600ms allow-discrete;
+				}
+
+				/* Following which is commented not neccesary */
+				/* &::backdrop {
+					opacity: 0;
+					transition: opacity 500ms ease-out, display 600ms allow-discrete;
+				}
+				&[open]::backdrop {
+					opacity: 1;
+					@starting-style {
+							opacity: 0;
+					}
+				} */
+
+				/* Following block for diaglog show/hide transition adapted from https://css-tricks.com/almanac/rules/s/starting-style/ */
+				transition: opacity .75s ease-out, display .6s allow-discrete, overlay .6s allow-discrete;
+				opacity: 0;
+				&[open] {
+					opacity: 1;
+
+					@starting-style {
+						opacity: 0;
+					}
 				}
 
 				& .message {
@@ -8125,7 +8175,7 @@
 	<!-- end of html modal popup -->
 
 	<!-- aspectrumDialog Options Dialog -->
-    <div id="aspectrumDialogOverlay">
+    <div id="aspectrumDialogOverlay" class="elm-hidden">
       <div name="aspectrumPanel">
 	   <fieldset>
 		<legend><label data-tooltip="When this is set (it is highlighted)&#xa;- Analyzer graphics are not rendered to spectrum canvas.&#xa;- All of 'Built-in choices and options' inside this box are ignored.&#xa;- Only draw 'External Effects' if any one is enabled." data-tooltip-location="bottom"><input type="checkbox" name="disableBuiltinSpectrum" />Disable Built-in Spectrum</label></legend>
@@ -21519,7 +21569,9 @@ this.highlight = (elem) => {
 				audioSpectrumDiv.addEventListener("click", () => {
 					if(ama.canvas === document.fullscreenElement) return; //do nothing if spectrum already in fullscreen mode
 
-					aspectrumOptionsOverlay.style.display = "block";
+					/* aspectrumOptionsOverlay.style.display = "block";
+					aspectrumOptionsOverlay.style.opacity = 1; */
+					aspectrumOptionsOverlay.classList.remove("elm-hidden");
 
 					//reposition tooltips inside options panel only once when panel is opened first time
 					if(!audioSpectrumDiv.beenLoaded) {
@@ -21621,7 +21673,9 @@ this.highlight = (elem) => {
 				/* Handle to close the options panel */
 				const closeOptionsPanel = (e) => {
 					saveState2Disk();
-					aspectrumOptionsOverlay.style.display = "none";
+					/* aspectrumOptionsOverlay.style.display = "none";
+					aspectrumOptionsOverlay.style.opacity = 0; */
+					aspectrumOptionsOverlay.classList.add("elm-hidden");
 
 					e.stopPropagation();
 				};
@@ -21652,13 +21706,14 @@ this.highlight = (elem) => {
 			/* === External / Custom Effects === */
 			const featuresDefaultOptions = {
 				energyMeter: {val: 0, type: "checkbox", label: "Energy Meters", hint: "Show energy meter and bass/midrange/treble indicators",},
-				showTitle: {val: 1, type: "checkbox", label: "Title", hint: "Show current chapter title at top of spectrum",},
+				showTitle: {val: 1, type: "checkbox", label: "Song Title", hint: "Show current chapter title at top of spectrum",},
 				songProgress: {val: 0, type: "checkbox", label: "Song Progress", hint: "Show song progress bar at very top of spectrum",},
 				showSphere: {val: 0, type: "checkbox", label: "Sphere", hint: "Show zooming sphere at center of spectrum",},
 				showJumpingBalls: {val: 0, type: "checkbox", label: "Jumping Balls", hint: "Show balls jumping at center bottom of spectrum on bass, midLow, mid, highMid, treble beat",},
 				showMultipleWaves: {val: 0, type: "checkbox", label: "Waves", hint: "Show multiple waveforms at center of spectrum",},
 				showRadialBars: {val: 0, type: "checkbox", label: "Radial Bars", hint: "Show particle explosion effect at center of spectrum on bass beat",},
-				showHorizoltalEnergy: {val: 0, type: "checkbox", label: "Energy Bars", hint: "Show horizontal energy bar at middle of spectrum",},
+				showOscilloscopeEnergy: {val: 0, type: "checkbox", label: "Oscilloscope", hint: "Show Energy Barsat middle of spectrum and horizontal energy bars (peak and overall) at top left of it",},
+				//showHorizoltalEnergy: {val: 0, type: "checkbox", label: "Energy Bars", hint: "Show horizontal energy bar at middle of spectrum",},
 			};
 
 			/* Function to populate checkboxes in options panel and handle event for selects, checkboxes of options panel */
@@ -22042,6 +22097,64 @@ this.highlight = (elem) => {
 
 				}
 				
+				function drawOscilloscope() {
+					//const { w, h } = ctx.canvas;
+
+					// get array of bar objects
+					const bars = amaInstance.getBars();
+
+					//ctx.clearRect(0, 0, w, h);
+
+					ctx.strokeStyle = 'rgba(0, 255, 255, 0.9)';
+					ctx.lineWidth = 2;
+					ctx.lineJoin = 'round';
+					ctx.lineCap = 'round';
+					
+					// DRAW THE TOP WAVES which correcponsing with the amplitude of LEFT channel
+					ctx.beginPath();
+					// step X increment using bar layout info (posX and width)
+					for (let i = 0; i < bars.length; i++) {
+						const bar = bars[i];
+
+						// correct access to normalized amplitude (0..1)
+						const amplitude = bar.value[0]; 
+						// Note: bar.value is an array with one element per channel. Use [0] for single channel or combined. :contentReference[oaicite:2]{index=2}
+
+						// map amplitude into Y coordinate
+						const x = bar.posX; // + bar.width / 2;
+						const y = centerY - amplitude * centerY;
+
+						if (i === 0) {
+							ctx.moveTo(x, y);
+						} else {
+							ctx.lineTo(x, y);
+						}
+					}
+					ctx.stroke();
+
+					// DRAW THE BOTTOM WAVES which correcponsing with the amplitude of RIGHT channel
+					ctx.beginPath();
+					ctx.strokeStyle = 'rgba(120, 120, 255, 0.9)';
+					// step X increment using bar layout info (posX and width)
+					for (let i = 0; i < bars.length; i++) {
+						const bar = bars[i];
+
+						// correct access to normalized amplitude (0..1)
+						const amplitude = bar.value[1]; 
+						// Note: bar.value is an array with one element per channel. Use [0] for single channel or combined. :contentReference[oaicite:2]{index=2}
+
+						// map amplitude into Y coordinate
+						const x = bar.posX; // + bar.width / 2;
+						const y = centerY + amplitude * centerY;
+
+						if (i === 0) {
+							ctx.moveTo(x, y);
+						} else {
+							ctx.lineTo(x, y);
+						}
+					}
+					ctx.stroke();
+				}
 				// --- multi-layer waveform visualizer ---
 				function drawMultipleWaves() {
 					const time = performance.now() * 0.002;
@@ -22213,11 +22326,11 @@ this.highlight = (elem) => {
 				};
 
 				/* -- Call the custom visualizer features according to user settings --- */
-				// --- horizontal energy bars visualizer ---
-				if( featuresDefaultOptions.showHorizoltalEnergy.val) drawHorizontalEnergyBars();
+				// --- Oscilloscope visualizer ---
+				if( featuresDefaultOptions.showOscilloscopeEnergy.val) drawOscilloscope();
 
-				// --- custom sphere visualizer ---
-				if ( featuresDefaultOptions.showSphere.val ) drawSphere();
+				// --- custom sphere  + horizontal energy bars visualizer ---
+				if ( featuresDefaultOptions.showSphere.val ) {drawSphere(); drawHorizontalEnergyBars();}
 
 				// --- bouncing balls circle ---
 				if( featuresDefaultOptions.showJumpingBalls.val ) drawJumpingBalls(); //drawPulsatingCircle();
