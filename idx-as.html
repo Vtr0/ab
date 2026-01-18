@@ -7567,7 +7567,7 @@
 				color: #eee;
 				position: absolute;
 				top: -5px;
-				left: -2px;
+				left: 0; /* -2px; */
 				padding: 0;
 				cursor: pointer;
 				background: #0000;
@@ -7576,6 +7576,12 @@
 				&:hover{
 					color: #999;
 				}
+			}
+
+			/* when in overlay mode, move the button a bit to avoid the curve at corner of workart */
+			&.overlayMode > [name="specFullscreenBtn"]{
+				top: 0;
+				left: 6px;
 			}
 
 			/* overlayMode to make spectrum overlay the poster workart */
@@ -21268,6 +21274,9 @@ this.highlight = (elem) => {
 				return; // not using audio spectrum
 			}
 
+			// the default height of spectrum canvas when it is detached and stand alone, that is, when it does not in 'overlay' mode (which it has to fit the element that it overlays)
+			const CANVAS_DEF_HEIGHT = 100;
+
 			/** Function to hook AudioMotionAnalyzer to xAudio element and audioSpectrumDiv container
 			 * @param xAudio {HTMLAudioElement} the audio element that play the audio source
 			 * @param audioSpectrumDiv {HTMLElement} the div element that contain audio spectrum canvas
@@ -21297,7 +21306,7 @@ this.highlight = (elem) => {
 					//set default audio spectrum options if not defined in xState
 					let amaOptions = {
 						
-						height: 100,
+						height: CANVAS_DEF_HEIGHT,
 						responsive: true, //canvas resize according to container size
 						ansiBands: false,
 						showScaleX: false,
@@ -21599,21 +21608,31 @@ this.highlight = (elem) => {
 				void function toggleOverlayModeBtn(){
 					const toggleOverlayModeBtn = el("toggleOverlayMode");
 
-					const workArtParentDiv = document.querySelector("div:has(> #elmArtwork)");
+					const workArtElem = document.getElementById("elmArtwork");
+					const workArtParentDiv = workArtElem.parentElement; // document.querySelector("div:has(> #elmArtwork)");
 					
 					const xStateSpectrum = xState.audioSpectrum;
 					xStateSpectrum.posterOverlay ??= false;
 
-					// change button appearance
+					// change button appearance, and also set the height of spectrum canvas depending on stand-alone or overlay mode
 					const changeMode = () => {
 						const isOverlay = xStateSpectrum.posterOverlay;
-						if(isOverlay){
+						if(isOverlay){ // overlay mode
 							// move the spectrum div to overlap the workart img
-							workArtParentDiv.append(audioSpectrumDiv);
+							if(audioSpectrumDiv.parentElement !== workArtParentDiv) //only move when it not yet moved before
+								workArtParentDiv.append(audioSpectrumDiv); 
+
+							// set the height of spectrum canvas the height of workart poster - the element which it overlays
+							if(ama.height !== workArtElem.offsetHeight) // I have to do this comparison before assigning because this run everytime the workart image loaded, see the event handler of workArtElem below
+								ama.height = workArtElem.offsetHeight;
 						}
-						else{
+						else{ //detached - stand alone mode
 							// move the spectrum div back to its original location (which is hard code in HTML mark-up)
-							workArtParentDiv.parentElement.insertBefore(audioSpectrumDiv, workArtParentDiv);
+							if(audioSpectrumDiv.parentElement == workArtParentDiv) //only move when it is share the same parent with workart poster
+								workArtParentDiv.parentElement.insertBefore(audioSpectrumDiv, workArtParentDiv);
+
+							// set the height of spectrum canvas back to its original height when it stands alone - that is, not in overlay mode
+							ama.height = CANVAS_DEF_HEIGHT;
 						}
 
 						// set the class for spectrum div (which contains the canvas)
@@ -21623,6 +21642,9 @@ this.highlight = (elem) => {
 						toggleOverlayModeBtn.classList.toggle("onOverlayedMode", isOverlay);
 					}
 					changeMode();
+
+					// listen for when the workart image loaded, when it is in overlaympde, change the height of spectrum canvas accordingly (so the drawing not being skewed)
+					workArtElem.addEventListener("load", _ => {if(xStateSpectrum.posterOverlay) changeMode()} );
 
 					toggleOverlayModeBtn.addEventListener("click", e => {
 						e.stopPropagation();
@@ -21996,7 +22018,8 @@ this.highlight = (elem) => {
 						ctx.ellipse(
 							posX,
 							posY,
-							radius - 6,
+							radius - Math.min( 6, radius * .1 ),
+							//Math.max( radius - 6, 0), //radius does not accept negative number
 							radius * 0.35,
 							angle,
 							0,
