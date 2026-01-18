@@ -21789,33 +21789,37 @@ this.highlight = (elem) => {
 			function drawCallback(amaInstance) {
 				//const amaInstance = amaInstance; //ama;
 				
-				const canvas    = amaInstance.canvas,
+				const canvas   = amaInstance.canvas,
 					ctx        = amaInstance.canvasCtx,
 					pixelRatio = amaInstance.pixelRatio, // for scaling the size of things drawn on canvas, on Hi-DPI screens or loRes mode
-					baseSize   = Math.max( 20 * pixelRatio, canvas.height / 27 | 0 ),
-					w = canvas.width, h = canvas.height,
-					centerX    = canvas.width >> 1,
-					centerY    = canvas.height >> 1;
+					//canvas width and height
+					canWidth = canvas.width, canHeight = canvas.height,
+					// a referenced size for calculating width/height/radius somewhere in customed visualizers
+					baseSize   = Math.max( 20 * pixelRatio, canHeight / 27 | 0 ),
+					// center number
+					centerX    = canWidth >> 1,					centerY    = canHeight >> 1;
 
 				//--- energy meters ---
 				function drawEnergyMeters() {
 					const energy    = amaInstance.getEnergy(),
 						peakEnergy = amaInstance.getEnergy('peak');
 
-					// overall energy peak
+					// draw overall energy peak
 					const width = 50 * pixelRatio;
-					const peakY = -canvas.height * ( peakEnergy - 1 );
-					ctx.fillStyle = '#f008';
-					ctx.fillRect( width, peakY, width, 2 );
+					const peakY = -canHeight * ( peakEnergy - 1 );
+					ctx.fillStyle = '#f80';
+					ctx.fillRect( width, peakY, width, 4 );
 
+					// draw the value of peak
 					ctx.font = `${ 40 * pixelRatio }px sans-serif`;
-					ctx.textAlign = 'left';
+					ctx.textAlign = 'center';
+					ctx.textBaseline = "bottom";
 					ctx.fillStyle = '#ccc';
-					ctx.fillText( peakEnergy.toFixed(4), width * .3, peakY - 4 );
+					ctx.fillText( peakEnergy.toFixed(4), width * 1.5, peakY - 4 );
 
 					// overall energy bar
 					ctx.fillStyle = '#fff8';
-					ctx.fillRect( width, canvas.height, width, -canvas.height * energy );
+					ctx.fillRect( width, canHeight, width, -canHeight * energy );
 
 					// bass, midrange and treble meters
 
@@ -21823,14 +21827,14 @@ this.highlight = (elem) => {
 						const halfWidth   = width >> 1,
 							doubleWidth = width << 1;
 
-						const grad = ctx.createLinearGradient( 0, 0, 0, canvas.height );
+						const grad = ctx.createLinearGradient( 0, 0, 0, canHeight );
 						grad.addColorStop( 0, color );
-						grad.addColorStop( .75, `${color}0` );
+						grad.addColorStop( .75, `${color}0` ); // .75 will define the height of the light-beam
 
 						ctx.beginPath();
 						ctx.moveTo( posX - halfWidth, 0 );
-						ctx.lineTo( posX - doubleWidth, canvas.height );
-						ctx.lineTo( posX + doubleWidth, canvas.height );
+						ctx.lineTo( posX - doubleWidth, canHeight );
+						ctx.lineTo( posX + doubleWidth, canHeight );
 						ctx.lineTo( posX + halfWidth, 0 );
 
 						ctx.save();
@@ -21850,22 +21854,22 @@ this.highlight = (elem) => {
 
 					const bassEnergy = amaInstance.getEnergy('bass');
 					ctx.font = `bold ${ baseSize + growSize * bassEnergy }px sans-serif`;
-					ctx.fillText( 'BASS', canvas.width * .15, centerY );
-					drawLight( canvas.width * .15, '#f00', bassEnergy );
+					ctx.fillText( 'BASS', canWidth * .15, centerY );
+					drawLight( canWidth * .15, '#f00', bassEnergy );
 
-					drawLight( canvas.width * .325, '#f80', amaInstance.getEnergy('lowMid') );
+					drawLight( canWidth * .325, '#f80', amaInstance.getEnergy('lowMid') );
 
 					const midEnergy = amaInstance.getEnergy('mid');
 					ctx.font = `bold ${ baseSize + growSize * midEnergy }px sans-serif`;
 					ctx.fillText( 'MIDRANGE', centerX, centerY );
 					drawLight( centerX, '#ff0', midEnergy );
 
-					drawLight( canvas.width * .675, '#0f0', amaInstance.getEnergy('highMid') );
+					drawLight( canWidth * .675, '#0f0', amaInstance.getEnergy('highMid') );
 
 					const trebleEnergy = amaInstance.getEnergy('treble');
 					ctx.font = `bold ${ baseSize + growSize * trebleEnergy }px sans-serif`;
-					ctx.fillText( 'TREBLE', canvas.width * .85, centerY );
-					drawLight( canvas.width * .85, '#0ff', trebleEnergy );
+					ctx.fillText( 'TREBLE', canWidth * .85, centerY );
+					drawLight( canWidth * .85, '#0ff', trebleEnergy );
 				}
 				
 				//--- title ---
@@ -21879,7 +21883,7 @@ this.highlight = (elem) => {
 					ctx.fillStyle = '#fff8';					
 					// center the text 
 					ctx.textAlign = 'center';
-					ctx.fillText( logoText, w / 2, baseSize * 2 );
+					ctx.fillText( logoText, canWidth / 2, baseSize * 2 );
 
 					/* //right align the text 
 					ctx.textAlign = 'right';
@@ -21892,14 +21896,14 @@ this.highlight = (elem) => {
 				//--- song progress bar ---
 				function drawSongProgress() {
 					const audioEl    = xAudio;
-					const lineWidth = h / 40,
+					const lineWidth = canHeight / 40,
 						posY = lineWidth >> 1;
 
 					ctx.save();
 
 					ctx.beginPath();
 					ctx.moveTo( 0, posY );
-					ctx.lineTo( w * audioEl.currentTime / audioEl.duration, posY );
+					ctx.lineTo( canWidth * audioEl.currentTime / audioEl.duration, posY );
 					ctx.fillStyle = '#fff';
 					ctx.lineCap = 'round';
 					ctx.lineWidth = lineWidth;
@@ -21922,7 +21926,7 @@ this.highlight = (elem) => {
 					amaInstance._pvtSphereZoom += (energy - amaInstance._pvtSphereZoom) * 0.08; */
 
 					// --- base radius ---
-					const baseRadius = Math.min(w, h) * 0.1;
+					const baseRadius = Math.min(canWidth, canHeight) * 0.1;
 					const radius = baseRadius + energy * baseRadius;
 					//amaInstance._pvtSphereZoom * baseRadius * 1.2;
 
@@ -21930,7 +21934,7 @@ this.highlight = (elem) => {
 					/* ctx.fillStyle = 'rgba(0,0,0,0.25)';
 					ctx.fillRect(0, 0, w, h); */
 
-					const posX = w - radius * 1.2, // centerX + radius * 0.5,
+					const posX = canWidth - radius * 1.2, // centerX + radius * 0.5,
 						posY = radius * 1.2; //centerY - radius * 0.5;
 
 					// this peak to control the center of inner circle. You can set it to a fix number, such as 0.3
@@ -21961,9 +21965,9 @@ this.highlight = (elem) => {
 					const alpha = Math.max( peak * 2.5, 0.5 );// .8;
 
 					// deduct the similar color from base color
-					const shiftColor = (ratio) => `rgba(${r * ratio},${g * ratio},${b * ratio},${alpha})`;
+					const shiftColor = (ratio, _alpha = alpha) => `rgba(${r * ratio},${g * ratio},${b * ratio},${_alpha})`;
 
-					grad.addColorStop(0, shiftColor(1.1));
+					grad.addColorStop(0, shiftColor(1.1, alpha * .75)); // smaller alpha so that the inner circle does not look too bright
 					grad.addColorStop(bass, shiftColor(1));
 					grad.addColorStop(1, shiftColor(.3));
 
@@ -22023,25 +22027,32 @@ this.highlight = (elem) => {
 					/* ctx.fillStyle = '#333';
 					ctx.fillRect(0, 0, w, h); */
 
-					const localTop = h / 20; // centerY;
+					const localTop = canHeight / 20; // centerY;
 
 					ctx.save();
+					/* const bands = [
+						{ name: 'bass',    color: [255, 60, 60] },
+						{ name: 'lowMid',  color: [255, 120, 0] },
+						{ name: 'mid',     color: [60, 255, 200] },
+						{ name: 'highMid', color: [0, 255, 0] },
+						{ name: 'treble',  color: [120, 120, 255] }
+					]; */
 
 					ctx.strokeStyle = '#fff';
 					ctx.font = `${baseSize* (1 + 2 * peak)}px serif`;
-					const diff = h * .07; //(h * 0.1 - baseSize* (1 + 2 * peak)) / 2;
+					const diff = canHeight * .07; //(h * 0.1 - baseSize* (1 + 2 * peak)) / 2;
 					
 					// peak energy
-					ctx.fillStyle = '#ff4444';
-					ctx.fillRect(0, localTop, w * peak, h * 0.1);
+					ctx.fillStyle = 'rgba(255, 120, 0, .7)'; //'#ff4444';
+					ctx.fillRect(0, localTop, canWidth * peak, canHeight * 0.1);
 					ctx.strokeStyle = '#fff';
-					ctx.strokeText(`Peak`, 20, localTop + diff);
+					ctx.strokeText(`Peak: ${peak.toFixed(3).substr(1)}`, 20, localTop + diff);
 
 					// overall energy
-					ctx.fillStyle = '#00ff88';
-					ctx.fillRect(0, localTop + (h * 0.12), w * energy, h * 0.1);
-					ctx.strokeStyle = '#A60D00';
-					ctx.strokeText(`Energy`, 20, localTop + (h * 0.12) + diff);
+					ctx.fillStyle = 'rgba(120, 120, 255, .7)'; //'#00ff88';
+					ctx.fillRect(0, localTop + (canHeight * 0.12), canWidth * energy, canHeight * 0.1);
+					ctx.strokeStyle = '$fff'; //'#A60D00';
+					ctx.strokeText(`Energy: ${energy.toFixed(3).substr(1)}`, 20, localTop + (canHeight * 0.12) + diff);
 
 					/* ctx.strokeStyle = '#fff';
 					ctx.font = `${baseSize* (1 + 2 * peak)}px serif`;
@@ -22056,7 +22067,7 @@ this.highlight = (elem) => {
 
 					const bass = amaInstance.getEnergy('bass');
 					const bars = 75;
-					const radius = Math.min(w, h) * 0.15;
+					const radius = Math.min(canWidth, canHeight) * 0.15;
 
 					//ctx.clearRect(0, 0, w, h);
 					//ctx.strokeStyle = '#ff4444';
@@ -22097,6 +22108,7 @@ this.highlight = (elem) => {
 
 				}
 				
+				// --- oscilloscope-like positive + negative line visualizer ---
 				function drawOscilloscope() {
 					//const { w, h } = ctx.canvas;
 
@@ -22155,6 +22167,7 @@ this.highlight = (elem) => {
 					}
 					ctx.stroke();
 				}
+				
 				// --- multi-layer waveform visualizer ---
 				function drawMultipleWaves() {
 					const time = performance.now() * 0.002;
@@ -22211,7 +22224,7 @@ this.highlight = (elem) => {
 
 						const points = 160;
 						for (let i = 0; i <= points; i++) {
-						const x = (i / points) * w;
+						const x = (i / points) * canWidth;
 						const wave =
 							Math.sin(i * 0.15 + time * layer.speed) *
 							amp *
@@ -22229,7 +22242,7 @@ this.highlight = (elem) => {
 					// --- BEAT PULSE FLASH ---
 					if (beat) {
 						ctx.beginPath();
-						ctx.arc(w / 2, centerY, bass * centerY * 0.8, 0, Math.PI * 2);
+						ctx.arc(canWidth / 2, centerY, bass * centerY * 0.8, 0, Math.PI * 2);
 						ctx.strokeStyle = 'rgba(255,255,255,0.5)';
 						ctx.lineWidth = 4;
 						ctx.stroke();
@@ -22258,9 +22271,9 @@ this.highlight = (elem) => {
 					const baseRadius = baseSize * 2;
 					const radius = baseRadius + overallEnergy * 30;
 
-					const spacing = w / (bands.length + 1);
-					const floorY = h - radius - 10;
-					const maxBounceHeight = h * 0.7;
+					const spacing = canWidth / (bands.length + 1);
+					const floorY = canHeight - radius - 10;
+					const maxBounceHeight = canHeight * 0.7;
 
 					/* bands.forEach((band, i) => {
 						const energy = amaInstance.getEnergy(band.name); // 0–1
@@ -22291,7 +22304,7 @@ this.highlight = (elem) => {
 						const [r, g, b] = band.color;
 
 						// deduct the similar color from base color
-						const shiftColor = (ratio) => `rgba(${r * ratio},${g * ratio},${b * ratio},${alpha})`;
+						const shiftColor = (ratio, _alpha = alpha) => `rgba(${r * ratio},${g * ratio},${b * ratio},${_alpha})`;
 
 						// 🌕 Radial gradient for sphere shading
 						const grad = ctx.createRadialGradient(
@@ -22313,14 +22326,14 @@ this.highlight = (elem) => {
 						ctx.fillStyle = grad;
 						ctx.fill();
 
-						// draw text
+						// draw the text which is first letter of the band name
 						ctx.font = `bold ${ baseSize * (1 + 4 * energy) }px sans-serif`;
 						// Horizontal center
 						ctx.textAlign = "center";
 						// Vertical center
 						ctx.textBaseline = "middle";
-
-						ctx.fillStyle = `rgba(${r * 0.3},${g * 0.3},${b * 0.3},${alpha * 1.1})`
+						
+						ctx.fillStyle = shiftColor(.3, alpha * 1.1);
 						ctx.fillText( band.name.at(0).toUpperCase(), x, y);
 					});
 				};
