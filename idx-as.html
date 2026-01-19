@@ -21656,8 +21656,8 @@ this.highlight = (elem) => {
 						}
 					}
 					
-					document.exitFullscreen && document.addEventListener('fullscreenchange', onFullscreenChange);
-					document.webkitExitFullscreen && document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+					if(document.exitFullscreen) document.addEventListener('fullscreenchange', onFullscreenChange)
+					else if (document.webkitExitFullscreen) document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 				}();
 
 				/*  Full-Screen dialog button */
