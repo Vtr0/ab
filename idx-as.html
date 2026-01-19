@@ -7755,14 +7755,20 @@
 				
 			}
 
-			[name="toggleAnalyzer"].analyzerStop{
+			/* & [name="toggleAnalyzer"].amaPanelBtnActivated,
+			& [name="toggleOverlayMode"].amaPanelBtnActivated,
+			& [name="toggleScreenAlwaysOn"].amaPanelBtnActivated */
+			& button.amaPanelBtnActivated {
 				background: #444;
-				color: #0f0;
-			}
+				/* color: #0f0;
+				text-shadow: 2px 2px 10px #0f08, -2px -2px 10px #0f08; */
+				color: #00ffd1;
+       			text-shadow: 2px 2px 10px #00ffd188, -2px -2px 10px #00ffd188;
 
-			[name="toggleOverlayMode"].onOverlayedMode{
-				background: #444;
-				color: #0f0;
+				/* no text-shadow for tooltip */
+				&::before, &::after {
+					text-shadow: none;
+				}
 			}
 
 			label:has([name="disableBuiltinSpectrum"]){
@@ -8275,12 +8281,17 @@
 		<legend>External Effects</legend>
 	   </fieldset>
 
+	   <fieldset class="aspGroupContainer" name="aspFeaturesContainer">
+		<legend>General Options</legend>
+		<button name="toggleAnalyzer" data-tooltip="Start/Stop the analyzer data processing and animation">Toggle Analyzer</button>
+  
+		<button name="toggleOverlayMode" data-tooltip="Put the spectrum on top of poster (Overlay mode) or Stand-alone before it">Overlay mode</button>
+
+		<button name="toggleScreenAlwaysOn" data-tooltip="Keep Screen always on (disable screen lock) or not">Always-On</button>
+	   </fieldset>
+
 	   <div class="aspGroupContainer">
 		<button name="fullScreen">Full screen</button>
-
-		<button name="toggleAnalyzer">Toggle Analyzer</button>
-
-		<button name="toggleOverlayMode">Overlay mode</button>
 
 		<button name="closeDialog">Close</button>
 	   </div>
@@ -16678,7 +16689,6 @@
 				handyCheckDBsEdition: _handyCheckDBsEdition
 			};
 		}
-
 	</script>
 
 	<!-- MAIN PLAYER CONTROLS -->
@@ -21562,7 +21572,7 @@ this.highlight = (elem) => {
 				aspectrumOptionsPanel.onKeyDown = (evt) => {
 					// Close dialog on ESC key
 					if (evt.key === "Escape") {
-						aspectrumOptionsOverlay.style.display = "none";
+						closeOptionsPanel();
 						evt.stopPropagation();
 					}
 				}; */
@@ -21574,7 +21584,7 @@ this.highlight = (elem) => {
 					ama.toggleFullscreen();
 				}); */
 
-				// Show / hide the settings panel
+				// Show the spectrum options (settings) panel
 				audioSpectrumDiv.addEventListener("click", () => {
 					if(ama.canvas === document.fullscreenElement) return; //do nothing if spectrum already in fullscreen mode
 
@@ -21586,7 +21596,9 @@ this.highlight = (elem) => {
 					if(!audioSpectrumDiv.beenLoaded) {
 						audioSpectrumDiv.beenLoaded = true;
 
+						setTimeout(_ => {
 						guiUtils.reposTooltips(aspectrumOptionsPanel, {container: aspectrumOptionsPanel }); //document.documentElement
+						}, 500);
 					}
 				});
 
@@ -21642,7 +21654,7 @@ this.highlight = (elem) => {
 						audioSpectrumDiv.classList.toggle("overlayMode", isOverlay);
 
 						// set for appearance of the button
-						toggleOverlayModeBtn.classList.toggle("onOverlayedMode", isOverlay);
+						toggleOverlayModeBtn.classList.toggle("amaPanelBtnActivated", isOverlay);
 					}
 					changeMode();
 
@@ -21659,7 +21671,7 @@ this.highlight = (elem) => {
 						changeMode();
 
 						//save to xState
-						xStateSpectrum.posterOverlay = audioSpectrumDiv.classList.contains("overlayMode");
+						//xStateSpectrum.posterOverlay = audioSpectrumDiv.classList.contains("overlayMode");
 					});
 				}();
 				
@@ -21676,7 +21688,7 @@ this.highlight = (elem) => {
 					const changeBtnAppearance = () => {
 						const isAmaStop = !ama.isOn;
 
-						toggleAnalyzerBtn.classList.toggle("analyzerStop", isAmaStop);
+						toggleAnalyzerBtn.classList.toggle("amaPanelBtnActivated", isAmaStop);
 						toggleAnalyzerBtn.textContent = (isAmaStop? "Start" : "Stop") + " Analyzer";
 					}
 					changeBtnAppearance();
@@ -21695,6 +21707,67 @@ this.highlight = (elem) => {
 					});
 				}();
 
+				/* toggle Always-on or Disable screen lock */
+				void function toggleAlwaysOnBtn(){
+					let wakeLock = null;
+
+					// Enable
+					async function keepScreenOn() {
+						try {
+							if (!wakeLock) {
+								wakeLock = await navigator.wakeLock.request("screen");
+								console.log("Screen wake lock enabled");
+							}
+						} catch (err) {
+							console.error(`${err.name}: ${err.message}`);
+						}
+					}
+
+					// Disable
+					async function disableKeepScreenOn() {
+						try {
+							if (wakeLock) {
+								await wakeLock.release();
+								wakeLock = null;
+								console.log("Screen wake lock disabled");
+							}
+						} catch (err) {
+							console.error(`${err.name}: ${err.message}`);
+						}
+					}
+
+					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
+					const xStateSpectrum = xState.audioSpectrum;
+					xStateSpectrum.screenAlwaysOn ??= false;
+
+					// change button appearance
+					const changeBtnAppearance = async () => {
+						const isAlwaysOn = xStateSpectrum.screenAlwaysOn;
+
+						toggleScreenAlwaysOnBtn.classList.toggle("amaPanelBtnActivated", isAlwaysOn);
+						// toggleScreenAlwaysOnBtn.textContent = (isAlwaysOn? "Disable" : "Enable") + " Always-On";
+
+						if(isAlwaysOn){
+							keepScreenOn();
+						}
+						else {
+							disableKeepScreenOn();
+						}
+					}
+					changeBtnAppearance();
+
+					toggleScreenAlwaysOnBtn.addEventListener("click", e => {
+						e.stopPropagation();
+
+						// start/stop analyzer
+						xStateSpectrum.screenAlwaysOn = !xStateSpectrum.screenAlwaysOn;
+
+						// change button appearance
+						changeBtnAppearance();
+					});
+
+				}();
+
 				/* Handle to close the options panel */
 				const closeOptionsPanel = (e) => {
 					saveState2Disk();
@@ -21704,6 +21777,7 @@ this.highlight = (elem) => {
 
 					e.stopPropagation();
 				};
+				
 				// Close dialog button
 				el("closeDialog").onclick = closeOptionsPanel;
 				
@@ -21824,7 +21898,8 @@ this.highlight = (elem) => {
 					// a referenced size for calculating width/height/radius somewhere in customed visualizers
 					baseSize   = Math.max( 20 * pixelRatio, canHeight / 27 | 0 ),
 					// center number
-					centerX    = canWidth >> 1,					centerY    = canHeight >> 1;
+					centerX    = canWidth >> 1,
+					centerY    = canHeight >> 1;
 
 				//--- energy meters ---
 				function drawEnergyMeters() {
@@ -22048,7 +22123,7 @@ this.highlight = (elem) => {
 					const peak = amaInstance.getEnergy('peak');
 					const energy = amaInstance.getEnergy();
 
-					const crest = peak / (energy + 0.001);
+					//const crest = peak / (energy + 0.001);
 
 					//ctx.clearRect(0, 0, w, h);
 
@@ -22066,21 +22141,25 @@ this.highlight = (elem) => {
 						{ name: 'treble',  color: [120, 120, 255] }
 					]; */
 
-					ctx.strokeStyle = '#fff';
-					ctx.font = `${baseSize* (1 + 2 * peak)}px serif`;
-					const diff = canHeight * .07; //(h * 0.1 - baseSize* (1 + 2 * peak)) / 2;
+					ctx.strokeStyle = '#fff9';
+					ctx.font = `${baseSize* (.5 + 2 * peak)}px serif`;
+					// Horizontal center
+					//ctx.textAlign = "center";
+					// Vertical center
+					ctx.textBaseline = "middle";
+					const barHeight = canHeight * 0.08; // the height of each bar
 					
 					// peak energy
 					ctx.fillStyle = 'rgba(255, 120, 0, .7)'; //'#ff4444';
-					ctx.fillRect(0, localTop, canWidth * peak, canHeight * 0.1);
+					ctx.fillRect(0, localTop, canWidth * peak, barHeight);
 					ctx.strokeStyle = '#fff';
-					ctx.strokeText(`Peak: ${peak.toFixed(3).substr(1)}`, 20, localTop + diff);
+					ctx.strokeText(`Peak: ${peak.toFixed(3).substr(1)}`, 20, localTop + barHeight / 2);
 
 					// overall energy
 					ctx.fillStyle = 'rgba(120, 120, 255, .7)'; //'#00ff88';
-					ctx.fillRect(0, localTop + (canHeight * 0.12), canWidth * energy, canHeight * 0.1);
+					ctx.fillRect(0, localTop + barHeight + (canHeight * 0.02), canWidth * energy, barHeight);
 					ctx.strokeStyle = '$fff'; //'#A60D00';
-					ctx.strokeText(`Energy: ${energy.toFixed(3).substr(1)}`, 20, localTop + (canHeight * 0.12) + diff);
+					ctx.strokeText(`Energy: ${energy.toFixed(3).substr(1)}`, 20, localTop + barHeight + (canHeight * 0.02) + barHeight / 2);
 
 					/* ctx.strokeStyle = '#fff';
 					ctx.font = `${baseSize* (1 + 2 * peak)}px serif`;
@@ -22296,12 +22375,20 @@ this.highlight = (elem) => {
 
 					// Overall energy controls ball size
 					const overallEnergy = amaInstance.getEnergy('peak'); // 0–1
-					const baseRadius = baseSize * 2;
-					const radius = baseRadius + overallEnergy * 30;
-
 					const spacing = canWidth / (bands.length + 1);
-					const floorY = canHeight - radius - 10;
+					
+					/* const baseRadius = baseSize * 1.8;
+					const radius = baseRadius + overallEnergy * 30;
+					const floorY = canHeight - radius - 10; */
 					const maxBounceHeight = canHeight * 0.7;
+
+					// calculate ball size depending on its energy
+					function calcRadius(energy){
+						// return baseSize * 2 + overallEnergy * 30; // all balls have same size
+						// return baseSize * 2 + energy * 30;
+						// return baseSize * 1.2 + energy * 60;
+						return baseSize * 1.5 + energy * 40;
+					}
 
 					/* bands.forEach((band, i) => {
 						const energy = amaInstance.getEnergy(band.name); // 0–1
@@ -22323,11 +22410,14 @@ this.highlight = (elem) => {
 					}); */
 					bands.forEach((band, i) => {
 						const energy = amaInstance.getEnergy(band.name);
-						const bounce = Math.pow(energy, 0.7) * maxBounceHeight;
+						const bounce = energy * maxBounceHeight; //Math.pow(energy, 0.7)
 
-						const x = spacing * (i + 1);
+						const radius =calcRadius(energy); // baseSize * 2 + energy * 30;
+						const floorY = canHeight - radius - 10;
+
+						const x = i==0? spacing - 30 : spacing * (i + 1); // move the first ball a bit to the left to match the light-beam of drawEnergyMeters()
 						const y = floorY - bounce;
-						const alpha = Math.min(0.5 + energy , 1); //0.3
+						const alpha = Math.min(0.4 + energy , 1); //0.3
 
 						const [r, g, b] = band.color;
 
@@ -22347,7 +22437,7 @@ this.highlight = (elem) => {
 						//grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
 						grad.addColorStop(0, shiftColor(1.2));
 						grad.addColorStop(0.25, shiftColor(1));
-						grad.addColorStop(1, shiftColor(.5));
+						grad.addColorStop(1, shiftColor(.4));
 
 						ctx.beginPath();
 						ctx.arc(x, y, radius, 0, Math.PI * 2);
