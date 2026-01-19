@@ -12180,7 +12180,7 @@
 						//allow trying reload 3 times
 						if (_retryCount < 3)
 							_elmArtwork.src = _elmArtwork.src + "?" + performance.now().toFixed(0);
-						else if (_retryCount < 10) //in case _DEFAULT_POSTER_IMG not exists, which should never happen but still be able to
+						else if (_retryCount < 10) //in case _DEFAULT_POSTER_IMG does exists, which should never happen but still be able to
 							_elmArtwork.src = _DEFAULT_POSTER_IMG;
 						else 
 						//in case _DEFAULT_POSTER_IMG not exists, which should never happen but still be able to. BUt I need to find a way for img element to stop keeping firing onerror event. Other way to do this is set _elmArtwork src to some inline svg image (which this page currently does not have)
@@ -22147,6 +22147,7 @@ this.highlight = (elem) => {
 					//ctx.textAlign = "center";
 					// Vertical center
 					ctx.textBaseline = "middle";
+					ctx.lineWidth = 0.5;
 					const barHeight = canHeight * 0.08; // the height of each bar
 					
 					// peak energy
