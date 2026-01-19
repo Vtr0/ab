@@ -21602,6 +21602,64 @@ this.highlight = (elem) => {
 					}
 				});
 
+				/* screen wake lock. This function is to handle to enable/disable wakeLock. Note that it only wakeLock screen when user turn on Always-On and spectrum canvas go fullscreen. When exit full-screen, even user set Always-On, this still turn off wakeLock */
+				void function handleWakeLockWhenFS(){
+					// wakeLock object
+					let wakeLockObj = null;
+
+					// full screen event handler
+					function onFullscreenChange(){
+
+						// Enable
+						async function keepScreenOn() {
+							try {
+								if (!wakeLockObj) {
+									wakeLockObj = await navigator.wakeLock.request("screen");
+									console.log("Screen wake lock enabled");
+								}
+							} catch (err) {
+								console.error(`${err.name}: ${err.message}`);
+							}
+						}
+
+						// Disable
+						async function disableKeepScreenOn() {
+							try {
+								if (wakeLockObj) {
+									await wakeLockObj.release();
+									wakeLockObj = null;
+									console.log("Screen wake lock disabled");
+								}
+							} catch (err) {
+								console.error(`${err.name}: ${err.message}`);
+							}
+						}
+
+						// get the element that is sent to fullscreen (usually the spectrum canvas)
+						const amaFSElm = ama._fsEl; //
+
+						// check if currently in fullscreen that trigger by spectrum analyzer
+						const isFullscreen =
+							document.fullscreenElement === amaFSElm ||
+							document.webkitFullscreenElement === amaFSElm;
+						
+						// console.log(isFullscreen ? 'Entered fullscreen' : 'Exited fullscreen');
+
+						
+						// only set screen alwayls on when spectrum is in Full Screen AND user set xState.audioSpectrum.screenAlwaysOn
+						if(xState.audioSpectrum.screenAlwaysOn && isFullscreen){
+							keepScreenOn();
+						}
+						else {
+							// disable for all other cases
+							disableKeepScreenOn();
+						}
+					}
+					
+					document.exitFullscreen && document.addEventListener('fullscreenchange', onFullscreenChange);
+					document.webkitExitFullscreen && document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+				}();
+
 				/*  Full-Screen dialog button */
 				if(!document.webkitExitFullscreen && !document.exitFullscreen){
 				// if (!document.fullscreenElement){ 
@@ -21613,6 +21671,7 @@ this.highlight = (elem) => {
 					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = (evt) => {
 						ama.toggleFullscreen();
 						evt.stopPropagation();
+						
 					}
 				}
 
@@ -21709,33 +21768,7 @@ this.highlight = (elem) => {
 
 				/* toggle Always-on or Disable screen lock */
 				void function toggleAlwaysOnBtn(){
-					let wakeLock = null;
-
-					// Enable
-					async function keepScreenOn() {
-						try {
-							if (!wakeLock) {
-								wakeLock = await navigator.wakeLock.request("screen");
-								console.log("Screen wake lock enabled");
-							}
-						} catch (err) {
-							console.error(`${err.name}: ${err.message}`);
-						}
-					}
-
-					// Disable
-					async function disableKeepScreenOn() {
-						try {
-							if (wakeLock) {
-								await wakeLock.release();
-								wakeLock = null;
-								console.log("Screen wake lock disabled");
-							}
-						} catch (err) {
-							console.error(`${err.name}: ${err.message}`);
-						}
-					}
-
+					
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
 					const xStateSpectrum = xState.audioSpectrum;
 					xStateSpectrum.screenAlwaysOn ??= false;
@@ -21745,14 +21778,7 @@ this.highlight = (elem) => {
 						const isAlwaysOn = xStateSpectrum.screenAlwaysOn;
 
 						toggleScreenAlwaysOnBtn.classList.toggle("amaPanelBtnActivated", isAlwaysOn);
-						// toggleScreenAlwaysOnBtn.textContent = (isAlwaysOn? "Disable" : "Enable") + " Always-On";
-
-						if(isAlwaysOn){
-							keepScreenOn();
-						}
-						else {
-							disableKeepScreenOn();
-						}
+						// toggleScreenAlwaysOnBtn.textContent = (isAlwaysOn? "Disable" : "Enable") + " Always-On";						
 					}
 					changeBtnAppearance();
 
@@ -21802,7 +21828,7 @@ this.highlight = (elem) => {
 				//bind event to switch background when page theme switch button is clicked
 				document.querySelector('[name="switchPageTheme"]').addEventListener("click", switchSpectrumBgrnd);
 
-			}();
+			}();			
 			
 			/* === External / Custom Effects === */
 			const featuresDefaultOptions = {
@@ -22147,7 +22173,8 @@ this.highlight = (elem) => {
 					//ctx.textAlign = "center";
 					// Vertical center
 					ctx.textBaseline = "middle";
-					ctx.lineWidth = 0.5;
+					ctx.lineWidth = 1;
+					
 					const barHeight = canHeight * 0.08; // the height of each bar
 					
 					// peak energy
@@ -22483,6 +22510,8 @@ this.highlight = (elem) => {
 				if ( featuresDefaultOptions.energyMeter.val ) drawEnergyMeters();
 				
 			}
+
+			
 					
 		} //end of loadAudioSpectrum function
 	</script>
