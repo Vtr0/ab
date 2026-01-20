@@ -22008,8 +22008,8 @@ this.highlight = (elem) => {
 					// deduct the similar color from base color
 					const shiftColor = (ratio, _alpha = alpha) => `rgba(${r * ratio},${g * ratio},${b * ratio},${_alpha})`;
 
-					grad.addColorStop(0, shiftColor(.6, alpha * .75)); // smaller alpha so that the inner circle does not look too bright
-					grad.addColorStop(bass *.7, shiftColor(1));
+					grad.addColorStop(0, shiftColor(1.1, alpha * .75)); // smaller alpha so that the inner circle does not look too bright
+					grad.addColorStop(bass, shiftColor(1));
 					grad.addColorStop(1, shiftColor(.3));
 
 					/* //grad.addColorStop(0, `rgba(255,255,255,.7)`);
