@@ -7579,9 +7579,10 @@
 			}
 
 			/* when in overlay mode, move the button a bit to avoid the curve at corner of workart */
-			&.overlayMode > [name="specFullscreenBtn"]{
-				top: 0;
-				left: 6px;
+			&.overlayMode > [name="specFullscreenBtn"] {
+				top: unset;
+				left: 2px;
+				bottom: 3px;
 			}
 
 			/* overlayMode to make spectrum overlay the poster workart */
@@ -8283,18 +8284,17 @@
 
 	   <fieldset class="aspGroupContainer" name="aspFeaturesContainer">
 		<legend>General Options</legend>
+		<button name="fullScreen">Full screen</button>
+ 
 		<button name="toggleAnalyzer" data-tooltip="Start/Stop the analyzer data processing and animation">Toggle Analyzer</button>
   
 		<button name="toggleOverlayMode" data-tooltip="Put the spectrum on top of poster (Overlay mode) or Stand-alone before it">Overlay mode</button>
 
-		<button name="toggleScreenAlwaysOn" data-tooltip="Keep Screen always on (disable screen lock) or not">Always-On</button>
+		<button name="closeDialog">Close</button>
 	   </fieldset>
 
-	   <div class="aspGroupContainer">
-		<button name="fullScreen">Full screen</button>
-
-		<button name="closeDialog">Close</button>
-	   </div>
+	   <!-- <div class="aspGroupContainer">
+	   </div> -->
       </div>
     </div>
     <!-- aspectrumDialog Options Dialog -->
@@ -21315,7 +21315,7 @@ this.highlight = (elem) => {
 
 					//set default audio spectrum options if not defined in xState
 					let amaOptions = {
-						
+						//fsElement: audioSpectrumDiv,
 						height: CANVAS_DEF_HEIGHT,
 						responsive: true, //canvas resize according to container size
 						ansiBands: false,
@@ -21707,67 +21707,6 @@ this.highlight = (elem) => {
 					});
 				}();
 
-				/* toggle Always-on or Disable screen lock */
-				void function toggleAlwaysOnBtn(){
-					let wakeLock = null;
-
-					// Enable
-					async function keepScreenOn() {
-						try {
-							if (!wakeLock) {
-								wakeLock = await navigator.wakeLock.request("screen");
-								console.log("Screen wake lock enabled");
-							}
-						} catch (err) {
-							console.error(`${err.name}: ${err.message}`);
-						}
-					}
-
-					// Disable
-					async function disableKeepScreenOn() {
-						try {
-							if (wakeLock) {
-								await wakeLock.release();
-								wakeLock = null;
-								console.log("Screen wake lock disabled");
-							}
-						} catch (err) {
-							console.error(`${err.name}: ${err.message}`);
-						}
-					}
-
-					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
-					const xStateSpectrum = xState.audioSpectrum;
-					xStateSpectrum.screenAlwaysOn ??= false;
-
-					// change button appearance
-					const changeBtnAppearance = async () => {
-						const isAlwaysOn = xStateSpectrum.screenAlwaysOn;
-
-						toggleScreenAlwaysOnBtn.classList.toggle("amaPanelBtnActivated", isAlwaysOn);
-						// toggleScreenAlwaysOnBtn.textContent = (isAlwaysOn? "Disable" : "Enable") + " Always-On";
-
-						if(isAlwaysOn){
-							keepScreenOn();
-						}
-						else {
-							disableKeepScreenOn();
-						}
-					}
-					changeBtnAppearance();
-
-					toggleScreenAlwaysOnBtn.addEventListener("click", e => {
-						e.stopPropagation();
-
-						// start/stop analyzer
-						xStateSpectrum.screenAlwaysOn = !xStateSpectrum.screenAlwaysOn;
-
-						// change button appearance
-						changeBtnAppearance();
-					});
-
-				}();
-
 				/* Handle to close the options panel */
 				const closeOptionsPanel = (e) => {
 					saveState2Disk();
@@ -22069,8 +22008,8 @@ this.highlight = (elem) => {
 					// deduct the similar color from base color
 					const shiftColor = (ratio, _alpha = alpha) => `rgba(${r * ratio},${g * ratio},${b * ratio},${_alpha})`;
 
-					grad.addColorStop(0, shiftColor(1.1, alpha * .75)); // smaller alpha so that the inner circle does not look too bright
-					grad.addColorStop(bass, shiftColor(1));
+					grad.addColorStop(0, shiftColor(.6, alpha * .75)); // smaller alpha so that the inner circle does not look too bright
+					grad.addColorStop(bass *.7, shiftColor(1));
 					grad.addColorStop(1, shiftColor(.3));
 
 					/* //grad.addColorStop(0, `rgba(255,255,255,.7)`);
