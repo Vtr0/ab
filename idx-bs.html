@@ -21720,7 +21720,7 @@ this.highlight = (elem) => {
 					async function requestWakeLock() {
 						try {
 							// if wakeLock not yet created or already being released 
-							if (!wakeLock || wakeLock.released) {
+							if (!wakeLock || wakeLock?.released) {
 								wakeLock = await navigator.wakeLock.request("screen");
 								console.log("Screen wake lock (Re)enabled");
 
