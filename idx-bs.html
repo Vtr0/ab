@@ -21716,6 +21716,7 @@ this.highlight = (elem) => {
 					// Enable keepScreenOn
 					async function requestWakeLock() {
 						try {
+							// if wakeLock not yet created or already being released 
 							if (!wakeLock || wakeLock.released) {
 								wakeLock = await navigator.wakeLock.request("screen");
 								console.log("Screen wake lock (Re)enabled");
@@ -21742,6 +21743,7 @@ this.highlight = (elem) => {
 						} catch (err) {
 							console.error(`${err.name}: ${err.message}`);
 						} */
+						// since we don't have to wait for wakeLock to be released, so I prefer this promise version than await version above
 						if (wakeLock) {
 							wakeLock.release()
 							.then( () => {
@@ -21775,11 +21777,13 @@ this.highlight = (elem) => {
 						if(isAlwaysOn){
 							requestWakeLock();
 
+							// add handler for when document got visibility again to reenable the wakeLock (each time document hidden, wakeLock will automatically released)
 							document.addEventListener('visibilitychange', handleVisibilityChange);
 						}
 						else {
 							releaseWakeLock();
 
+							// When not set AlwaysOn, there is no need to re-enable wakeLock, so we remove this handler
 							document.removeEventListener('visibilitychange', handleVisibilityChange);
 						}
 					}
@@ -22173,7 +22177,7 @@ this.highlight = (elem) => {
 					ctx.strokeStyle = '#fff9';
 					ctx.font = `${baseSize* (.5 + 2 * peak)}px serif`;
 					// Horizontal center
-					//ctx.textAlign = "center";
+					ctx.textAlign = "left";
 					// Vertical center
 					ctx.textBaseline = "middle";
 					ctx.lineWidth = 0.5;
