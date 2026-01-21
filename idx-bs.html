@@ -21334,6 +21334,7 @@ this.highlight = (elem) => {
 						showPeaks: true,
 						mirror: 0,
 						maxFreq: 12000,
+						//maxFPS: 45,
 						lineWidth: 2,
 						fillAlpha: 0.2,
 						ledBars: true, //to activate the LED bars effect for frequency bands modes
@@ -21717,7 +21718,13 @@ this.highlight = (elem) => {
 						try {
 							if (!wakeLock || wakeLock.released) {
 								wakeLock = await navigator.wakeLock.request("screen");
-								console.log("Screen wake lock enabled");
+								console.log("Screen wake lock (Re)enabled");
+
+								// listen for wakeLockSentinel's release event. This currently is for debug purpose only. So, I commented it
+								/* wakeLock.onrelease = function(ev) {
+									//console.log(ev);
+									console.log(`[${performance.now().toFixed(2)} ms] WakeLog being RELEASED`);
+								} */
 							}
 						} catch (err) {
 							console.error(`${err.name}: ${err.message}`);
@@ -21748,7 +21755,6 @@ this.highlight = (elem) => {
 					}
 
 					const handleVisibilityChange = () => {
-						//if (document.visibilityState === 'hidden') console.log(wakeLock);
 
 						if (wakeLock !== null && document.visibilityState === 'visible') {
 							requestWakeLock();
