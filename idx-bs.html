@@ -21628,6 +21628,12 @@ this.highlight = (elem) => {
 					const xStateSpectrum = xState.audioSpectrum;
 					xStateSpectrum.posterOverlay ??= false;
 
+					// listen for when the workart image loaded, when it is in overlaympde, change the height of spectrum canvas accordingly (so the drawing not being skewed). I am using the debounce technique to wait the workart img being completely rendered before changing the canvas height.
+					const debounceWorkartLoad = debounce(_ => {if(xStateSpectrum.posterOverlay) changeMode()}, 200);
+
+					// add handler if last session user set posterOverlay mode ON
+					if(xStateSpectrum.posterOverlay) workArtElem.addEventListener("load", debounceWorkartLoad );
+
 					// change button appearance, and also set the height of spectrum canvas depending on stand-alone or overlay mode
 					const changeMode = () => {
 						const isOverlay = xStateSpectrum.posterOverlay;
@@ -21660,9 +21666,6 @@ this.highlight = (elem) => {
 					}
 					changeMode();
 
-					// listen for when the workart image loaded, when it is in overlaympde, change the height of spectrum canvas accordingly (so the drawing not being skewed)
-					workArtElem.addEventListener("load", _ => {if(xStateSpectrum.posterOverlay) changeMode()} );
-
 					toggleOverlayModeBtn.addEventListener("click", e => {
 						e.stopPropagation();
 
@@ -21672,8 +21675,8 @@ this.highlight = (elem) => {
 						// change button appearance
 						changeMode();
 
-						//save to xState
-						//xStateSpectrum.posterOverlay = audioSpectrumDiv.classList.contains("overlayMode");
+						// add/remove handler for workart load event depending onethe posterOverlay mode ON or OFF
+						workArtElem[xStateSpectrum.posterOverlay ? "addEventListener" : "removeEventListener"]("load", debounceWorkartLoad );
 					});
 				}();
 				
@@ -22180,7 +22183,7 @@ this.highlight = (elem) => {
 					ctx.textAlign = "left";
 					// Vertical center
 					ctx.textBaseline = "middle";
-					ctx.lineWidth = 0.5;
+					ctx.lineWidth = 1;
 					const barHeight = canHeight * 0.08; // the height of each bar
 					
 					// peak energy
