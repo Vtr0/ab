@@ -7579,9 +7579,10 @@
 			}
 
 			/* when in overlay mode, move the button a bit to avoid the curve at corner of workart */
-			&.overlayMode > [name="specFullscreenBtn"]{
-				top: 0;
-				left: 6px;
+			&.overlayMode > [name="specFullscreenBtn"] {
+				top: unset;
+				left: 2px;
+				bottom: 3px;
 			}
 
 			/* overlayMode to make spectrum overlay the poster workart */
@@ -8283,18 +8284,17 @@
 
 	   <fieldset class="aspGroupContainer" name="aspFeaturesContainer">
 		<legend>General Options</legend>
+		<button name="fullScreen">Full screen</button>
+ 
 		<button name="toggleAnalyzer" data-tooltip="Start/Stop the analyzer data processing and animation">Toggle Analyzer</button>
   
 		<button name="toggleOverlayMode" data-tooltip="Put the spectrum on top of poster (Overlay mode) or Stand-alone before it">Overlay mode</button>
 
-		<button name="toggleScreenAlwaysOn" data-tooltip="Keep Screen always on (disable screen lock) or not">Always-On</button>
+		<button name="closeDialog">Close</button>
 	   </fieldset>
 
-	   <div class="aspGroupContainer">
-		<button name="fullScreen">Full screen</button>
-
-		<button name="closeDialog">Close</button>
-	   </div>
+	   <!-- <div class="aspGroupContainer">
+	   </div> -->
       </div>
     </div>
     <!-- aspectrumDialog Options Dialog -->
@@ -21315,7 +21315,7 @@ this.highlight = (elem) => {
 
 					//set default audio spectrum options if not defined in xState
 					let amaOptions = {
-						
+						//fsElement: audioSpectrumDiv,
 						height: CANVAS_DEF_HEIGHT,
 						responsive: true, //canvas resize according to container size
 						ansiBands: false,
@@ -21333,6 +21333,7 @@ this.highlight = (elem) => {
 						showPeaks: true,
 						mirror: 0,
 						maxFreq: 12000,
+						//maxFPS: 45,
 						lineWidth: 2,
 						fillAlpha: 0.2,
 						ledBars: true, //to activate the LED bars effect for frequency bands modes
@@ -21602,119 +21603,6 @@ this.highlight = (elem) => {
 					}
 				});
 
-				/* screen wake lock. This function is to handle to enable/disable wakeLock. Note that it only wakeLock screen when user turn on Always-On and spectrum canvas go fullscreen. When exit full-screen, even user set Always-On, this still turn off wakeLock
-				Also set handler for toggleScreenAlwaysOn button
-				*/
-				void function handleWakeLockWhenFS(){
-					// wakeLock object
-					let wakeLockSentinel = null;
-
-					// Enable
-					async function requestWakeLock() {
-						try {
-							if (!wakeLockSentinel || wakeLockSentinel?.released) {
-								wakeLockSentinel = await navigator.wakeLock.request("screen");
-								console.log("Screen wake lock enabled");
-							}
-						} catch (err) {
-							console.error(`${err.name}: ${err.message}`);
-						}
-					}
-
-					// Disable
-					async function releaseWakeLock() {
-						try {
-							if (wakeLockSentinel) {
-								await wakeLockSentinel.release();
-								wakeLockSentinel = null;
-								console.log("Screen wake lock disabled");
-							}
-						} catch (err) {
-							console.error(`${err.name}: ${err.message}`);
-						}
-					}
-
-					// check if currently in fullscreen that trigger by spectrum analyzer
-					function checkIfOnFullScreen(){
-						// get the element that is sent to fullscreen (usually the spectrum canvas)
-						const amaFSElm = ama._fsEl; //
-
-						// check if currently in fullscreen that trigger by spectrum analyzer
-						const isFullscreen = 
-							document.fullscreenElement === amaFSElm ||
-							document.webkitFullscreenElement === amaFSElm;
-
-						// console.log(isFullscreen ? 'Entered fullscreen' : 'Exited fullscreen');
-
-						return isFullscreen;
-					}
-
-
-					// full screen event handler
-					function onFullscreenChange(){
-
-						const isFullscreen = checkIfOnFullScreen();
-
-						// only set screen alwayls on when spectrum is in Full Screen AND user set xState.audioSpectrum.screenAlwaysOn
-						if(xState.audioSpectrum.screenAlwaysOn && isFullscreen){
-							requestWakeLock();
-						}
-						else {
-							// disable for all other cases
-							releaseWakeLock();
-						}
-					}
-					
-					if(document.exitFullscreen) document.addEventListener('fullscreenchange', onFullscreenChange)
-					else if(document.webkitExitFullscreen) document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-
-					// The following code reacquires the wake lock should the visibility of the document change and the wake lock is released.
-					const handleVisibilityChange2requestWakeLock = () => {
-						//console.log(wakeLockSentinel);
-						if ( (wakeLockSentinel !== null && !wakeLockSentinel.released) && document.visibilityState === 'visible') {
-							requestWakeLock();
-						}
-					}
-
-					/* toggle Always-on or Disable screen lock */
-					void function toggleAlwaysOnBtn(){
-						
-						const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
-						const xStateSpectrum = xState.audioSpectrum;
-						xStateSpectrum.screenAlwaysOn ??= false;
-
-						// change button appearance
-						const changeBtnAppearance = async () => {
-							const isAlwaysOn = xStateSpectrum.screenAlwaysOn;
-
-							toggleScreenAlwaysOnBtn.classList.toggle("amaPanelBtnActivated", isAlwaysOn);
-							// toggleScreenAlwaysOnBtn.textContent = (isAlwaysOn? "Disable" : "Enable") + " Always-On";
-							
-							// Add or remove the handler that watching for change to requestWakeLock
-							if (isAlwaysOn) {
-								// add the handler
-								document.addEventListener('visibilitychange', handleVisibilityChange2requestWakeLock);
-							} else {
-								// remove the handler
-								document.removeEventListener('visibilitychange', handleVisibilityChange2requestWakeLock);
-							}
-						}
-						changeBtnAppearance();
-
-						toggleScreenAlwaysOnBtn.addEventListener("click", e => {
-							e.stopPropagation();
-
-							// start/stop analyzer
-							xStateSpectrum.screenAlwaysOn = !xStateSpectrum.screenAlwaysOn;
-
-							// change button appearance
-							changeBtnAppearance();
-						});
-
-					}();
-
-				}();
-
 				/*  Full-Screen dialog button */
 				if(!document.webkitExitFullscreen && !document.exitFullscreen){
 				// if (!document.fullscreenElement){ 
@@ -21726,7 +21614,6 @@ this.highlight = (elem) => {
 					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = (evt) => {
 						ama.toggleFullscreen();
 						evt.stopPropagation();
-						
 					}
 				}
 
@@ -21839,7 +21726,6 @@ this.highlight = (elem) => {
 					if (e.target === aspectrumOptionsOverlay) {
 						closeOptionsPanel(e);
 					}
-					e.stopPropagation();
 				};
 
 				/* show or hide spectrum's background according to page theme */
@@ -21856,7 +21742,7 @@ this.highlight = (elem) => {
 				//bind event to switch background when page theme switch button is clicked
 				document.querySelector('[name="switchPageTheme"]').addEventListener("click", switchSpectrumBgrnd);
 
-			}();			
+			}();
 			
 			/* === External / Custom Effects === */
 			const featuresDefaultOptions = {
@@ -22123,7 +22009,7 @@ this.highlight = (elem) => {
 					// deduct the similar color from base color
 					const shiftColor = (ratio, _alpha = alpha) => `rgba(${r * ratio},${g * ratio},${b * ratio},${_alpha})`;
 
-					grad.addColorStop(0, shiftColor(1.1, alpha * .75)); // smaller alpha so that the inner circle does not look too bright
+					grad.addColorStop(0, shiftColor(.6, alpha * .75)); // 1.1 smaller alpha so that the inner circle does not look too bright
 					grad.addColorStop(bass, shiftColor(1));
 					grad.addColorStop(1, shiftColor(.3));
 
@@ -22202,7 +22088,6 @@ this.highlight = (elem) => {
 					// Vertical center
 					ctx.textBaseline = "middle";
 					ctx.lineWidth = 1;
-					
 					const barHeight = canHeight * 0.08; // the height of each bar
 					
 					// peak energy
@@ -22538,8 +22423,6 @@ this.highlight = (elem) => {
 				if ( featuresDefaultOptions.energyMeter.val ) drawEnergyMeters();
 				
 			}
-
-			
 					
 		} //end of loadAudioSpectrum function
 	</script>
