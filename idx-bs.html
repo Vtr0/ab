@@ -7579,10 +7579,10 @@
 			}
 
 			/* when in overlay mode, move the button a bit to avoid the curve at corner of workart */
-			&.overlayMode > [name="specFullscreenBtn"] {
+			&.overlayMode > [name="specFullscreenBtn"]{
 				top: unset;
 				left: 2px;
-				bottom: 3px;
+				bottom: 2px;
 			}
 
 			/* overlayMode to make spectrum overlay the poster workart */
@@ -8284,17 +8284,18 @@
 
 	   <fieldset class="aspGroupContainer" name="aspFeaturesContainer">
 		<legend>General Options</legend>
-		<button name="fullScreen">Full screen</button>
- 
 		<button name="toggleAnalyzer" data-tooltip="Start/Stop the analyzer data processing and animation">Toggle Analyzer</button>
   
 		<button name="toggleOverlayMode" data-tooltip="Put the spectrum on top of poster (Overlay mode) or Stand-alone before it">Overlay mode</button>
 
-		<button name="closeDialog">Close</button>
+		<button name="toggleScreenAlwaysOn" data-tooltip="Keep Screen always on (disable screen lock) or not">Always-On</button>
 	   </fieldset>
 
-	   <!-- <div class="aspGroupContainer">
-	   </div> -->
+	   <div class="aspGroupContainer">
+		<button name="fullScreen">Full screen</button>
+
+		<button name="closeDialog">Close</button>
+	   </div>
       </div>
     </div>
     <!-- aspectrumDialog Options Dialog -->
@@ -21315,7 +21316,7 @@ this.highlight = (elem) => {
 
 					//set default audio spectrum options if not defined in xState
 					let amaOptions = {
-						//fsElement: audioSpectrumDiv,
+						
 						height: CANVAS_DEF_HEIGHT,
 						responsive: true, //canvas resize according to container size
 						ansiBands: false,
@@ -21707,6 +21708,89 @@ this.highlight = (elem) => {
 					});
 				}();
 
+				/* toggle Always-on or Disable screen lock */
+				void function toggleAlwaysOnBtn(){
+					let wakeLock = null;
+
+					// Enable keepScreenOn
+					async function requestWakeLock() {
+						try {
+							if (!wakeLock || wakeLock.released) {
+								wakeLock = await navigator.wakeLock.request("screen");
+								console.log("Screen wake lock enabled");
+							}
+						} catch (err) {
+							console.error(`${err.name}: ${err.message}`);
+						}
+					}
+
+					// Disable keepScreenOn
+					async function releaseWakeLock() {
+						/* try {
+							if (wakeLock) {
+								await wakeLock.release();
+								wakeLock = null;
+								console.log("Screen wake lock disabled");
+							}
+						} catch (err) {
+							console.error(`${err.name}: ${err.message}`);
+						} */
+						if (wakeLock) {
+							wakeLock.release()
+							.then( () => {
+								wakeLock = null;
+								console.log("Screen wake lock disabled");
+							})
+							.catch( (err) => {
+								console.error(`${err.name}: ${err.message}`);
+							})
+						}
+					}
+
+					const handleVisibilityChange = () => {
+						//if (document.visibilityState === 'hidden') console.log(wakeLock);
+
+						if (wakeLock !== null && document.visibilityState === 'visible') {
+							requestWakeLock();
+						}
+					}
+
+					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
+					const xStateSpectrum = xState.audioSpectrum;
+					xStateSpectrum.screenAlwaysOn ??= false;
+
+					// change button appearance
+					const changeBtnAppearance = async () => {
+						const isAlwaysOn = xStateSpectrum.screenAlwaysOn;
+
+						toggleScreenAlwaysOnBtn.classList.toggle("amaPanelBtnActivated", isAlwaysOn);
+						// toggleScreenAlwaysOnBtn.textContent = (isAlwaysOn? "Disable" : "Enable") + " Always-On";
+
+						if(isAlwaysOn){
+							requestWakeLock();
+
+							document.addEventListener('visibilitychange', handleVisibilityChange);
+						}
+						else {
+							releaseWakeLock();
+
+							document.removeEventListener('visibilitychange', handleVisibilityChange);
+						}
+					}
+					changeBtnAppearance();
+
+					toggleScreenAlwaysOnBtn.addEventListener("click", e => {
+						e.stopPropagation();
+
+						// start/stop analyzer
+						xStateSpectrum.screenAlwaysOn = !xStateSpectrum.screenAlwaysOn;
+
+						// change button appearance
+						changeBtnAppearance();
+					});
+
+				}();
+
 				/* Handle to close the options panel */
 				const closeOptionsPanel = (e) => {
 					saveState2Disk();
@@ -21846,27 +21930,27 @@ this.highlight = (elem) => {
 						peakEnergy = amaInstance.getEnergy('peak');
 
 					// draw overall energy peak
-					const width = 50 * pixelRatio;
+					const energyBarWidth = baseSize * 2; //50 * pixelRatio;
 					const peakY = -canHeight * ( peakEnergy - 1 );
 					ctx.fillStyle = '#f80';
-					ctx.fillRect( width, peakY, width, 4 );
+					ctx.fillRect( energyBarWidth, peakY, energyBarWidth, 4 );
 
 					// draw the value of peak
-					ctx.font = `${ 40 * pixelRatio }px sans-serif`;
+					ctx.font = `${ baseSize * 1.2 }px sans-serif`; //40 * pixelRatio
 					ctx.textAlign = 'center';
 					ctx.textBaseline = "bottom";
 					ctx.fillStyle = '#ccc';
-					ctx.fillText( peakEnergy.toFixed(4), width * 1.5, peakY - 4 );
+					ctx.fillText( peakEnergy.toFixed(4), energyBarWidth * 1.5, peakY - 4 );
 
 					// overall energy bar
 					ctx.fillStyle = '#fff8';
-					ctx.fillRect( width, canHeight, width, -canHeight * energy );
+					ctx.fillRect( energyBarWidth, canHeight, energyBarWidth, -canHeight * energy );
 
 					// bass, midrange and treble meters
 
 					const drawLight = ( posX, color, alpha ) => {
-						const halfWidth   = width >> 1,
-							doubleWidth = width << 1;
+						const halfWidth   = energyBarWidth >> 1,
+							doubleWidth = energyBarWidth << 1;
 
 						const grad = ctx.createLinearGradient( 0, 0, 0, canHeight );
 						grad.addColorStop( 0, color );
