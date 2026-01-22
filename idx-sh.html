@@ -21787,7 +21787,7 @@ this.highlight = (elem) => {
 							console.error(`${err.name}: ${err.message}`);
 						} */
 						// since we don't have to wait for wakeLock to be released, so I prefer this promise version than await version above
-						if (wakeLock) return;
+						if (!wakeLock) return;
 
 						wakeLock.release()
 						.then( () => {
