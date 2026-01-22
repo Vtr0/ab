@@ -21720,6 +21720,8 @@ this.highlight = (elem) => {
 				/* toggle Always-on or Disable screen lock */
 				void function toggleAlwaysOnBtn(){
 					let wakeLock = null;
+					// variable so that Re-Request for wakeLock only one time when user first click on the page
+					let allowRequestOnUserClick = true;
 
 					// Enable keepScreenOn
 					async function requestWakeLock() {
@@ -21728,7 +21730,7 @@ this.highlight = (elem) => {
 							if (!wakeLock || wakeLock?.released) {
 								wakeLock = await navigator.wakeLock.request("screen");
 								console.log("Screen wake lock (Re)enabled");
-								ssData.wakeLock = wakeLock;
+								ama.wakeLockSentinel = wakeLock;
 
 								// listen for wakeLockSentinel's release event. This currently is for debug purpose only. So, I commented it
 								/* wakeLock.onrelease = function(ev) {
@@ -21740,10 +21742,17 @@ this.highlight = (elem) => {
 							console.error(`${err.name}: ${err.message}`);
 							toast.showToast(`WL: ${err.name}: ${err.message}`);
 
-							document.addEventListener("click", () => {
-								toast.showToast("Button clicked once!");
-								requestWakeLock();
-							}, { once: true });
+							// Because wakeLock policy is that it can only request for wakeLock when user has action
+							if(allowRequestOnUserClick){
+								// so that this re-request will not be called any more time
+								allowRequestOnUserClick = false;
+
+								// listen for user click to re-request, note that { once: true } make this handler to be removed after invoked one time
+								document.addEventListener("click", () => {
+									toast.showToast("Button clicked once!");
+									requestWakeLock();
+								}, { once: true });
+							}
 						}
 					}
 
@@ -21959,12 +21968,12 @@ this.highlight = (elem) => {
 					ctx.textBaseline = "bottom";
 					const peakEnergy = amaInstance.getEnergy('peak');
 					ctx.font = `bold ${ canHeight * ((1 + peakEnergy) / 9) }px sans-serif`;
-					ctx.fillText( ssData.wakeLock.released? 'WR' : 'WL', canWidth - 20, canHeight );
+					ctx.fillText( ama.wakeLockSentinel.released? 'WR' : 'WL', canWidth - 20, canHeight );
 					ctx.restore();
 				}
 
 				//xState.audioSpectrum.screenAlwaysOn
-				if(ssData.wakeLock) wakeLockAlert();
+				if(ama.wakeLockSentinel) wakeLockAlert();
 
 				//--- energy meters ---
 				function drawEnergyMeters() {
@@ -22042,8 +22051,9 @@ this.highlight = (elem) => {
 				//--- title ---
 				function drawTitle() {
 					// the overall energy provides a simple way to sync a pulsating text/image to the beat
+					const fontSize = baseSize + amaInstance.getEnergy() * 25 * pixelRatio;
 					// it usually works best than specific frequency ranges, for a wider range of music styles
-					ctx.font = `${ baseSize + amaInstance.getEnergy() * 25 * pixelRatio }px sans-serif`;
+					ctx.font = `${ fontSize }px sans-serif`;
 
 					const logoText = xAudio.title ?? 'Audio Books';
 
@@ -22051,13 +22061,6 @@ this.highlight = (elem) => {
 					// center the text 
 					ctx.textAlign = 'center';
 					ctx.fillText( logoText, canWidth / 2, baseSize );
-
-					/* //right align the text 
-					ctx.textAlign = 'right';
-					ctx.fillText( logoText, w - baseSize, baseSize * 2 ); */
-					
-					// ctx.fillText( logoText, canvas.width  - baseSize * logoText.length / 2, baseSize * 2 );
-
 				}
 				
 				//--- song progress bar ---
@@ -22076,6 +22079,16 @@ this.highlight = (elem) => {
 					ctx.lineWidth = lineWidth;
 					ctx.globalAlpha = amaInstance.getEnergy(); // use the song energy to control the bar opacity
 					ctx.stroke();
+
+					// draw the time
+					ctx.font = `${ baseSize * 1.2 }px sans-serif`;
+					const timeText    = `${toHhMmSs(audioEl.currentTime)} / ${toHhMmSs(audioEl.duration)}`;
+					//ctx.fillText( timeText, canWidth / 2, baseSize + fontSize * 1.2 ); //line-height = fontSize * 1.2
+
+					ctx.textBaseline = "bottom";
+					ctx.globalCompositeOperation = 'lighter';
+					ctx.fillText(timeText, centerX, canHeight - 5);
+					ctx.textBaseline = "alphabetic"; //reset to default
 
 					ctx.restore();
 				}
