@@ -21738,7 +21738,12 @@ this.highlight = (elem) => {
 							}
 						} catch (err) {
 							console.error(`${err.name}: ${err.message}`);
-							toast.showToast(`${err.name}: ${err.message}`);
+							toast.showToast(`WL: ${err.name}: ${err.message}`);
+
+							document.addEventListener("click", () => {
+								toast.showToast("Button clicked once!");
+								requestWakeLock();
+							}, { once: true });
 						}
 					}
 
