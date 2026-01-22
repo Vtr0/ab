@@ -21757,9 +21757,9 @@ this.highlight = (elem) => {
 									ama._pvtWakeLockState = false; //change the state to tell that a wakeLock is released
 								}
 						} catch (err) {
-							console.error(`${err.name}: ${err.message}`);
+							console.error(`WL: ${err.name}: ${err.message}`);
 
-							/* //since wakeLock only active when FS, to do that there must be user action, so following code not need anymore
+							/* //since wakeLock only active when FS, to do that there must be user gesture, so following code not need anymore
 							toast.showToast(`WL: ${err.name}: ${err.message}`);
 							// Because wakeLock policy is that it can only request for wakeLock when user has action
 							if(allowRequestOnUserClick){
@@ -21787,16 +21787,17 @@ this.highlight = (elem) => {
 							console.error(`${err.name}: ${err.message}`);
 						} */
 						// since we don't have to wait for wakeLock to be released, so I prefer this promise version than await version above
-						if (wakeLock) {
-							wakeLock.release()
-							.then( () => {
-								wakeLock = null;
-								console.log("A wakeLockSentinel is forced to be released.");
-							})
-							.catch( (err) => {
-								toast.showToast(`${err.name}: ${err.message}`);
-							})
-						}
+						if (wakeLock) return;
+
+						wakeLock.release()
+						.then( () => {
+							wakeLock = null;
+							console.log("A wakeLockSentinel is forced to be released.");
+						})
+						.catch( (err) => {
+							toast.showToast(`${err.name}: ${err.message}`);
+						})
+						
 					}
 
 					/* =======================
@@ -21814,7 +21815,6 @@ this.highlight = (elem) => {
 					/* =======================
 						Visibility handler
 					======================= */
-
 					function onVisibilityChange() {
 						// Note that when page lost visibility (it is hidden from user's eyes), the wakeLock will automatically be released. Thanks to wakeLock.onrelease() function, wakeLock = null for garbage collection
 						if (
