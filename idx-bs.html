@@ -7566,8 +7566,8 @@
 				font-size: 24px;        /* make icon bigger */
 				color: #eee;
 				position: absolute;
-				top: -5px;
-				left: 0; /* -2px; */
+				bottom: 0px;
+				left: 2px;
 				padding: 0;
 				cursor: pointer;
 				background: #0000;
@@ -7580,7 +7580,7 @@
 
 			/* when in overlay mode, move the button a bit to avoid the curve at corner of workart */
 			&.overlayMode > [name="specFullscreenBtn"]{
-				top: unset;
+				/* top: unset; */
 				left: 2px;
 				bottom: 2px;
 			}
@@ -7600,8 +7600,13 @@
 					position: relative;
 				}
 			}
-		}
 
+			/* This control background of #divAudioSpectrum div of the body light-theme, so that it got opaque backgound of #111 only when stand-alone, all other cases it has to be transparent. Controlling by css so we don't have to change ama.showBg depending on cases (which somehow, sometim does not work) */
+			body:not(.dark-theme) &:not(.overlayMode){
+				background: #111;
+			}
+		}
+		
 		/* aspectrumDialogOverlay overlay */
 		#aspectrumDialogOverlay {
 			position: fixed;
@@ -21311,7 +21316,7 @@ this.highlight = (elem) => {
 						//source: xAudio, // this can replace src and audioCtx variable below
 						audioCtx: audioCtx,
 						source: mesSrc,
-						onCanvasDraw: drawCallback, // callback function used to add custom features for this demo
+						onCanvasDraw: drawExternalEffectsCallback, // callback function used to add custom features for this demo
 					}
 
 					//set default audio spectrum options if not defined in xState
@@ -21606,12 +21611,12 @@ this.highlight = (elem) => {
 
 				/*  Full-Screen dialog button */
 				if(!document.webkitExitFullscreen && !document.exitFullscreen){
-				// if (!document.fullscreenElement){ 
 					//hide fullScreen button if browser not support fullscreen API
 					el("fullScreen").style.display = "none";
 					document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
 				}
 				else{
+					// if browser support, add handler for Fullscreen button 
 					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = (evt) => {
 						ama.toggleFullscreen();
 						evt.stopPropagation();
@@ -21732,6 +21737,7 @@ this.highlight = (elem) => {
 							}
 						} catch (err) {
 							console.error(`${err.name}: ${err.message}`);
+							toast.showToast(`${err.name}: ${err.message}`);
 						}
 					}
 
@@ -21824,7 +21830,8 @@ this.highlight = (elem) => {
 					}
 				};
 
-				/* show or hide spectrum's background according to page theme */
+				/* No I control by CSS, so following commented codes not need anymore
+				//show or hide spectrum's background according to page theme
 				const switchSpectrumBgrnd = _ => {
 					// show or hide background color according to page theme
 					//ama.setOptions( {showBgColor: !document.body.classList.contains("dark-theme")});
@@ -21836,7 +21843,8 @@ this.highlight = (elem) => {
 				switchSpectrumBgrnd(); 
 
 				//bind event to switch background when page theme switch button is clicked
-				document.querySelector('[name="switchPageTheme"]').addEventListener("click", switchSpectrumBgrnd);
+				document.querySelector('[name="switchPageTheme"]').addEventListener("click", switchSpectrumBgrnd); 
+				*/
 
 			}();
 			
@@ -21853,11 +21861,11 @@ this.highlight = (elem) => {
 				//showHorizoltalEnergy: {val: 0, type: "checkbox", label: "Energy Bars", hint: "Show horizontal energy bar at middle of spectrum",},
 			};
 
-			/* Function to populate checkboxes in options panel and handle event for selects, checkboxes of options panel */
-			void function(){
+			/* Function to populate checkboxes for EXTERNAL/CUSTOM EFFECTS in options panel and handle event for selects, checkboxes of options panel */
+			void function handleExternalEffectCheckboxs(){
 				
 				if(!xState?.audioSpectrum?.features)
-					//initialize features options from default options
+					//initialize external effects options from default options
 					xState.audioSpectrum.features = {};
 				
 				const xStateFeatures = xState.audioSpectrum.features;
@@ -21868,7 +21876,7 @@ this.highlight = (elem) => {
 					xStateFeatures[id] = config.val;
 				}
 
-				// go through each option control element and bind it to AudioMotionAnalyzer option
+				// go through each option control element and bind it to external effects
 				const chkboxesContainer = aspectrumOptionsPanel.querySelector('[name="aspFeaturesContainer"]');
 				for (const [id, config] of Object.entries(featuresDefaultOptions)) {
 					if(config.type === "checkbox"){
@@ -21920,10 +21928,10 @@ this.highlight = (elem) => {
 			}();
 			
 			/** Draw custom elements on the audio spectrum canvas
-			 * @param amaInstance {AudioMotionAnalyzer} the AudioMotionAnalyzer instance
+			 * @param amaInstance {AudioMotionAnalyzer} the AudioMotionAnalyzer instance. This is automatically passed by {AudioMotionAnalyzer}
 			 * @see https://github.com/hvianna/audioMotion-analyzer?tab=readme-ov-file#oncanvasdraw-function
 			 */
-			function drawCallback(amaInstance) {
+			function drawExternalEffectsCallback(amaInstance) {
 				//const amaInstance = amaInstance; //ama;
 				
 				const canvas   = amaInstance.canvas,
@@ -21936,6 +21944,20 @@ this.highlight = (elem) => {
 					// center number
 					centerX    = canWidth >> 1,
 					centerY    = canHeight >> 1;
+
+				/* Draw WL annoucement so user know that the app currently in wake-lock (or screen-always-on) mode */
+				function wakeLockAlert(){
+					ctx.save();
+					ctx.globalAlpha = 0.5;
+					ctx.textAlign = 'right';
+					ctx.textBaseline = "bottom";
+					const peakEnergy = amaInstance.getEnergy('peak');
+					ctx.font = `bold ${ canHeight * ((1 + peakEnergy) / 9) }px sans-serif`;
+					ctx.fillText( 'WL', canWidth - 20, canHeight );
+					ctx.restore();
+				}
+
+				if(xState.audioSpectrum.screenAlwaysOn) wakeLockAlert();
 
 				//--- energy meters ---
 				function drawEnergyMeters() {
@@ -22021,7 +22043,7 @@ this.highlight = (elem) => {
 					ctx.fillStyle = '#fff8';					
 					// center the text 
 					ctx.textAlign = 'center';
-					ctx.fillText( logoText, canWidth / 2, baseSize * 2 );
+					ctx.fillText( logoText, canWidth / 2, baseSize );
 
 					/* //right align the text 
 					ctx.textAlign = 'right';
