@@ -21746,13 +21746,13 @@ this.highlight = (elem) => {
 
 						try {
 								wakeLock = await navigator.wakeLock.request("screen");
-								console.log("Screen wake lock (Re)enabled");
+								console.log("A wakeLockSentinel (Re)created");
 								ama._pvtWakeLockState = true;
 
 								// listen for wakeLockSentinel's release event. This currently is for debug purpose only. So, I commented it
 								wakeLock.onrelease = function(ev) {
 									//console.log(ev);
-									console.log(`[${performance.now().toFixed(2)} ms] WakeLog being RELEASED`);
+									console.log(`[${performance.now().toFixed(2)} ms] A wakeLockSentinel being RELEASED`);
 									wakeLock = null; //garbage collection
 									ama._pvtWakeLockState = false; //change the state to tell that a wakeLock is released
 								}
@@ -21791,7 +21791,7 @@ this.highlight = (elem) => {
 							wakeLock.release()
 							.then( () => {
 								wakeLock = null;
-								toast.showToast("Screen wake lock disabled");
+								console.log("A wakeLockSentinel is forced to be released.");
 							})
 							.catch( (err) => {
 								toast.showToast(`${err.name}: ${err.message}`);
@@ -21829,7 +21829,6 @@ this.highlight = (elem) => {
 					/* =======================
 						Enable / Disable logic
 					======================= */
-
 					function enableWakeLockFeature() {
 						document.addEventListener('fullscreenchange', onFullscreenChange);
 						document.addEventListener('visibilitychange', onVisibilityChange);
@@ -21848,7 +21847,7 @@ this.highlight = (elem) => {
 
 						releaseWakeLock();
 
-						console.log('Wake lock feature DISABLED');
+						toast.showToast('Wake lock feature DISABLED');
 					}
 
 					const xStateSpectrum = xState.audioSpectrum;
