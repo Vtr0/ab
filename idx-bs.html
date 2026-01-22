@@ -21728,6 +21728,7 @@ this.highlight = (elem) => {
 							if (!wakeLock || wakeLock?.released) {
 								wakeLock = await navigator.wakeLock.request("screen");
 								console.log("Screen wake lock (Re)enabled");
+								ssData.wakeLock = wakeLock;
 
 								// listen for wakeLockSentinel's release event. This currently is for debug purpose only. So, I commented it
 								/* wakeLock.onrelease = function(ev) {
@@ -21953,11 +21954,12 @@ this.highlight = (elem) => {
 					ctx.textBaseline = "bottom";
 					const peakEnergy = amaInstance.getEnergy('peak');
 					ctx.font = `bold ${ canHeight * ((1 + peakEnergy) / 9) }px sans-serif`;
-					ctx.fillText( 'WL', canWidth - 20, canHeight );
+					ctx.fillText( ssData.wakeLock.released? 'WR' : 'WL', canWidth - 20, canHeight );
 					ctx.restore();
 				}
 
-				if(xState.audioSpectrum.screenAlwaysOn) wakeLockAlert();
+				//xState.audioSpectrum.screenAlwaysOn
+				if(ssData.wakeLock) wakeLockAlert();
 
 				//--- energy meters ---
 				function drawEnergyMeters() {
