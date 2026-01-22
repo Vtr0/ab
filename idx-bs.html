@@ -21771,7 +21771,7 @@ this.highlight = (elem) => {
 						if (wakeLock) {
 							wakeLock.release()
 							.then( () => {
-								wakeLock = null;
+								ama.wakeLockSentinel = wakeLock = null;
 								console.log("Screen wake lock disabled");
 							})
 							.catch( (err) => {
@@ -21781,7 +21781,7 @@ this.highlight = (elem) => {
 					}
 
 					const handleVisibilityChange = () => {
-
+						// check wakeLock to make sure that when the page gain focus again, there was a wakeLock that active (but was released), not the case that user does set alwaysOn option
 						if (wakeLock !== null && document.visibilityState === 'visible') {
 							requestWakeLock();
 						}
@@ -21967,8 +21967,8 @@ this.highlight = (elem) => {
 					ctx.textAlign = 'right';
 					ctx.textBaseline = "bottom";
 					const peakEnergy = amaInstance.getEnergy('peak');
-					ctx.font = `bold ${ canHeight * ((1 + peakEnergy) / 9) }px sans-serif`;
-					ctx.fillText( ama.wakeLockSentinel.released? 'WR' : 'WL', canWidth - 20, canHeight );
+					ctx.font = `bold ${ canHeight * ((1 + peakEnergy) / 12) }px sans-serif`;
+					ctx.fillText( ama.wakeLockSentinel.released? 'WR' : 'WL', canWidth - baseSize * .5, canHeight );
 					ctx.restore();
 				}
 
@@ -22454,7 +22454,11 @@ this.highlight = (elem) => {
 
 					// Overall energy controls ball size
 					const overallEnergy = amaInstance.getEnergy('peak'); // 0–1
-					const spacing = canWidth / (bands.length + 1);
+					let spacing = canWidth / (bands.length + 1);
+
+					// make two left-most and right-most balls closer to the screen edge to align with light-beam of drawEnergyMeters
+					const lrDistance = spacing - 30;
+					spacing = (canWidth - lrDistance * 2) / (bands.length - 1);
 					
 					/* const baseRadius = baseSize * 1.8;
 					const radius = baseRadius + overallEnergy * 30;
@@ -22494,7 +22498,8 @@ this.highlight = (elem) => {
 						const radius =calcRadius(energy); // baseSize * 2 + energy * 30;
 						const floorY = canHeight - radius - 10;
 
-						const x = i==0? spacing - 30 : spacing * (i + 1); // move the first ball a bit to the left to match the light-beam of drawEnergyMeters()
+						// i==0? spacing - 30 : spacing * (i + 1); 
+						const x = lrDistance + spacing * i; // move all the balls a bit to match the light-beam of drawEnergyMeters()
 						const y = floorY - bounce;
 						const alpha = Math.min(0.4 + energy , 1); //0.3
 
