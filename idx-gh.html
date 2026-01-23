@@ -21609,20 +21609,6 @@ this.highlight = (elem) => {
 					}
 				});
 
-				/*  Full-Screen dialog button */
-				if(!document.webkitExitFullscreen && !document.exitFullscreen){
-					//hide fullScreen button if browser not support fullscreen API
-					el("fullScreen").style.display = "none";
-					document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
-				}
-				else{
-					// if browser support, add handler for Fullscreen button 
-					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = (evt) => {
-						ama.toggleFullscreen();
-						evt.stopPropagation();
-					}
-				}
-
 				/* toggle Overlay Mode */
 				void function toggleOverlayModeBtn(){
 					const toggleOverlayModeBtn = el("toggleOverlayMode");
@@ -21806,7 +21792,7 @@ this.highlight = (elem) => {
 					function onFullscreenChange() {
 						// or just simple (document.fullscreen || document.webkitIsFullScreen)
 						if (document.fullscreenElement || document.webkitFullscreenElement) {
-							requestWakeLock();
+							//requestWakeLock();
 						} else {
 							releaseWakeLock();
 						}
@@ -21832,7 +21818,7 @@ this.highlight = (elem) => {
 					function enableWakeLockFeature() {
 						document.addEventListener('fullscreenchange', onFullscreenChange);
 						document.addEventListener('visibilitychange', onVisibilityChange);
-						el("fullScreen").addEventListener("click", requestWakeLock);
+						//el("fullScreen").addEventListener("click", requestWakeLock);
 
 						// If already in fullscreen, request immediately
 						if (document.fullscreenElement) {
@@ -21845,7 +21831,7 @@ this.highlight = (elem) => {
 					function disableWakeLockFeature() {
 						document.removeEventListener('fullscreenchange', onFullscreenChange);
 						document.removeEventListener('visibilitychange', onVisibilityChange);
-						el("fullScreen").removeEventListener("click", requestWakeLock);
+						//el("fullScreen").removeEventListener("click", requestWakeLock);
 
 						releaseWakeLock();
 
@@ -21881,6 +21867,22 @@ this.highlight = (elem) => {
 						changeBtnAppearance();
 					});
 
+					/*  Full-Screen dialog button */
+				if(!document.webkitExitFullscreen && !document.exitFullscreen){
+					//hide fullScreen button if browser not support fullscreen API
+					el("fullScreen").style.display = "none";
+					document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
+				}
+				else{
+					// if browser support, add handler for Fullscreen button 
+					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = async (evt) => {
+						await requestWakeLock();
+						ama.toggleFullscreen();
+						evt.stopPropagation();
+					}
+				}
+
+				
 				}();
 
 				/* Handle to close the options panel */
