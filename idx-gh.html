@@ -21703,9 +21703,14 @@ this.highlight = (elem) => {
 					});
 				}();
 
-				/* toggle Always-on or Disable screen lock */
+				/** 1) toggle Always-on (or Disable screen lock) 
+					2) toggle Fullscreen button
+
+					Reason: wakeLock require many thing to accept request a wakeLock sentinel, which even more strict on appleOS who require user gesture and denied when request when already in fullscreen. So, we have to request a wakeLock BEFORE the spectrum actually go fullscreen.
+				*/
 				void function toggleAlwaysOnBtn(){
 
+					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
 
 					// Hide the toggle button if browser does not support
@@ -21870,7 +21875,8 @@ this.highlight = (elem) => {
 						changeBtnAppearance();
 					});
 
-					/*  Full-Screen dialog button */
+
+					/* --- B) Full-Screen toggle button --- */
 					if(!document.webkitExitFullscreen && !document.exitFullscreen){
 						//hide fullScreen button if browser not support fullscreen API
 						el("fullScreen").style.display = "none";
@@ -21881,8 +21887,11 @@ this.highlight = (elem) => {
 						document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = async (evt) => {
 							evt.stopPropagation();
 
-							// One of requirement for request wakeLock to be successed on phone/tablet is there must be user gesture (beside some other requirements). So, We have to wait for request wakeLock to be done before toggling FS. Otherwise, it won't work on iPadOS  (even work well in desktop)
-							await requestWakeLock();						
+							// only request wakeLock when screenAlwaysOn
+							if(xStateSpectrum.screenAlwaysOn)
+								// One of requirement for request wakeLock to be successed on phone/tablet is there must be user gesture (beside some other requirements). So, We have to wait for request wakeLock to be done before toggling FS. Otherwise, it won't work on iPadOS  (even work well in desktop)
+								await requestWakeLock();
+							
 							ama.toggleFullscreen();
 						}
 					}
@@ -22341,6 +22350,7 @@ this.highlight = (elem) => {
 					const bars = 75;
 					const radius = Math.min(canWidth, canHeight) * 0.15;
 
+					ctx.save();
 					//ctx.clearRect(0, 0, w, h);
 					//ctx.strokeStyle = '#ff4444';
 					ctx.lineWidth = 6;
@@ -22360,7 +22370,7 @@ this.highlight = (elem) => {
 						const rangeNo = ~~(i / (bars / 5));
 						const barInfor = getBarsInfor(rangeNo);
 						const energy = amaInstance.getEnergy(barInfor[0]);
-						ctx.strokeStyle = barInfor[1];
+						ctx.strokeStyle = barInfor[1] + "a"; // add alpha channel for rgb color stored in barInfor[1]
 
 						radius 
 						const r1 = radius;
@@ -22378,6 +22388,7 @@ this.highlight = (elem) => {
 						ctx.stroke();
 					}
 
+					ctx.restore();
 				},
 				
 				// --- oscilloscope-like positive + negative line visualizer ---
