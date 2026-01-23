@@ -21792,6 +21792,7 @@ this.highlight = (elem) => {
 					function onFullscreenChange() {
 						// or just simple (document.fullscreen || document.webkitIsFullScreen)
 						if (document.fullscreenElement || document.webkitFullscreenElement) {
+							// the job to requestWakeLock is done in toggleFullScreen button. This request has to be done before going fullscreen, otherwise the request will fail on iPadOS (even work well in desktop)
 							//requestWakeLock();
 						} else {
 							releaseWakeLock();
@@ -21835,7 +21836,9 @@ this.highlight = (elem) => {
 
 						releaseWakeLock();
 
-						toast.showToast('Wake lock feature DISABLED');
+						ama._pvtWakeLockState = null;
+
+						console.log('Wake lock feature DISABLED');
 					}
 
 					const xStateSpectrum = xState.audioSpectrum;
@@ -21868,19 +21871,21 @@ this.highlight = (elem) => {
 					});
 
 					/*  Full-Screen dialog button */
-				if(!document.webkitExitFullscreen && !document.exitFullscreen){
-					//hide fullScreen button if browser not support fullscreen API
-					el("fullScreen").style.display = "none";
-					document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
-				}
-				else{
-					// if browser support, add handler for Fullscreen button 
-					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = async (evt) => {
-						await requestWakeLock();
-						ama.toggleFullscreen();
-						evt.stopPropagation();
+					if(!document.webkitExitFullscreen && !document.exitFullscreen){
+						//hide fullScreen button if browser not support fullscreen API
+						el("fullScreen").style.display = "none";
+						document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
 					}
-				}
+					else{
+						// if browser support, add handler for Fullscreen button 
+						document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = async (evt) => {
+							evt.stopPropagation();
+
+							// One of requirement for request wakeLock to be successed on phone/tablet is there must be user gesture (beside some other requirements). So, We have to wait for request wakeLock to be done before toggling FS. Otherwise, it won't work on iPadOS  (even work well in desktop)
+							await requestWakeLock();						
+							ama.toggleFullscreen();
+						}
+					}
 
 				
 				}();
@@ -21923,18 +21928,29 @@ this.highlight = (elem) => {
 
 			}();
 			
-			/* === External / Custom Effects === */
-			const featuresDefaultOptions = {
-				energyMeter: {val: 0, type: "checkbox", label: "Energy Meters", hint: "Show energy meter and bass/midrange/treble indicators",},
-				showTitle: {val: 1, type: "checkbox", label: "Song Title", hint: "Show current chapter title at top of spectrum",},
-				songProgress: {val: 0, type: "checkbox", label: "Song Progress", hint: "Show song progress bar at very top of spectrum",},
-				showSphere: {val: 0, type: "checkbox", label: "Sphere", hint: "Show zooming sphere at center of spectrum",},
-				showJumpingBalls: {val: 0, type: "checkbox", label: "Jumping Balls", hint: "Show balls jumping at center bottom of spectrum on bass, midLow, mid, highMid, treble beat",},
-				showMultipleWaves: {val: 0, type: "checkbox", label: "Waves", hint: "Show multiple waveforms at center of spectrum",},
-				showRadialBars: {val: 0, type: "checkbox", label: "Radial Bars", hint: "Show particle explosion effect at center of spectrum on bass beat",},
-				showOscilloscopeEnergy: {val: 0, type: "checkbox", label: "Oscilloscope", hint: "Show Energy Barsat middle of spectrum and horizontal energy bars (peak and overall) at top left of it",},
+			/** === External / Custom Effects === 
+			 * FORMAT: each item is pair of {key:value}
+			 * 	key: visualEffect name. also the attribute name of {xState.audioSpectrum.features} to rememeber if the effect is turn On (being selected)
+			 * 	value, has following properties
+			 * 		val: 0 mean not selected. 1 mean selected
+			 * 		type: checkbox or select or button - type of element that will be created on option panel
+			 * 		hint: the tooltip text of the element
+			 * 		cbFunc: array of draw callback function(s) that will be invoked when this effect is selected
+			*/
+			const extVisualEffectOptions = {
+				showMultipleWaves: {val: 0, type: "checkbox", label: "Waves", hint: "Show multiple waveforms at center of spectrum", cbFunc: ["drawMultipleWaves"],},
+				showSphere: {val: 0, type: "checkbox", label: "Sphere", hint: "Show zooming sphere at center of spectrum", cbFunc: ["drawSphere", "drawHorizontalEnergyBars"],},
+				showOscilloscopeEnergy: {val: 0, type: "checkbox", label: "Oscilloscope", hint: "Show Energy Barsat middle of spectrum and horizontal energy bars (peak and overall) at top left of it", cbFunc: ["drawOscilloscope"],},
+				showRadialBars: {val: 0, type: "checkbox", label: "Radial Bars", hint: "Show particle explosion effect at center of spectrum on bass beat", cbFunc: ["drawRadialBars"],},
+				showJumpingBalls: {val: 0, type: "checkbox", label: "Jumping Balls", hint: "Show balls jumping at center bottom of spectrum on bass, midLow, mid, highMid, treble beat", cbFunc: ["drawJumpingBalls"],},
+				songProgress: {val: 0, type: "checkbox", label: "Song Progress", hint: "Show song progress bar at very top of spectrum", cbFunc: ["drawSongProgress"],},
+				showTitle: {val: 1, type: "checkbox", label: "Song Title", hint: "Show current chapter title at top of spectrum", cbFunc: ["drawTitle"]},
+				energyMeter: {val: 0, type: "checkbox", label: "Energy Meters", hint: "Show energy meter and bass/midrange/treble indicators", cbFunc: ["drawEnergyMeters"],},
 				//showHorizoltalEnergy: {val: 0, type: "checkbox", label: "Energy Bars", hint: "Show horizontal energy bar at middle of spectrum",},
 			};
+
+			// get the name (the key) of all external visual effects
+			const visualEffectNames = Object.keys(extVisualEffectOptions);
 
 			/* Function to populate checkboxes for EXTERNAL/CUSTOM EFFECTS in options panel and handle event for selects, checkboxes of options panel */
 			void function handleExternalEffectCheckboxs(){
@@ -21944,22 +21960,30 @@ this.highlight = (elem) => {
 					xState.audioSpectrum.features = {};
 				
 				const xStateFeatures = xState.audioSpectrum.features;
+				
 				// merge features options from default options and from xState
-				for(const [id, config] of Object.entries(featuresDefaultOptions)){
-					config.val = xStateFeatures[id] ?? config.val;
+				for(const effectName of visualEffectNames){
+					// get the config for visual effect effectName
+					const config = extVisualEffectOptions[effectName];
+					config.val = xStateFeatures[effectName] ?? config.val;
 					// copy the default value to xState if not defined
-					xStateFeatures[id] = config.val;
+					xStateFeatures[effectName] = config.val;
 				}
 
 				// go through each option control element and bind it to external effects
 				const chkboxesContainer = aspectrumOptionsPanel.querySelector('[name="aspFeaturesContainer"]');
-				for (const [id, config] of Object.entries(featuresDefaultOptions)) {
+
+				// add checkbox element for each visual effect but in the reversed order of object featuresDefaultOptions
+				for (const effectName of visualEffectNames.toReversed()) {
+					// get the config for visual effect effectName
+					const config = extVisualEffectOptions[effectName];
+
 					if(config.type === "checkbox"){
 						const label = document.createElement("label");
 
 						const checkbox = document.createElement("input");
 						checkbox.type = "checkbox";
-						checkbox.name = id;
+						checkbox.name = effectName;
 
 						checkbox.checked = config.val;
 
@@ -21967,12 +21991,12 @@ this.highlight = (elem) => {
 
 						//add checkbox to label
 						label.appendChild(checkbox);
-						label.append(` ${config.label ?? id}`); //if no label provided, use id as label
+						label.append(` ${config.label ?? effectName}`); //if no label provided, use id as label
 
 						chkboxesContainer.appendChild(label);
 					}
 
-					const element = el(id); //get the option control element by its name attribute
+					const element = el(effectName); //get the option control element by its name attribute
 
 					// bind onchange event for each option control element
 					element.onchange = (e) => {
@@ -21994,10 +22018,10 @@ this.highlight = (elem) => {
 						}
 
 						// update the option
-						featuresDefaultOptions[id].val = value;
+						extVisualEffectOptions[effectName].val = value;
 
 						// save to xState
-						xStateFeatures[id] = value;
+						xStateFeatures[effectName] = value;
 					};
 				}
 			}();
@@ -22028,15 +22052,17 @@ this.highlight = (elem) => {
 					ctx.textBaseline = "bottom";
 					const peakEnergy = amaInstance.getEnergy('peak');
 					ctx.font = `bold ${ canHeight * ((1 + peakEnergy) / 12) }px sans-serif`;
-					ctx.fillText( ama._pvtWakeLockState? 'WL' : 'WR', canWidth - baseSize * .5, canHeight );
+					ctx.fillText( ama._pvtWakeLockState ? 'WL' : 'WR', canWidth - baseSize * .5, canHeight );
 					ctx.restore();
 				}
 
 				//xState.audioSpectrum.screenAlwaysOn
 				if(ama._pvtWakeLockState !== null) wakeLockAlert();
-
+			
+			/* Object that contains the actual code to draw visual effect. The purpose of this object is that we can dynamically invoke any draw function for any visual effect by effect's name (stored in a string) */
+			const drawFunctions = {
 				//--- energy meters ---
-				function drawEnergyMeters() {
+				drawEnergyMeters: () => {
 					const energy    = amaInstance.getEnergy(),
 						peakEnergy = amaInstance.getEnergy('peak');
 
@@ -22044,18 +22070,18 @@ this.highlight = (elem) => {
 					const energyBarWidth = baseSize * 2; //50 * pixelRatio;
 					const peakY = -canHeight * ( peakEnergy - 1 );
 					ctx.fillStyle = '#f80';
-					ctx.fillRect( energyBarWidth, peakY, energyBarWidth, 4 );
+					ctx.fillRect( energyBarWidth * .5, peakY, energyBarWidth, 4 ); // * 1
 
 					// draw the value of peak
-					ctx.font = `${ baseSize * 1.2 }px sans-serif`; //40 * pixelRatio
+					ctx.font = `${ baseSize }px sans-serif`; //40 * pixelRatio
 					ctx.textAlign = 'center';
 					ctx.textBaseline = "bottom";
 					ctx.fillStyle = '#ccc';
-					ctx.fillText( peakEnergy.toFixed(4), energyBarWidth * 1.5, peakY - 4 );
+					ctx.fillText( peakEnergy.toFixed(4), energyBarWidth, peakY - 4 );
 
 					// overall energy bar
 					ctx.fillStyle = '#fff8';
-					ctx.fillRect( energyBarWidth, canHeight, energyBarWidth, -canHeight * energy );
+					ctx.fillRect( energyBarWidth * .5, canHeight, energyBarWidth, -canHeight * energy );
 
 					// bass, midrange and treble meters
 
@@ -22106,10 +22132,10 @@ this.highlight = (elem) => {
 					ctx.font = `bold ${ baseSize + growSize * trebleEnergy }px sans-serif`;
 					ctx.fillText( 'TREBLE', canWidth * .85, centerY );
 					drawLight( canWidth * .85, '#0ff', trebleEnergy );
-				}
+				},
 				
 				//--- title ---
-				function drawTitle() {
+				drawTitle: () => {
 					// the overall energy provides a simple way to sync a pulsating text/image to the beat
 					const fontSize = baseSize + amaInstance.getEnergy() * 25 * pixelRatio;
 					// it usually works best than specific frequency ranges, for a wider range of music styles
@@ -22121,10 +22147,10 @@ this.highlight = (elem) => {
 					// center the text 
 					ctx.textAlign = 'center';
 					ctx.fillText( logoText, canWidth / 2, baseSize );
-				}
+				},
 				
 				//--- song progress bar ---
-				function drawSongProgress() {
+				drawSongProgress: () => {
 					const audioEl    = xAudio;
 					const lineWidth = canHeight / 40,
 						posY = lineWidth >> 1;
@@ -22151,10 +22177,10 @@ this.highlight = (elem) => {
 					ctx.textBaseline = "alphabetic"; //reset to default
 
 					ctx.restore();
-				}
+				},
 
 				// --- custom sphere visualizer ---
-				function drawSphere() {
+				drawSphere: () => {
 					// --- energies ---
 					const bass = amaInstance.getEnergy('bass');
 					const midE = amaInstance.getEnergy('mid');
@@ -22253,10 +22279,10 @@ this.highlight = (elem) => {
 					drawEquator(Math.PI * 2 / 3);
 
 					ctx.restore();
-				}
+				},
 
 				// --- peak and overall energy horizontal bars ---
-				function drawHorizontalEnergyBars() {
+				drawHorizontalEnergyBars: () => {
 
 					const peak = amaInstance.getEnergy('peak');
 					const energy = amaInstance.getEnergy();
@@ -22306,10 +22332,10 @@ this.highlight = (elem) => {
 
 					ctx.restore();
 
-				}
+				},
 				
 				// --- radial bars visualizer ---
-				function drawRadialBars() {
+				drawRadialBars: () => {
 
 					const bass = amaInstance.getEnergy('bass');
 					const bars = 75;
@@ -22352,10 +22378,10 @@ this.highlight = (elem) => {
 						ctx.stroke();
 					}
 
-				}
+				},
 				
 				// --- oscilloscope-like positive + negative line visualizer ---
-				function drawOscilloscope() {
+				drawOscilloscope: () => {
 					//const { w, h } = ctx.canvas;
 
 					// get array of bar objects
@@ -22412,10 +22438,10 @@ this.highlight = (elem) => {
 						}
 					}
 					ctx.stroke();
-				}
+				},
 				
 				// --- multi-layer waveform visualizer ---
-				function drawMultipleWaves() {
+				drawMultipleWaves: () => {
 					const time = performance.now() * 0.002;
 
 					// --- ENERGY ---
@@ -22496,10 +22522,10 @@ this.highlight = (elem) => {
 
 					ctx.restore();
 
-				}
+				},
 
 				// --- bouncing balls visualizer ---
-				function drawJumpingBalls() {
+				drawJumpingBalls: () => {
 					
 					//ctx.clearRect(0, 0, w, h);
 
@@ -22598,9 +22624,23 @@ this.highlight = (elem) => {
 						ctx.fillStyle = shiftColor(.3, alpha * 1.1);
 						ctx.fillText( band.name.at(0).toUpperCase(), x, y);
 					});
-				};
-
+				}
+			}
 				/* -- Call the custom visualizer features according to user settings --- */
+
+				// go through all visual effect and check to see if each of them is turn on, then draw corresponding visual effect
+				visualEffectNames.forEach( (effectName) => {
+					// get the config for visual effect effectName
+					const config = extVisualEffectOptions[effectName];
+
+					if(config.val) // if an effect is set ON
+						// run all function whose name is in array .cbFunc
+						config.cbFunc.forEach(cbFun =>
+						drawFunctions[cbFun]())
+				})
+
+				/* return;
+
 				// --- Oscilloscope visualizer ---
 				if( featuresDefaultOptions.showOscilloscopeEnergy.val) drawOscilloscope();
 
@@ -22608,7 +22648,7 @@ this.highlight = (elem) => {
 				if ( featuresDefaultOptions.showSphere.val ) {drawSphere(); drawHorizontalEnergyBars();}
 
 				// --- bouncing balls circle ---
-				if( featuresDefaultOptions.showJumpingBalls.val ) drawJumpingBalls(); //drawPulsatingCircle();
+				if( featuresDefaultOptions.showJumpingBalls.val ) drawJumpingBalls();
 				
 				// --- radial bars visualizer ---
 				if(featuresDefaultOptions.showRadialBars.val) drawRadialBars();
@@ -22624,7 +22664,7 @@ this.highlight = (elem) => {
 				
 				// --- energy meters ---
 				if ( featuresDefaultOptions.energyMeter.val ) drawEnergyMeters();
-				
+				 */
 			}
 					
 		} //end of loadAudioSpectrum function
