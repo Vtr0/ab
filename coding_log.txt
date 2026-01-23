@@ -101,6 +101,7 @@ LOG
 		- idx-gh.html: spectrum with wakelock. But lock the screen only when spectrum go fullscreen and the page is active (the window of app is visible to user's eye). Work well on desktop. But not with iPadOS  - it always throw error: 'NotAllowedError', Permission denied, because on iPadOS when fullscreen and request for wakeLock, maybe it requires user-gesture to give the permission.  This version request for wakeLock on document.onFullscreen event and fullScreen button click event.
 2026-01-23 21:00
 		- idx-gh.html: I have actually make it work on iPadOS that it is only active wakeLock when spectrum go fullscreen. When back from fullscreen, wakeLock deactivated
+		- idx-b.html : the minified code of idx-gh.html 
 
 2026-01- ..... TODO:
 		- change index.html to idxx.html for old version 2025-12-29 (no spectrum, no wakeLock at all)
