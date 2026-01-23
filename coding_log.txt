@@ -83,7 +83,28 @@ LOG
 2025-09-17, 18
 	Experiment on dark theme. It is not very good, especially when Brutally forcing almost all elements of the page having color #eee. This effect heavily on page performance (open an SDD and scroll to see how lag it is), but this is shortest (but not the best) way for dark theme mode.
 	If you needs to remove dark-theme out of the source code, you have to delete following block out of CSS; remove button[name="switchPageTheme"] out of HTML code; remove switchPageTheme() out of JS and delete icnSvgDarkTheme svg icon out of SVG icons sprite
-
+2025-12-30
+	Experiment adding audio spectrum using 'audioMotion-analyzer' at https://github.com/hvianna/audioMotion-analyzer?tab=readme-ov-file
+2026-01-10
+	Extensive code for audio spectrum using 'audioMotion-analyzer'
+2026-01-20
+	Adding wakeLock API to keep screen always on, but not work well on iPadOS
+2026-01-23 09:46
+	There are multiple version 
+		- index.html - minified version Same old version of 2025-12-29
+		- idx-*[0-9a-z].html - minified version of using audio spectrum, wakeLock
+		
+		- sh.html: no audio spectrum, no wakeLock. Same old version of 2025-12-29
+		- idx-as: spectrum but no wakeLock
+		- idx-bs: spectrum with wakelock. But lock the screen as we using the app and the page is active (the window of app is visible to user's eye). Work with iPadOS
+		- idx-sh: spectrum with wakelock. But lock the screen only when spectrum go fullscreen and the page is active (the window of app is visible to user's eye). Work well on desktop. But not with iPadOS  - it always throw error: 'NotAllowedError', Permission denied, because on iPadOS when fullscreen and request for wakeLock, maybe it requires user-gesture to give the permission. This version request for wakeLock on document.onFullscreen event
+		- idx-gh: spectrum with wakelock. But lock the screen only when spectrum go fullscreen and the page is active (the window of app is visible to user's eye). Work well on desktop. But not with iPadOS  - it always throw error: 'NotAllowedError', Permission denied, because on iPadOS when fullscreen and request for wakeLock, maybe it requires user-gesture to give the permission.  This version request for wakeLock on document.onFullscreen event and fullScreen button click event.
+2026-01-23 12:00
+		- change index.html to idxx.html for old version 2025-12-29 (no spectrum, no wakeLock at all)
+		- index.html will have spectrum and wakeLock
+		
+		- Copy back idx-bs.html to sh.html. This version will have spectrum with wakelock. But lock the screen as we using the app and the page is active (the window of app is visible to user's eye), but not support active wakeLock only when spectrum go full screen. Work with iPadOS
+	
 -------------------------------------
 Bản ngày 11/3 kg bị lỗi
 Css: 12/3 slash+elmPlayingTime (nhớ @media, noInternetSign), title trên audio panel (nhớ sửa flex của app-track),. Bỏ content-visibility ở elmPlaylist.
