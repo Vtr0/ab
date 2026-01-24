@@ -21709,7 +21709,7 @@ this.highlight = (elem) => {
 					Reason: wakeLock require many thing to accept request a wakeLock sentinel, which even more strict on appleOS who require user gesture and denied when request when already in fullscreen. So, we have to request a wakeLock BEFORE the spectrum actually go fullscreen.
 				*/
 				void function toggleAlwaysOnBtn(){
-					toast.showToast("GH version 4");
+					toast.showToast("GH version 5");
 					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
 
@@ -21737,7 +21737,7 @@ this.highlight = (elem) => {
 
 						try {
 								wakeLock = await navigator.wakeLock.request("screen");
-								console.log("A wakeLockSentinel (Re)created");
+								console.log("[wakeLock.request]: A wakeLockSentinel (Re)created");
 								ama._pvtWakeLockState = true;
 
 								// listen for wakeLockSentinel's release event. This currently is for debug purpose only. So, I commented it
@@ -21748,7 +21748,7 @@ this.highlight = (elem) => {
 									ama._pvtWakeLockState = false; //change the state to tell that a wakeLock is released
 								}
 						} catch (err) {
-							console.error(`WL: ${err.name}: ${err.message}`);
+							console.error(`[wakeLock.request]: ${err.name}: ${err.message}`);
 
 							/* //since wakeLock only active when FS, to do that there must be user gesture, so following code not need anymore
 							toast.showToast(`WL: ${err.name}: ${err.message}`);
@@ -21783,10 +21783,10 @@ this.highlight = (elem) => {
 						wakeLock.release()
 						.then( () => {
 							wakeLock = null;
-							console.log("A wakeLockSentinel is forced to be released.");
+							console.log("[wakeLock.release]: A wakeLockSentinel is forced to be released.");
 						})
 						.catch( (err) => {
-							toast.showToast(`${err.name}: ${err.message}`);
+							console.log(`[wakeLock.release]: ${err.name}: ${err.message}`);
 						})
 						
 					}
@@ -21831,7 +21831,7 @@ this.highlight = (elem) => {
 							requestWakeLock();
 						}
 
-						console.log('Wake lock feature ENABLED');
+						console.log('[Service On] Wake lock feature ENABLED');
 					}
 
 					function disableWakeLockFeature() {
@@ -21843,14 +21843,14 @@ this.highlight = (elem) => {
 
 						ama._pvtWakeLockState = null;
 
-						console.log('Wake lock feature DISABLED');
+						console.log('[Service Off] Wake lock feature DISABLED');
 					}
 
 					const xStateSpectrum = xState.audioSpectrum;
 					xStateSpectrum.screenAlwaysOn ??= false;
 
-					// change button appearance
-					const changeBtnAppearance = async () => {
+					// Handle enable/disable wakeLock and change button appearance
+					const screenAlwaysOnBtnHandler = async () => {
 						const isAlwaysOn = xStateSpectrum.screenAlwaysOn;
 
 						toggleScreenAlwaysOnBtn.classList.toggle("amaPanelBtnActivated", isAlwaysOn);
@@ -21863,7 +21863,7 @@ this.highlight = (elem) => {
 							disableWakeLockFeature();
 						}
 					}
-					changeBtnAppearance();
+					screenAlwaysOnBtnHandler();
 
 					toggleScreenAlwaysOnBtn.addEventListener("click", e => {
 						e.stopPropagation();
@@ -21872,7 +21872,7 @@ this.highlight = (elem) => {
 						xStateSpectrum.screenAlwaysOn = !xStateSpectrum.screenAlwaysOn;
 
 						// change button appearance
-						changeBtnAppearance();
+						screenAlwaysOnBtnHandler();
 					});
 
 					/* --- B) Full-Screen toggle button. We handle Request for wakeLock when click this button --- */
