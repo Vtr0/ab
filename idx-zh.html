@@ -21713,7 +21713,7 @@ this.highlight = (elem) => {
 					Reason: wakeLock require many thing to accept request a wakeLock sentinel, which even more strict on appleOS who require user gesture and denied when request when already in fullscreen. So, we have to request a wakeLock BEFORE the spectrum actually go fullscreen.
 				*/
 				void function toggleAlwaysOnBtnWraper(){
-					toast.showToast("ZH ver 2");
+					//toast.showToast("ZH ver 2");
 
 					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
@@ -22070,7 +22070,7 @@ this.highlight = (elem) => {
 					ctx.textBaseline = "bottom";
 					const peakEnergy = amaInstance.getEnergy('peak');
 					ctx.font = `bold ${ canHeight * ((1 + peakEnergy) / 12) }px sans-serif`;
-					ctx.fillText( ama._pvtWakeLockState ? 'WL' : 'WR', canWidth - baseSize * .5, canHeight );
+					ctx.fillText( ama._pvtWakeLockState ? 'WL' : 'RW', canWidth - baseSize * .5, canHeight );
 					ctx.restore();
 				}
 
