@@ -21326,7 +21326,7 @@ this.highlight = (elem) => {
 						responsive: true, //canvas resize according to container size
 						ansiBands: false,
 						showScaleX: false,
-						bgAlpha: 1, // these 3 settings make the canvas background opape. Set this 0 to make background transparent
+						bgAlpha: 0, // these 3 settings make the canvas background opape. Set this 0 to make background transparent
 						overlay: true,
 						showBgColor: true, 
 						smoothing: 0.7,
@@ -21709,7 +21709,7 @@ this.highlight = (elem) => {
 					Reason: wakeLock require many thing to accept request a wakeLock sentinel, which even more strict on appleOS who require user gesture and denied when request when already in fullscreen. So, we have to request a wakeLock BEFORE the spectrum actually go fullscreen.
 				*/
 				void function toggleAlwaysOnBtn(){
-					toast.showToast("GH version 2");
+					toast.showToast("GH AlwaysOn version 2");
 					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
 
