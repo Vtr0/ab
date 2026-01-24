@@ -112,7 +112,7 @@ LOG
 2026-01-24: (Afternoon)
 		As it turn out, somehow the version I modify the morning got error on iPhone. So, I have to fix the code so the afternoon the work version is idx-th.html and then the newer one idx-zh.html work.
 		
-		To clean up, I remove all other version and change "idx-zh.html" to "idx-sh.html"
+		To clean up, I remove all other version and change "idx-zh.html" to "idx-sh.html" (this is latest version that works)
 
 TODO: When stable and don't have to test on ipad at home, change back idx-sh.html to sh.html so this full-code version not be stored on github
 -------------------------------------

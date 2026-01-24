@@ -22074,8 +22074,8 @@ this.highlight = (elem) => {
 					ctx.restore();
 				}
 
-				//xState.audioSpectrum.screenAlwaysOn
-				if(ama._pvtWakeLockState !== null) wakeLockAlert();
+				// Do not draw if _pvtWakeLockState == undefined (Browser does not support wakeLock or FS) or _pvtWakeLockState == null (wakeLock currently Disabled)
+				if(ama._pvtWakeLockState ?? false) wakeLockAlert();
 			
 			/* Object that contains the actual code to draw visual effect. The purpose of this object is that we can dynamically invoke any draw function for any visual effect by effect's name (stored in a string) */
 			const drawFunctions = {
