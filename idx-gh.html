@@ -21573,7 +21573,7 @@ this.highlight = (elem) => {
 			}();
 			
 			// Setup event handlers for the audio spectrum (something related to spectrum div) and buttons in options panel.
-			void function handleGenerals(){
+			function handleGenerals(){
 				
 				/* // Keyboard handling for the options panel
 				aspectrumOptionsPanel.onKeyDown = (evt) => {
@@ -21610,7 +21610,7 @@ this.highlight = (elem) => {
 				});
 
 				/* toggle Overlay Mode */
-				void function toggleOverlayModeBtn(){
+				void function toggleOverlayModeBtnWraper(){
 					const toggleOverlayModeBtn = el("toggleOverlayMode");
 
 					const workArtElem = document.getElementById("elmArtwork");
@@ -21672,7 +21672,7 @@ this.highlight = (elem) => {
 				}();
 				
 				/* toggle Analyzer */
-				void function toggleAnalyzerBtn(){
+				void function toggleAnalyzerBtnWraper(){
 					const toggleAnalyzerBtn = el("toggleAnalyzer");
 					const xStateSpectrum = xState.audioSpectrum;
 					xStateSpectrum.stopAnalyzer ??= false;
@@ -21708,14 +21708,14 @@ this.highlight = (elem) => {
 
 					Reason: wakeLock require many thing to accept request a wakeLock sentinel, which even more strict on appleOS who require user gesture and denied when request when already in fullscreen. So, we have to request a wakeLock BEFORE the spectrum actually go fullscreen.
 				*/
-				void function toggleAlwaysOnBtn(){
-					toast.showToast("GH version 6");
+				void function toggleAlwaysOnBtnWraper(){
+					toast.showToast("GH version 7");
 					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
 
 					// Hide the toggle button if browser does not support
 					if (!('wakeLock' in navigator)) {
-						toggleAlwaysOnBtn.style.display = "none";
+						toggleScreenAlwaysOnBtn.style.display = "none";
 						console.warn('Wake Lock API not supported');
 						return;
 					}
@@ -21876,12 +21876,12 @@ this.highlight = (elem) => {
 					});
 
 					/* --- B) Full-Screen toggle button. We handle Request for wakeLock when click this button --- */
-					if(!document.webkitExitFullscreen && !document.exitFullscreen){
+					if(!document.webkitExitFullscreen1 && !document.exitFullscreen1){
 						//hide fullScreen button if browser not support fullscreen API
 						el("fullScreen").style.display = "none";
 						document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
 
-						toggleAlwaysOnBtn.style.display = "none";
+						toggleScreenAlwaysOnBtn.style.display = "none";
 					}
 					else{
 						// if browser support, add handler for Fullscreen button 
@@ -21889,9 +21889,10 @@ this.highlight = (elem) => {
 							evt.stopPropagation();
 
 							// only request wakeLock when screenAlwaysOn
-							if(xStateSpectrum.screenAlwaysOn)
+							if(xStateSpectrum.screenAlwaysOn){
 								// One of requirement for request wakeLock to be successed on phone/tablet is there must be user gesture (beside some other requirements). So, We have to wait for request wakeLock to be done before toggling FS. Otherwise, it won't work on iPadOS  (even work well in desktop)
-								await requestWakeLock();						
+								await requestWakeLock();
+							}					
 							ama.toggleFullscreen();
 						}
 					}
@@ -21935,7 +21936,7 @@ this.highlight = (elem) => {
 				document.querySelector('[name="switchPageTheme"]').addEventListener("click", switchSpectrumBgrnd); 
 				*/
 
-			}();
+			}//();
 			
 			/** === External / Custom Effects === 
 			 * FORMAT: each item is pair of {key:value}
@@ -22041,6 +22042,8 @@ this.highlight = (elem) => {
 			 */
 			function drawExternalEffectsCallback(amaInstance) {
 				//const amaInstance = amaInstance; //ama;
+				
+				if(!visualEffectNames) return;
 				
 				const canvas   = amaInstance.canvas,
 					ctx        = amaInstance.canvasCtx,
@@ -22638,6 +22641,7 @@ this.highlight = (elem) => {
 				/* -- Call the custom visualizer features according to user settings --- */
 
 				// go through all visual effect and check to see if each of them is turn on, then draw corresponding visual effect
+				if(visualEffectNames)
 				visualEffectNames.forEach( (effectName) => {
 					// get the config for visual effect effectName
 					const config = extVisualEffectOptions[effectName];
@@ -22676,6 +22680,7 @@ this.highlight = (elem) => {
 				 */
 			}
 					
+			handleGenerals();
 		} //end of loadAudioSpectrum function
 	</script>
 
