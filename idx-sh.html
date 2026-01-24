@@ -21267,8 +21267,8 @@ this.highlight = (elem) => {
 	</script>
 
 	<!-- AUDIO SPECTRUM -->
-	<!-- Using AudioMotionAnalyzer library from https://github.com/hvianna/audioMotion-analyzer -->
 	<script>
+		/* Using AudioMotionAnalyzer library from https://github.com/hvianna/audioMotion-analyzer */
 		"use strict";
 		// Load module from Skypack CDN
     		//import AudioMotionAnalyzer from "https://cdn.skypack.dev/audiomotion-analyzer?min";
@@ -21718,6 +21718,9 @@ this.highlight = (elem) => {
 					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
 
+					// store the state of the wakeLock. null if wakeLock has not yet been initialize. True If there is a active wakeLockSentinel. False: if an inactive wakeLockSentinel has been released
+					ama._pvtWakeLockState = null;
+
 					// Hide the toggle button if browser does not support
 					if (!('wakeLock' in navigator)) {
 						toggleScreenAlwaysOnBtn.style.display = "none";
@@ -21740,9 +21743,6 @@ this.highlight = (elem) => {
 
 					// variable so that Re-Request for wakeLock only one time when user first click on the page
 					//let allowRequestOnUserClick = true;
-
-					// store the state of the wakeLock. null if wakeLock has not yet been initialize. True If there is a active wakeLockSentinel. False: if an inactive wakeLockSentinel has been released
-					ama._pvtWakeLockState = null;
 
 					/* =======================
 						Wake Lock helpers
@@ -22074,8 +22074,8 @@ this.highlight = (elem) => {
 					ctx.restore();
 				}
 
-				// Do not draw if _pvtWakeLockState == undefined (Browser does not support wakeLock or FS) or _pvtWakeLockState == null (wakeLock currently Disabled)
-				if(ama._pvtWakeLockState ?? false) wakeLockAlert();
+				// Do not draw _pvtWakeLockState == null (wakeLock currently Disabled)
+				if(ama._pvtWakeLockState !== null) wakeLockAlert();
 			
 			/* Object that contains the actual code to draw visual effect. The purpose of this object is that we can dynamically invoke any draw function for any visual effect by effect's name (stored in a string) */
 			const drawFunctions = {
