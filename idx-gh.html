@@ -21703,9 +21703,14 @@ this.highlight = (elem) => {
 					});
 				}();
 
-				/* toggle Always-on or Disable screen lock */
-				void function toggleAlwaysOnBtn(){
+				/** 1) toggle Always-on (or Disable screen lock) 
+					2) toggle Fullscreen button
 
+					Reason: wakeLock require many thing to accept request a wakeLock sentinel, which even more strict on appleOS who require user gesture and denied when request when already in fullscreen. So, we have to request a wakeLock BEFORE the spectrum actually go fullscreen.
+				*/
+				void function toggleAlwaysOnBtn(){
+					toast.showToast("GH version 1");
+					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
 
 					// Hide the toggle button if browser does not support
@@ -21870,7 +21875,7 @@ this.highlight = (elem) => {
 						changeBtnAppearance();
 					});
 
-					/*  Full-Screen dialog button */
+					/* --- B) Full-Screen toggle button. We handle Request for wakeLock when click this button --- */
 					if(!document.webkitExitFullscreen && !document.exitFullscreen){
 						//hide fullScreen button if browser not support fullscreen API
 						el("fullScreen").style.display = "none";
@@ -21881,8 +21886,10 @@ this.highlight = (elem) => {
 						document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = async (evt) => {
 							evt.stopPropagation();
 
-							// One of requirement for request wakeLock to be successed on phone/tablet is there must be user gesture (beside some other requirements). So, We have to wait for request wakeLock to be done before toggling FS. Otherwise, it won't work on iPadOS  (even work well in desktop)
-							await requestWakeLock();						
+							// only request wakeLock when screenAlwaysOn
+							if(xStateSpectrum.screenAlwaysOn)
+								// One of requirement for request wakeLock to be successed on phone/tablet is there must be user gesture (beside some other requirements). So, We have to wait for request wakeLock to be done before toggling FS. Otherwise, it won't work on iPadOS  (even work well in desktop)
+								await requestWakeLock();						
 							ama.toggleFullscreen();
 						}
 					}
