@@ -21709,7 +21709,7 @@ this.highlight = (elem) => {
 					Reason: wakeLock require many thing to accept request a wakeLock sentinel, which even more strict on appleOS who require user gesture and denied when request when already in fullscreen. So, we have to request a wakeLock BEFORE the spectrum actually go fullscreen.
 				*/
 				void function toggleAlwaysOnBtn(){
-					toast.showToast("GH AlwaysOn version 2");
+					toast.showToast("GH AlwaysOn version 3");
 					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
 
@@ -21717,15 +21717,6 @@ this.highlight = (elem) => {
 					if (!('wakeLock' in navigator)) {
 						toggleAlwaysOnBtn.style.display = "none";
 						console.warn('Wake Lock API not supported');
-						return;
-					}
-
-					if(!document.webkitExitFullscreen && !document.exitFullscreen){
-						//hide fullScreen button if browser not support fullscreen API
-						el("fullScreen").style.display = "none";
-						document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
-
-						toggleAlwaysOnBtn.style.display = "none";
 						return;
 					}
 
@@ -21885,7 +21876,15 @@ this.highlight = (elem) => {
 					});
 
 					/* --- B) Full-Screen toggle button. We handle Request for wakeLock when click this button --- */
-					{
+					if(!document.webkitExitFullscreen && !document.exitFullscreen){
+						//hide fullScreen button if browser not support fullscreen API
+						el("fullScreen").style.display = "none";
+						document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
+
+						toggleAlwaysOnBtn.style.display = "none";
+						//return;
+					}
+					else {
 						// if browser support, add handler for Fullscreen button 
 						document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = async (evt) => {
 							evt.stopPropagation();
