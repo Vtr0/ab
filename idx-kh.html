@@ -21947,6 +21947,8 @@ this.highlight = (elem) => {
 
 			}();
 			
+			toast.showToast("KH version 1");
+			return;
 			/** === External / Custom Effects === 
 			 * FORMAT: each item is pair of {key:value}
 			 * 	key: visualEffect name. also the attribute name of {xState.audioSpectrum.features} to rememeber if the effect is turn On (being selected)
@@ -21973,7 +21975,7 @@ this.highlight = (elem) => {
 
 			/* Function to populate checkboxes for EXTERNAL/CUSTOM EFFECTS in options panel and handle event for selects, checkboxes of options panel */
 			void function handleExternalEffectCheckboxs(){
-				return;
+				
 				if(!xState?.audioSpectrum?.features)
 					//initialize external effects options from default options
 					xState.audioSpectrum.features = {};
