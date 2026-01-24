@@ -21710,7 +21710,7 @@ this.highlight = (elem) => {
 					Reason: wakeLock require many thing to accept request a wakeLock sentinel, which even more strict on appleOS who require user gesture and denied when request when already in fullscreen. So, we have to request a wakeLock BEFORE the spectrum actually go fullscreen.
 				*/
 				void function toggleAlwaysOnBtn(){
-
+					toast.showToast("SH version 1");
 					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
 
@@ -21722,7 +21722,7 @@ this.highlight = (elem) => {
 					}
 
 					// Check if browser support Fullscreen. If not, we have to hide two fullscreen buttons (one attach with spectrum canvas and one in options panel) AND hide Always-On toggle button (because we do the wakeLock only when spectrum go Fullscreen)
-					if(!document.webkitExitFullscreen && !document.exitFullscreen){
+					if( !(('webkitExitFullscreen' in document) || ('exitFullscreen' in document)) ){
 						//hide fullScreen button if browser not support fullscreen API
 						el("fullScreen").style.display = "none";
 						document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
@@ -21893,8 +21893,7 @@ this.highlight = (elem) => {
 					});
 
 
-					/* --- B) Full-Screen toggle button. We handle Request for wakeLock when click this button --- */
-					
+					/* --- B) Full-Screen toggle button. We handle Request for wakeLock when click this button --- */					
 					// Add handler for Fullscreen button 
 					document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = async (evt) => {
 						evt.stopPropagation();
