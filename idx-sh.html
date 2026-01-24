@@ -16,7 +16,11 @@
 	<link rel="shortcut icon" href="favicon/favicon.ico" />
 	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
 	<meta name="apple-mobile-web-app-title" content="Audio Books" />
-	<!-- <link rel="manifest" href="favicon/site.webmanifest" /> -->
+	<link rel="manifest" href="favicon/site.webmanifest" />
+
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-title" content="Audio Books">
 
 	<!-- Root, common elements  type="text/css" -->
 	<style>
@@ -7764,7 +7768,6 @@
 			/* & [name="toggleAnalyzer"].amaPanelBtnActivated,
 			& [name="toggleOverlayMode"].amaPanelBtnActivated,
 			& [name="toggleScreenAlwaysOn"].amaPanelBtnActivated */
-			/* This class for checkbox-like button, it marks that button is currently checked (more specifically, turned on) */
 			& button.amaPanelBtnActivated {
 				background: #444;
 				/* color: #0f0;
@@ -8294,7 +8297,7 @@
   
 		<button name="toggleOverlayMode" data-tooltip="Put the spectrum on top of poster (Overlay mode) or Stand-alone before it">Overlay mode</button>
 
-		<button name="toggleScreenAlwaysOn" data-tooltip="When spectrum go fullscreen, keep Screen always-on (disable screen lock) or not">Always-On</button>
+		<button name="toggleScreenAlwaysOn" data-tooltip="When spectrum goes Fullscreen, keep Screen always on (disable screen lock) or not">Always-On</button>
 	   </fieldset>
 
 	   <div class="aspGroupContainer">
@@ -15617,7 +15620,7 @@
 
 					//switch audio spectrum show/hide when clicking on the button
 					toggleAudioSpectrumBtn.onclick = async function(){
-						if (!await Dialog.confirm("<b>Bạn muốn " + btText + " phổ âm thanh?</b><br><br>Lưu ý, khi bật chế độ hiện phổ âm thanh, sẽ có nhiều hạn chế như sau:<ol><li>Không hỗ trợ phát từ một số nguồn audio (do CORS), nhưng nghe bình thường khi tắt phổ âm thanh.</li><li>Sẽ bị mất những đoạn audio nhỏ khi phát với tốc độ > 1 (trên iOS).</li><li>Đôi khi mất tiếng, phải Pause và Play lại mới được. Đôi khi bị nhại tiếng. Bị hơi vấp thời điểm màn hình bị khóa.</li><li>Phổ âm thanh có thể không hiện trong một số trường hợp (ví dụ: nghe live radio trên iOs/iPadOS)</li></ol><div style='text-align:right'>Power by <a target='_blank' rel='noopener' href='https://github.com/hvianna/audioMotion-analyzer?tab=readme-ov-file'>audioMotion-analyzer</a></div><br><b style='color:#00aaff'>Sẽ cần phải nạp lại trang Web.</b>")) return;
+						if (!await Dialog.confirm("<b>Bạn muốn " + btText + " phổ âm thanh?</b><br><br>Lưu ý, khi bật chế độ hiện phổ âm thanh, sẽ có nhiều hạn chế như sau:<ol><li>Không hỗ trợ phát từ một số nguồn audio (do CORS), nhưng nghe bình thường khi tắt phổ âm thanh.</li><li>Sẽ bị mất những đoạn audio nhỏ khi phát với tốc độ > 1.</li><li>Đôi khi mất tiếng, phải Pause và Play lại mới được.</li><li>Phổ âm thanh có thể không hiện trong một số trường hợp (ví dụ: nghe live radio trên iOs/iPadOS)</li></ol><div style='text-align:right'>Power by <a target='_blank' rel='noopener' href='https://github.com/hvianna/audioMotion-analyzer?tab=readme-ov-file'>audioMotion-analyzer</a></div><br><b style='color:#00aaff'>Sẽ cần phải nạp lại trang Web.</b>")) return;
 
 						if(!ssData.audioMotionObj) {
 							xState.audio.showSpectrum = 1; // set to show spectrum
@@ -21327,7 +21330,7 @@ this.highlight = (elem) => {
 						responsive: true, //canvas resize according to container size
 						ansiBands: false,
 						showScaleX: false,
-						bgAlpha: 1, // these 3 settings make the canvas background opape. Set this 0 to make background transparent
+						bgAlpha: 0, // these 3 settings make the canvas background opape. Set this 0 to make background transparent
 						overlay: true,
 						showBgColor: true, 
 						smoothing: 0.7,
@@ -21611,7 +21614,7 @@ this.highlight = (elem) => {
 				});
 
 				/* toggle Overlay Mode */
-				void function toggleOverlayModeBtn(){
+				void function toggleOverlayModeBtnWraper(){
 					const toggleOverlayModeBtn = el("toggleOverlayMode");
 
 					const workArtElem = document.getElementById("elmArtwork");
@@ -21673,7 +21676,7 @@ this.highlight = (elem) => {
 				}();
 				
 				/* toggle Analyzer */
-				void function toggleAnalyzerBtn(){
+				void function toggleAnalyzerBtnWraper(){
 					const toggleAnalyzerBtn = el("toggleAnalyzer");
 					const xStateSpectrum = xState.audioSpectrum;
 					xStateSpectrum.stopAnalyzer ??= false;
@@ -21709,29 +21712,29 @@ this.highlight = (elem) => {
 
 					Reason: wakeLock require many thing to accept request a wakeLock sentinel, which even more strict on appleOS who require user gesture and denied when request when already in fullscreen. So, we have to request a wakeLock BEFORE the spectrum actually go fullscreen.
 				*/
-				void function toggleAlwaysOnBtn(){
-					toast.showToast("SH version 2");
+				void function toggleAlwaysOnBtnWraper(){
+					//toast.showToast("ZH ver 2");
+
 					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
 
-					// Hide the Always-On toggle button if browser does not support wakeLock
+					// Hide the toggle button if browser does not support
 					if (!('wakeLock' in navigator)) {
-						toggleAlwaysOnBtn.style.display = "none";
+						toggleScreenAlwaysOnBtn.style.display = "none";
 						console.warn('Wake Lock API not supported');
 						return;
 					}
 
-					// Check if browser support Fullscreen. If not, we have to hide two fullscreen buttons (one attach with spectrum canvas and one in options panel) AND hide Always-On toggle button (because we do the wakeLock only when spectrum go Fullscreen)
-					/* if( !webkitExitFullscreen && !document.exitFullscreen ){
+					if(!document.webkitExitFullscreen && !document.exitFullscreen){
 						//hide fullScreen button if browser not support fullscreen API
 						el("fullScreen").style.display = "none";
 						document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
 
 						// Also hide the Always-On toggle button
-						toggleAlwaysOnBtn.style.display = "none";
+						toggleScreenAlwaysOnBtn.style.display = "none";
 
 						return;
-					} */
+					}
 
 					let wakeLock = null; //wakeLockSentinel object
 
@@ -21750,13 +21753,13 @@ this.highlight = (elem) => {
 
 						try {
 								wakeLock = await navigator.wakeLock.request("screen");
-								console.log("[wakeLock.request] A wakeLockSentinel (Re)created");
+								console.log("[wakeLock.request]: A wakeLockSentinel (Re)created");
 								ama._pvtWakeLockState = true;
 
 								// listen for wakeLockSentinel's release event. This currently is for debug purpose only. So, I commented it
 								wakeLock.onrelease = function(ev) {
 									//console.log(ev);
-									console.log(`[wakeLock.onrelease] A wakeLockSentinel being RELEASED`);
+									console.log(`[wakeLock.onrelease]: A wakeLockSentinel being RELEASED`);
 									wakeLock = null; //garbage collection
 									ama._pvtWakeLockState = false; //change the state to tell that a wakeLock is released
 								}
@@ -21796,10 +21799,10 @@ this.highlight = (elem) => {
 						wakeLock.release()
 						.then( () => {
 							wakeLock = null;
-							console.log("[wakeLock.release] A wakeLockSentinel is forced to be released.");
+							console.log("[wakeLock.release]: A wakeLockSentinel is forced to be released.");
 						})
 						.catch( (err) => {
-							console.log(`[wakeLock.release] ${err.name}: ${err.message}`);
+							console.log(`[wakeLock.release]: ${err.name}: ${err.message}`);
 						})
 						
 					}
@@ -21859,14 +21862,10 @@ this.highlight = (elem) => {
 						console.log('[Service Off] Wake lock feature DISABLED');
 					}
 
-					/* =======================
-						Buttons function implementation
-					======================= */
-
 					const xStateSpectrum = xState.audioSpectrum;
 					xStateSpectrum.screenAlwaysOn ??= false;
 
-					// Handle enable/disable wakeLock and change button appearance
+					// change button appearance
 					const screenAlwaysOnBtnHandler = async () => {
 						const isAlwaysOn = xStateSpectrum.screenAlwaysOn;
 
@@ -21892,32 +21891,21 @@ this.highlight = (elem) => {
 						screenAlwaysOnBtnHandler();
 					});
 
-
 					/* --- B) Full-Screen toggle button. We handle Request for wakeLock when click this button --- */
 					
-					if( !webkitExitFullscreen && !document.exitFullscreen ){
-						//hide fullScreen button if browser not support fullscreen API
-						el("fullScreen").style.display = "none";
-						document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
-
-						// Also hide the Always-On toggle button
-						//toggleAlwaysOnBtn.style.display = "none";
-
-						//return;
-					}
-					else{
-						// Add handler for Fullscreen button 
+					{
+						// if browser support, add handler for Fullscreen button 
 						document.querySelector('[name="specFullscreenBtn"]').onclick = el("fullScreen").onclick = async (evt) => {
 							evt.stopPropagation();
 
-							// only request wakeLock when screenAlwaysOn
-							if(xStateSpectrum.screenAlwaysOn)
-								// One of requirement for request wakeLock to be successed on phone/tablet is there must be user gesture (beside some other requirements). So, We have to wait for request wakeLock to be done before toggling FS. Otherwise, it won't work on iPadOS  (even work well in desktop)
-								await requestWakeLock();
-							
+							// One of requirement for request wakeLock to be successed on phone/tablet is there must be user gesture (beside some other requirements). So, We have to wait for request wakeLock to be done before toggling FS. Otherwise, it won't work on iPadOS  (even work well in desktop)
+							if(xStateSpectrum.screenAlwaysOn) // only request wakeLock when screenAlwaysOn
+								await requestWakeLock();						
 							ama.toggleFullscreen();
 						}
 					}
+
+				
 				}();
 
 				/* Handle to close the options panel */
@@ -22371,7 +22359,6 @@ this.highlight = (elem) => {
 					const bars = 75;
 					const radius = Math.min(canWidth, canHeight) * 0.15;
 
-					ctx.save();
 					//ctx.clearRect(0, 0, w, h);
 					//ctx.strokeStyle = '#ff4444';
 					ctx.lineWidth = 6;
@@ -22391,7 +22378,7 @@ this.highlight = (elem) => {
 						const rangeNo = ~~(i / (bars / 5));
 						const barInfor = getBarsInfor(rangeNo);
 						const energy = amaInstance.getEnergy(barInfor[0]);
-						ctx.strokeStyle = barInfor[1] + "a"; // add alpha channel for rgb color stored in barInfor[1]
+						ctx.strokeStyle = barInfor[1] + "a"; // "a" is value for alpha channel, which is hex number in range [0..f]
 
 						radius 
 						const r1 = radius;
@@ -22409,7 +22396,6 @@ this.highlight = (elem) => {
 						ctx.stroke();
 					}
 
-					ctx.restore();
 				},
 				
 				// --- oscilloscope-like positive + negative line visualizer ---

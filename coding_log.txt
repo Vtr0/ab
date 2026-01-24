@@ -103,12 +103,16 @@ LOG
 		- idx-gh.html: I have actually make it work on iPadOS that it is only active wakeLock when spectrum go fullscreen. When back from fullscreen, wakeLock deactivated
 		- idx-b.html : the minified code of idx-gh.html 
 
-2026-01-24:
+2026-01-24: (Morning)
 		- change index.html to idxx.html for old version 2025-12-29 (no spectrum, no wakeLock at all)
 		- index.html will have spectrum and wakeLock
 		
 		- Copy back idx-gh.html to idx-sh.html. This version will have spectrum with wakelock. But lock the screen as we using the app and the page is active (the window of app is visible to user's eye), but not support active wakeLock only when spectrum go full screen. Work with iPadOS
 		- Delete all old files which was for experimenting spectrum/wakeLock purpose, which includes following files: idx-a.html (minified version), idx-as.html, idx-b.html (minified version, not deleted, actually be renamed to index.html), idx-bs.html, idx-gh.html (not deleted, which actually be renamed to idx-sh.html)
+2026-01-24: (Afternoon)
+		As it turn out, somehow the version I modify the morning got error on iPhone. So, I have to fix the code so the afternoon the work version is idx-th.html and then the newer one idx-zh.html work.
+		
+		To clean up, I remove all other version and change "idx-zh.html" to "idx-sh.html"
 
 TODO: When stable and don't have to test on ipad at home, change back idx-sh.html to sh.html so this full-code version not be stored on github
 -------------------------------------
