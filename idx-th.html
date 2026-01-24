@@ -15620,7 +15620,7 @@
 
 					//switch audio spectrum show/hide when clicking on the button
 					toggleAudioSpectrumBtn.onclick = async function(){
-						if (!await Dialog.confirm("<b>Bạn muốn " + btText + " phổ âm thanh?</b><br><br>Lưu ý, khi bật chế độ hiện phổ âm thanh, sẽ có nhiều hạn chế như sau:<ol><li>Không hỗ trợ phát từ một số nguồn audio (do CORS), nhưng nghe bình thường khi tắt phổ âm thanh.</li><li>Sẽ bị mất những đoạn audio nhỏ khi phát với tốc độ > 1.</li><li>Đôi khi mất tiếng, phải Pause và Play lại mới được.</li><li>Phổ âm thanh có thể không hiện trong một số trường hợp (ví dụ: nghe live radio trên iOs/iPadOS)</li></ol><b style='color:#00aaff'>Sẽ cần phải nạp lại trang Web.</b>")) return;
+						if (!await Dialog.confirm("<b>Bạn muốn " + btText + " phổ âm thanh?</b><br><br>Lưu ý, khi bật chế độ hiện phổ âm thanh, sẽ có nhiều hạn chế như sau:<ol><li>Không hỗ trợ phát từ một số nguồn audio (do CORS), nhưng nghe bình thường khi tắt phổ âm thanh.</li><li>Sẽ bị mất những đoạn audio nhỏ khi phát với tốc độ > 1.</li><li>Đôi khi mất tiếng, phải Pause và Play lại mới được.</li><li>Phổ âm thanh có thể không hiện trong một số trường hợp (ví dụ: nghe live radio trên iOs/iPadOS)</li></ol><div style='text-align:right'>Power by <a target='_blank' rel='noopener' href='https://github.com/hvianna/audioMotion-analyzer?tab=readme-ov-file'>audioMotion-analyzer</a></div><br><b style='color:#00aaff'>Sẽ cần phải nạp lại trang Web.</b>")) return;
 
 						if(!ssData.audioMotionObj) {
 							xState.audio.showSpectrum = 1; // set to show spectrum
@@ -21713,7 +21713,7 @@ this.highlight = (elem) => {
 					Reason: wakeLock require many thing to accept request a wakeLock sentinel, which even more strict on appleOS who require user gesture and denied when request when already in fullscreen. So, we have to request a wakeLock BEFORE the spectrum actually go fullscreen.
 				*/
 				void function toggleAlwaysOnBtnWraper(){
-					toast.showToast("TH ver3");
+					toast.showToast("TH ver 4");
 
 					/* --- A) Always-On toggle button --- */
 					const toggleScreenAlwaysOnBtn = el("toggleScreenAlwaysOn");
@@ -21885,6 +21885,9 @@ this.highlight = (elem) => {
 						//hide fullScreen button if browser not support fullscreen API
 						el("fullScreen").style.display = "none";
 						document.querySelector('[name="specFullscreenBtn"]').style.display = "none";
+
+						// Also hide the Always-On toggle button
+						toggleScreenAlwaysOnBtn.style.display = "none";
 					}
 					else{
 						// if browser support, add handler for Fullscreen button 
