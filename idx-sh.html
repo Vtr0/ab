@@ -22227,7 +22227,7 @@ this.highlight = (elem) => {
 					const grad = ctx.createRadialGradient(
 						posX - radius * innerCircleCenterDeltaRatio, //0.3
 						posY - radius * innerCircleCenterDeltaRatio, //0.3
-						radius * midE,//0.1,
+						radius * midE / 2,//0.1,
 						posX,
 						posY,
 						radius
@@ -22411,6 +22411,8 @@ this.highlight = (elem) => {
 					ctx.lineWidth = 2;
 					ctx.lineJoin = 'round';
 					ctx.lineCap = 'round';
+
+					const MAX_AMPLITUDE = canHeight / 4;
 					
 					// DRAW THE TOP WAVES which correcponsing with the amplitude of LEFT channel
 					ctx.beginPath();
@@ -22424,7 +22426,7 @@ this.highlight = (elem) => {
 
 						// map amplitude into Y coordinate
 						const x = bar.posX; // + bar.width / 2;
-						const y = centerY - amplitude * centerY;
+						const y = centerY - amplitude * MAX_AMPLITUDE;
 
 						if (i === 0) {
 							ctx.moveTo(x, y);
@@ -22447,7 +22449,7 @@ this.highlight = (elem) => {
 
 						// map amplitude into Y coordinate
 						const x = bar.posX; // + bar.width / 2;
-						const y = centerY + amplitude * centerY;
+						const y = centerY + amplitude * MAX_AMPLITUDE;
 
 						if (i === 0) {
 							ctx.moveTo(x, y);
