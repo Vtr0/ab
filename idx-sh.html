@@ -22222,7 +22222,7 @@ this.highlight = (elem) => {
 						posY = radius * 1.2; //centerY - radius * 0.5;
 
 					// this peak to control the center of inner circle. You can set it to a fix number, such as 0.3
-					const innerCircleCenterDeltaRatio = bass; //peak;
+					const innerCircleCenterDeltaRatio = bass > .5 ? bass / 2 : bass; //peak;
 					// --- radial gradient (fake 3D lighting) ---
 					const grad = ctx.createRadialGradient(
 						posX - radius * innerCircleCenterDeltaRatio, //0.3
@@ -22642,7 +22642,7 @@ this.highlight = (elem) => {
 						ctx.textBaseline = "middle";
 						
 						ctx.fillStyle = shiftColor(.3, alpha * 1.1);
-						ctx.fillText( band.name.at(0).toUpperCase(), x, y);
+						ctx.fillText( band.name.at(0).toUpperCase(), x, y + 20);
 					});
 				}
 			}
