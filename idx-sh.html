@@ -22070,7 +22070,7 @@ this.highlight = (elem) => {
 					ctx.textBaseline = "bottom";
 					const peakEnergy = amaInstance.getEnergy('peak');
 					ctx.font = `bold ${ canHeight * ((1 + peakEnergy) / 12) }px sans-serif`;
-					ctx.fillText( ama._pvtWakeLockState ? 'WL' : 'RW', canWidth - baseSize * .5, canHeight );
+					ctx.fillText( ama._pvtWakeLockState ? 'WL' : 'RW', canWidth - baseSize * .2, canHeight );
 					ctx.restore();
 				}
 
