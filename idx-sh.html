@@ -15632,7 +15632,8 @@
 							btnLabel.innerText = "Bật phổ âm thanh";
 						}
 
-						saveState2Disk().then( _ => {
+						// 'false' param to also save xDBFilesCfg to disk, so if user also change database files setting, all changes are saved together
+						saveState2Disk(false).then( _ => {
 							//notify user to reload the page
 							//alert("Đã lưu thay đổi. Trang Web sẽ được nạp lại để áp dụng thay đổi.");
 							//Force a hard reload to clear the cache if supported by the browser
