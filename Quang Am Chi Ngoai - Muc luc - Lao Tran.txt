@@ -12,11 +12,12 @@
 --------------------
 `c`: book data array (the 'parts' array)
 `m`: the TOC below. m = `TOC_list_below`.split("\n")
-`s`: the mapping above
+`s`: the mapping above. m = `MAPPING_list_above`.split("\n")
 
 code:
 
 //supported function to extract the chapter list from m array (`arr` param) that is in `rangeStr` to put into sTit of corresponding audio chapter
+// for example: extractChapters(m, "2-7") will return "2-4: Còn sống; 5-6: Dị chất; 7: Chúc… An nghỉ"
 function extractChapters(arr, rangeStr) {
   const [rangeStart, rangeEnd] = rangeStr.split('-').map(Number);
   const results = [];
