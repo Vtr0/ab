@@ -55,6 +55,7 @@ s.forEach(r => {
 	h.tit += ` (Chương ${k[1]})`; //Tập ${k[0]}
 	h.sTit = extractChapters(m, k[1]);
 }); copy(c)
+
 ==========================================
 Chương 1-4: Còn sống
 Chương 5-6: Dị chất
