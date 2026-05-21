@@ -113,7 +113,9 @@ LOG
 		As it turn out, somehow the version I modify the morning got error on iPhone. So, I have to fix the code so the afternoon the work version is idx-th.html and then the newer one idx-zh.html work.
 		
 		To clean up, I remove all other version and change "idx-zh.html" to "idx-sh.html" (this is latest version that works)
-
+2026-05-21:
+		Break data_3.js into two database since it reaches 2MB. All Xianxia novels that not been listened kept in data_3.js, all listened novels are moved to data_4.js. Old data_4.js now is data_5.js. In file data_3.js, notice the bookGrp array which has the first item empry because all the books of this database using the id = $5X which already defined in data_3.js
+		This version make changes to 4 files: config.js, data_3.js, data_4.js, data_5.js
 TODO: When stable and don't have to test on ipad at home, change back idx-sh.html to sh.html so this full-code version not be stored on github
 -------------------------------------
 Bản ngày 11/3 kg bị lỗi
